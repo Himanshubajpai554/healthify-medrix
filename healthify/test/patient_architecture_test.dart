@@ -8,6 +8,8 @@ import 'package:healthify_hospital/core/queries/domain_queries.dart';
 import 'package:healthify_hospital/core/services/distance_service.dart';
 import 'package:healthify_hospital/core/services/patient_data_visibility_service.dart';
 import 'package:healthify_hospital/core/services/patient_discovery_service.dart';
+import 'package:healthify_hospital/patient/beds/bed_discovery_service.dart';
+import 'package:healthify_hospital/patient/models/patient_portal_models.dart';
 
 void main() {
   group('Phase 16 — Patient App Architecture & Contract Tests', () {
@@ -106,6 +108,24 @@ void main() {
 
       expect(review.ratingScore, equals(5.0));
       expect(review.feedback, contains('Great care'));
+    });
+
+    test('8. Hospital Bed Availability Comparison Data Integrity & Equality Test', () {
+      final beds1 = BedDiscoveryService.getHospitalBedDataList();
+      final beds2 = BedDiscoveryService.getHospitalBedDataList();
+
+      expect(beds1.isNotEmpty, isTrue);
+      expect(beds2.isNotEmpty, isTrue);
+
+      // Verify operator == and hashCode equality based on hospital id
+      expect(beds1.first == beds2.first, isTrue);
+
+      final selectedList = <HospitalBedData>[];
+      selectedList.add(beds1[0]);
+
+      // Check if beds2[0] (newly instantiated object for same hospital) is recognized as selected
+      final isSelected = selectedList.any((b) => b.hospital.id == beds2[0].hospital.id);
+      expect(isSelected, isTrue);
     });
   });
 }

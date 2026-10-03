@@ -57,13 +57,13 @@ class HospitalComparisonModal extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF41A8A2).withValues(alpha: 0.96)
-                : const Color(0xFFF3FAF9).withValues(alpha: 0.96),
+                ? const Color(0xFF061817).withValues(alpha: 0.84)
+                : const Color(0xFFF3FAF9).withValues(alpha: 0.88),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border.all(color: _border(isDark)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.10),
+                color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.055),
                 blurRadius: 40,
                 offset: const Offset(0, -10),
               ),

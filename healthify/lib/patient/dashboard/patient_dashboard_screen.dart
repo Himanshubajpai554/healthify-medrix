@@ -298,7 +298,27 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                                   constraints: const BoxConstraints(
                                     maxWidth: 1600,
                                   ),
-                                  child: _buildSelectedTabContent(),
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 320),
+                                    switchInCurve: Curves.easeOutCubic,
+                                    switchOutCurve: Curves.easeInCubic,
+                                    transitionBuilder: (child, animation) {
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: SlideTransition(
+                                          position: Tween<Offset>(
+                                            begin: const Offset(0.0, 0.03),
+                                            end: Offset.zero,
+                                          ).animate(animation),
+                                          child: child,
+                                        ),
+                                      );
+                                    },
+                                    child: KeyedSubtree(
+                                      key: ValueKey<int>(_selectedTab),
+                                      child: _buildSelectedTabContent(),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -439,7 +459,27 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       body: AnimatedPulseBackground(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-          child: _buildSelectedTabContent(),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 320),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.0, 0.03),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey<int>(_selectedTab),
+              child: _buildSelectedTabContent(),
+            ),
+          ),
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(isDark),

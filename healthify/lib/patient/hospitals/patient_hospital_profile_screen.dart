@@ -31,6 +31,60 @@ class _PatientHospitalProfileScreenState
   static const Color primary = Color(0xFF0D9488);
   static const Color primaryDark = Color(0xFF0F766E);
 
+  Color _surface(bool isDark) => isDark
+      ? Colors.white.withValues(alpha: 0.045)
+      : Colors.white.withValues(alpha: 0.72);
+
+  Color _surfaceStrong(bool isDark) => isDark
+      ? Colors.white.withValues(alpha: 0.075)
+      : Colors.white.withValues(alpha: 0.90);
+
+  Color _border(bool isDark) => isDark
+      ? Colors.white.withValues(alpha: 0.085)
+      : Colors.white.withValues(alpha: 0.88);
+
+  Color _primaryText(bool isDark) =>
+      isDark ? Colors.white : AppTheme.textPrimary;
+
+  Color _secondaryText(bool isDark) =>
+      isDark ? Colors.white.withValues(alpha: 0.55) : AppTheme.textSecondary;
+
+  Widget _glassBackground({required bool isDark, required Widget child}) {
+    return Stack(
+      children: [
+        Positioned(
+          top: -110,
+          right: -90,
+          child: IgnorePointer(
+            child: Container(
+              width: 270,
+              height: 270,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: primary.withValues(alpha: isDark ? 0.065 : 0.055),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -120,
+          left: -90,
+          child: IgnorePointer(
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.indigo.withValues(alpha: isDark ? 0.035 : 0.025),
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -75,44 +129,45 @@ class _PatientHospitalProfileScreenState
       // --------------------------------------------------------------------
       // BODY
       // --------------------------------------------------------------------
-      body: AnimatedPulseBackground(
-        child: SafeArea(
-          child: NestedScrollView(
-            physics: const BouncingScrollPhysics(),
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                    child: _buildHospitalHero(h, isDark),
-                  ),
-                ),
-
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _GlassTabBarDelegate(
-                    child: _buildGlassTabBar(isDark),
-                  ),
-                ),
-              ];
-            },
-            body: TabBarView(
-              controller: _tabController,
+      body: _glassBackground(
+        isDark: isDark,
+        child: AnimatedPulseBackground(
+          child: SafeArea(
+            child: NestedScrollView(
               physics: const BouncingScrollPhysics(),
-              children: [
-                _buildLiveCapacityTab(h, isDark),
-                _buildDoctorsTab(isDark),
-                _buildFacilitiesTab(h, isDark),
-                _buildReviewsTab(h, isDark),
-              ],
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: _buildHospitalHero(h, isDark),
+                    ),
+                  ),
+
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _GlassTabBarDelegate(
+                      child: _buildGlassTabBar(isDark),
+                    ),
+                  ),
+                ];
+              },
+              body: TabBarView(
+                controller: _tabController,
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildLiveCapacityTab(h, isDark),
+                  _buildDoctorsTab(isDark),
+                  _buildFacilitiesTab(h, isDark),
+                  _buildReviewsTab(h, isDark),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
-
-
 
   // ========================================================================
   // GLASS APP BAR
@@ -129,9 +184,7 @@ class _PatientHospitalProfileScreenState
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF071C1B).withValues(alpha: 0.78)
-                : Colors.white.withValues(alpha: 0.78),
+            color: _surfaceStrong(isDark),
             border: Border(
               bottom: BorderSide(
                 color: isDark
@@ -204,15 +257,9 @@ class _PatientHospitalProfileScreenState
           height: 42,
           margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.055)
-                : Colors.white.withValues(alpha: 0.65),
+            color: _surfaceStrong(isDark),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.white.withValues(alpha: 0.85),
-            ),
+            border: Border.all(color: _border(isDark)),
           ),
           child: Icon(
             icon,
@@ -305,7 +352,7 @@ class _PatientHospitalProfileScreenState
                             fontSize: 19,
                             height: 1.15,
                             fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : AppTheme.textPrimary,
+                            color: _primaryText(isDark),
                             letterSpacing: -0.4,
                           ),
                         ),
@@ -439,9 +486,7 @@ class _PatientHospitalProfileScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.045)
-            : Colors.black.withValues(alpha: 0.025),
+        color: _surfaceStrong(isDark),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -461,7 +506,7 @@ class _PatientHospitalProfileScreenState
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : AppTheme.textPrimary,
+                    color: _primaryText(isDark),
                   ),
                 ),
                 Text(
@@ -582,15 +627,9 @@ class _PatientHospitalProfileScreenState
         child: Container(
           height: 48,
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.055)
-                : Colors.white.withValues(alpha: 0.72),
+            color: _surfaceStrong(isDark),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.white,
-            ),
+            border: Border.all(color: _border(isDark)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -625,15 +664,9 @@ class _PatientHospitalProfileScreenState
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Container(
             decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF102422).withValues(alpha: 0.82)
-                  : Colors.white.withValues(alpha: 0.82),
+              color: _surfaceStrong(isDark),
               borderRadius: BorderRadius.circular(19),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.07)
-                    : Colors.white,
-              ),
+              border: Border.all(color: _border(isDark)),
             ),
             child: TabBar(
               controller: _tabController,
@@ -641,9 +674,7 @@ class _PatientHospitalProfileScreenState
               tabAlignment: TabAlignment.start,
               dividerColor: Colors.transparent,
               labelColor: primary,
-              unselectedLabelColor: isDark
-                  ? Colors.white.withValues(alpha: 0.50)
-                  : AppTheme.textSecondary,
+              unselectedLabelColor: _secondaryText(isDark),
               indicatorSize: TabBarIndicatorSize.tab,
               indicatorPadding: const EdgeInsets.all(4),
               indicator: BoxDecoration(
@@ -856,7 +887,7 @@ class _PatientHospitalProfileScreenState
                   fontSize: 25,
                   height: 1,
                   fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : AppTheme.textPrimary,
+                  color: _primaryText(isDark),
                 ),
               ),
 
@@ -1040,7 +1071,7 @@ class _PatientHospitalProfileScreenState
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : AppTheme.textPrimary,
+                        color: _primaryText(isDark),
                       ),
                     ),
 

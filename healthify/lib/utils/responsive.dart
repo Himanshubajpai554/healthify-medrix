@@ -92,3 +92,155 @@ class Responsive extends StatelessWidget {
     return mobile;
   }
 }
+
+/// Extension on BuildContext for quick access to responsive properties
+extension ResponsiveContext on BuildContext {
+  double get screenWidth => MediaQuery.of(this).size.width;
+  double get screenHeight => MediaQuery.of(this).size.height;
+
+  bool get isMobile => Responsive.isMobile(this);
+  bool get isTablet => Responsive.isTablet(this);
+  bool get isDesktop => Responsive.isDesktop(this);
+  bool get isLargeDesktop => Responsive.isLargeDesktop(this);
+  bool get isTabletOrLarger => Responsive.isTabletOrLarger(this);
+
+  DeviceType get deviceType => Responsive.getDeviceType(this);
+
+  T responsiveValue<T>({
+    required T mobile,
+    T? tablet,
+    required T desktop,
+    T? largeDesktop,
+  }) {
+    if (isLargeDesktop && largeDesktop != null) return largeDesktop;
+    if (isDesktop) return desktop;
+    if (isTablet && tablet != null) return tablet;
+    return mobile;
+  }
+
+  EdgeInsets get responsivePadding => Responsive.pagePadding(this);
+}
+
+/// Flexible Grid that automatically adjusts items per row based on maxItemWidth or crossAxisCount
+class ResponsiveGrid extends StatelessWidget {
+  final List<Widget> children;
+  final double maxItemWidth;
+  final double mainAxisSpacing;
+  final double crossAxisSpacing;
+  final double childAspectRatio;
+  final bool shrinkWrap;
+  final ScrollPhysics? physics;
+
+  const ResponsiveGrid({
+    super.key,
+    required this.children,
+    this.maxItemWidth = 320.0,
+    this.mainAxisSpacing = 16.0,
+    this.crossAxisSpacing = 16.0,
+    this.childAspectRatio = 1.0,
+    this.shrinkWrap = true,
+    this.physics = const NeverScrollableScrollPhysics(),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: shrinkWrap,
+      physics: physics,
+      itemCount: children.length,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: maxItemWidth,
+        mainAxisSpacing: mainAxisSpacing,
+        crossAxisSpacing: crossAxisSpacing,
+        childAspectRatio: childAspectRatio,
+      ),
+      itemBuilder: (context, index) => children[index],
+    );
+  }
+}
+
+/// Adaptive Layout widget that displays Row on tablet/desktop and Column on mobile
+class ResponsiveFlex extends StatelessWidget {
+  final List<Widget> children;
+  final MainAxisAlignment mainAxisAlignment;
+  final CrossAxisAlignment crossAxisAlignment;
+  final double spacing;
+  final bool forceColumnOnTablet;
+
+  const ResponsiveFlex({
+    super.key,
+    required this.children,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.crossAxisAlignment = CrossAxisAlignment.start,
+    this.spacing = 16.0,
+    this.forceColumnOnTablet = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+    final isTablet = Responsive.isTablet(context);
+    final useColumn = isMobile || (forceColumnOnTablet && isTablet);
+
+    if (useColumn) {
+      List<Widget> spacedChildren = [];
+      for (int i = 0; i < children.length; i++) {
+        spacedChildren.add(children[i]);
+        if (i < children.length - 1) {
+          spacedChildren.add(SizedBox(height: spacing));
+        }
+      }
+      return Column(
+        mainAxisAlignment: mainAxisAlignment,
+        crossAxisAlignment: crossAxisAlignment,
+        children: spacedChildren,
+      );
+    } else {
+      List<Widget> spacedChildren = [];
+      for (int i = 0; i < children.length; i++) {
+        spacedChildren.add(Expanded(child: children[i]));
+        if (i < children.length - 1) {
+          spacedChildren.add(SizedBox(width: spacing));
+        }
+      }
+      return Row(
+        mainAxisAlignment: mainAxisAlignment,
+        crossAxisAlignment: crossAxisAlignment,
+        children: spacedChildren,
+      );
+    }
+  }
+}
+
+/// Smoothly animated container for responsive transitions
+class AnimatedResponsiveLayout extends StatelessWidget {
+  final Widget child;
+  final Duration duration;
+  final Curve curve;
+
+  const AnimatedResponsiveLayout({
+    super.key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 300),
+    this.curve = Curves.easeOutCubic,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: duration,
+      switchInCurve: curve,
+      switchOutCurve: curve,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SizeTransition(
+            sizeFactor: animation,
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+}

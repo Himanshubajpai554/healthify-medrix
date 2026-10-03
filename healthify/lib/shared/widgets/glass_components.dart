@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import 'animated_components.dart';
 
 class HealthifyGlassTheme {
   // Colors
@@ -123,10 +124,13 @@ class GlassCard extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return InkWell(
+      return ScaleOnTap(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: glassWidget,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: glassWidget,
+        ),
       );
     }
 
@@ -483,40 +487,43 @@ class GlassPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.35),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(borderRadius),
-            ),
+    return ScaleOnTap(
+      onTap: isLoading ? null : onPressed,
+      child: SizedBox(
+        height: height,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-          child: isLoading
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : child,
+          child: ElevatedButton(
+            onPressed: isLoading ? null : onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(borderRadius),
+              ),
+            ),
+            child: isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : child,
+          ),
         ),
       ),
     );
@@ -541,28 +548,31 @@ class GlassSecondaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
 
-    return SizedBox(
-      height: height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-          child: OutlinedButton(
-            onPressed: onPressed,
-            style: OutlinedButton.styleFrom(
-              backgroundColor: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.70),
-              foregroundColor: HealthifyGlassTheme.primaryTeal,
-              side: BorderSide(
-                color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
-                width: 1.5,
+    return ScaleOnTap(
+      onTap: onPressed,
+      child: SizedBox(
+        height: height,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+            child: OutlinedButton(
+              onPressed: onPressed,
+              style: OutlinedButton.styleFrom(
+                backgroundColor: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.white.withValues(alpha: 0.70),
+                foregroundColor: HealthifyGlassTheme.primaryTeal,
+                side: BorderSide(
+                  color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
+                  width: 1.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                ),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(borderRadius),
-              ),
+              child: child,
             ),
-            child: child,
           ),
         ),
       ),
@@ -832,26 +842,26 @@ Future<T?> showHealthifyGlassBottomSheet<T>({
               ),
               child: SafeArea(
                 top: false,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 12),
-                      // Drag Handle
-                      Container(
-                        width: 38,
-                        height: 4.5,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.25)
-                              : Colors.black.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 12),
+                    // Drag Handle
+                    Container(
+                      width: 38,
+                      height: 4.5,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : Colors.black.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(height: 16),
-                      builder(context),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    Flexible(
+                      child: builder(context),
+                    ),
+                  ],
                 ),
               ),
             ),

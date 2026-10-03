@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../auth/login/login_screen.dart';
 import '../../hospital/dashboard/main_dashboard_screen.dart';
 import '../../main.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
+import '../../theme/app_theme.dart';
 import '../../utils/page_transitions.dart';
 import '../../utils/responsive.dart';
 import '../data/doctor_mock_data.dart';
@@ -383,7 +385,27 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                         child: Center(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 1600),
-                            child: _buildDesktopViewContent(),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 320),
+                              switchInCurve: Curves.easeOutCubic,
+                              switchOutCurve: Curves.easeInCubic,
+                              transitionBuilder: (child, animation) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: const Offset(0.0, 0.03),
+                                      end: Offset.zero,
+                                    ).animate(animation),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: KeyedSubtree(
+                                key: ValueKey<int>(_selectedNavIndex),
+                                child: _buildDesktopViewContent(),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -397,40 +419,189 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       );
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isCompactMobile = screenWidth < 420;
+
+    Color surfaceStrongMobile(bool dark) => dark
+        ? Colors.white.withValues(alpha: 0.075)
+        : Colors.white.withValues(alpha: 0.90);
+    Color borderMobile(bool dark) => dark
+        ? Colors.white.withValues(alpha: 0.075)
+        : Colors.white.withValues(alpha: 0.88);
+    Color primaryTextMobile(bool dark) =>
+        dark ? Colors.white : AppTheme.textPrimary;
+
+    const doctorPrimary = Color(0xFF0D9488);
+
+    Color statusDotColor() {
+      switch (_availabilityStatus) {
+        case DoctorAvailability.available:
+          return const Color(0xFF10B981);
+        case DoctorAvailability.busy:
+          return Colors.amber.shade800;
+        case DoctorAvailability.offline:
+          return Colors.grey.shade600;
+      }
+    }
+
     // Mobile & Tablet Responsive Layout
     return Scaffold(
       backgroundColor: HealthifyGlassTheme.getBackgroundColor(isDark),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
-        child: DoctorHeader(
-          doctorName: widget.doctorName,
-          title: 'Doctor Dashboard',
-          subtitle: 'Clinical Overview & OPD Queue',
-          availabilityStatus: _availabilityStatus,
-          onAvailabilityChanged: (status) =>
-              setState(() => _availabilityStatus = status),
-          onNotificationTap: () => DoctorModals.showNotificationsPane(
-            context: context,
-            notifications: _notifications,
-            onMarkAllRead: () {
-              setState(() {
-                _notifications = _notifications
-                    .map((n) => n.copyWith(isRead: true))
-                    .toList();
-              });
-              Navigator.pop(context);
-            },
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        titleSpacing: 8,
+        flexibleSpace: ClipRRect(
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(22),
           ),
-          onSearchTap: _showSearchModal,
-          onProfileTap: _showRoleSwitcherModal,
-          onThemeToggle: _toggleTheme,
-          unreadNotificationsCount: unreadCount,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Container(
+              decoration: BoxDecoration(
+                color: surfaceStrongMobile(isDark),
+                border: Border(
+                  bottom: BorderSide(color: borderMobile(isDark)),
+                ),
+              ),
+            ),
+          ),
         ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: doctorPrimary.withValues(
+                  alpha: isDark ? 0.14 : 0.11,
+                ),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(
+                  color: doctorPrimary.withValues(alpha: 0.12),
+                ),
+              ),
+              child: const Icon(
+                Icons.medical_services_rounded,
+                color: doctorPrimary,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: RichText(
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: 'HEALTHIFY',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        color: doctorPrimary,
+                        fontSize: 16,
+                      ),
+                    ),
+                    if (!isCompactMobile)
+                      TextSpan(
+                        text: ' | Doctor',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: primaryTextMobile(isDark),
+                          fontSize: 14,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          InkWell(
+            onTap: _showRoleSwitcherModal,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isCompactMobile ? 8 : 10,
+                vertical: 5,
+              ),
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: doctorPrimary.withValues(
+                  alpha: isDark ? 0.10 : 0.08,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: doctorPrimary.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: statusDotColor(),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.medical_services_rounded,
+                    size: 15,
+                    color: doctorPrimary,
+                  ),
+                  if (!isCompactMobile) ...[
+                    const SizedBox(width: 4),
+                    const Text(
+                      'DOCTOR',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: doctorPrimary,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 2),
+                  const Icon(
+                    Icons.arrow_drop_down_rounded,
+                    size: 16,
+                    color: doctorPrimary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+        ],
       ),
       body: AnimatedPulseBackground(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: _buildMobileTabContent(),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 320),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.0, 0.03),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey<int>(_mobileBottomNavIndex),
+              child: _buildMobileTabContent(),
+            ),
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -576,8 +747,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     final String greeting = hour < 12
         ? 'Good morning'
         : hour < 17
-            ? 'Good afternoon'
-            : 'Good evening';
+        ? 'Good afternoon'
+        : 'Good evening';
 
     return GlassCard(
       padding: const EdgeInsets.all(20),

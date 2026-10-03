@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../patient/emergency/emergency_hospitals_modal.dart';
 import '../../shared/widgets/glass_components.dart';
+import '../../theme/app_theme.dart';
 import '../models/doctor_dashboard_models.dart';
 
 class DoctorHeader extends StatelessWidget {
@@ -30,6 +31,28 @@ class DoctorHeader extends StatelessWidget {
     required this.unreadNotificationsCount,
   });
 
+  // ── Palette (mirrors Patient Dashboard exactly) ──────────────────────
+  static const Color _primary = Color(0xFF0D9488);
+
+  static Color _surfaceStrong(bool isDark) => isDark
+      ? Colors.white.withValues(alpha: 0.075)
+      : Colors.white.withValues(alpha: 0.90);
+
+  static Color _border(bool isDark) => isDark
+      ? Colors.white.withValues(alpha: 0.075)
+      : Colors.white.withValues(alpha: 0.88);
+
+  static Color _primaryText(bool isDark) =>
+      isDark ? Colors.white : AppTheme.textPrimary;
+
+  static Color _secondaryText(bool isDark) =>
+      isDark ? Colors.white.withValues(alpha: 0.55) : AppTheme.textSecondary;
+
+  static Color _surface(bool isDark) => isDark
+      ? Colors.white.withValues(alpha: 0.045)
+      : Colors.white.withValues(alpha: 0.72);
+
+  // ── Availability helpers ─────────────────────────────────────────────
   Color _getStatusColor(DoctorAvailability status) {
     switch (status) {
       case DoctorAvailability.available:
@@ -39,11 +62,6 @@ class DoctorHeader extends StatelessWidget {
       case DoctorAvailability.offline:
         return Colors.grey.shade600;
     }
-  }
-
-  Color _getStatusBgColor(DoctorAvailability status, bool isDark) {
-    final baseColor = _getStatusColor(status);
-    return baseColor.withValues(alpha: isDark ? 0.18 : 0.10);
   }
 
   String _getStatusLabel(DoctorAvailability status) {
@@ -57,67 +75,102 @@ class DoctorHeader extends StatelessWidget {
     }
   }
 
+  // ── Build ────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isCompact = screenWidth < 650;
-    final primary = HealthifyGlassTheme.primaryTeal;
 
     return ClipRRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
           padding: EdgeInsets.symmetric(
             horizontal: isCompact ? 16 : 24,
             vertical: 14,
           ),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.075)
-                : Colors.white.withValues(alpha: 0.90),
+            color: _surfaceStrong(isDark),
             border: Border(
-              bottom: BorderSide(
-                color: HealthifyGlassTheme.getGlassBorder(isDark),
-              ),
+              bottom: BorderSide(color: _border(isDark)),
             ),
           ),
           child: Row(
             children: [
-              // 1. Page Title & Subtitle (Patient Header Style)
+              // ── 1. Branded Title (matches Patient header) ────────
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      title ?? 'Doctor Dashboard',
-                      style: TextStyle(
-                        fontSize: isCompact ? 16 : 18,
-                        fontWeight: FontWeight.bold,
-                        color: HealthifyGlassTheme.getTextPrimary(isDark),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (!isCompact && subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: HealthifyGlassTheme.getTextSecondary(isDark),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color:
+                            _primary.withValues(alpha: isDark ? 0.14 : 0.11),
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(
+                          color: _primary.withValues(alpha: 0.12),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
+                      child: const Icon(
+                        Icons.medical_services_rounded,
+                        color: _primary,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RichText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            text: TextSpan(
+                              children: [
+                                const TextSpan(
+                                  text: 'HEALTHIFY',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    color: _primary,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                if (!isCompact)
+                                  TextSpan(
+                                    text: ' | Doctor',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: _primaryText(isDark),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          if (!isCompact && subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle!,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: _secondaryText(isDark),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
 
-              // 2. Action Controls Row (Patient Header Style)
+              // ── 2. Action Controls Row ───────────────────────────
               Flexible(
                 fit: FlexFit.loose,
                 child: FittedBox(
@@ -136,14 +189,15 @@ class DoctorHeader extends StatelessWidget {
                             child: Container(
                               width: 190,
                               height: 36,
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? Colors.white.withValues(alpha: 0.05)
                                     : Colors.black.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: HealthifyGlassTheme.getGlassBorder(isDark),
+                                  color: _border(isDark),
                                 ),
                               ),
                               child: Row(
@@ -151,7 +205,7 @@ class DoctorHeader extends StatelessWidget {
                                   Icon(
                                     Icons.search_rounded,
                                     size: 16,
-                                    color: HealthifyGlassTheme.getTextMuted(isDark),
+                                    color: _secondaryText(isDark),
                                   ),
                                   const SizedBox(width: 6),
                                   Expanded(
@@ -159,7 +213,7 @@ class DoctorHeader extends StatelessWidget {
                                       'Search patients...',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: HealthifyGlassTheme.getTextMuted(isDark),
+                                        color: _secondaryText(isDark),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -174,7 +228,7 @@ class DoctorHeader extends StatelessWidget {
                         IconButton(
                           icon: Icon(
                             Icons.search_rounded,
-                            color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            color: _primaryText(isDark),
                           ),
                           tooltip: 'Search Patients',
                           onPressed: onSearchTap,
@@ -192,10 +246,12 @@ class DoctorHeader extends StatelessWidget {
                               vertical: 7,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.redAccent.withValues(alpha: 0.12),
+                              color:
+                                  Colors.redAccent.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: Colors.redAccent.withValues(alpha: 0.3),
+                                color:
+                                    Colors.redAccent.withValues(alpha: 0.3),
                               ),
                             ),
                             child: const Row(
@@ -221,15 +277,17 @@ class DoctorHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
 
-                      // Doctor Portal Switcher & Status Pill
+                      // Doctor Status & Portal Switcher Pill
                       Container(
                         height: 34,
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: _getStatusBgColor(availabilityStatus, isDark),
+                          color: _primary.withValues(
+                            alpha: isDark ? 0.10 : 0.08,
+                          ),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: _getStatusColor(availabilityStatus).withValues(alpha: 0.35),
+                            color: _primary.withValues(alpha: 0.25),
                           ),
                         ),
                         child: PopupMenuButton<DoctorAvailability>(
@@ -246,33 +304,43 @@ class DoctorHeader extends StatelessWidget {
                                 width: 7,
                                 height: 7,
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(availabilityStatus),
+                                  color:
+                                      _getStatusColor(availabilityStatus),
                                   shape: BoxShape.circle,
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                'DOCTOR PORTAL',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: primary,
-                                ),
+                              const Icon(
+                                Icons.medical_services_rounded,
+                                size: 15,
+                                color: _primary,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '• ${_getStatusLabel(availabilityStatus)}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: _getStatusColor(availabilityStatus),
+                              if (!isCompact) ...[
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'DOCTOR',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: _primary,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '• ${_getStatusLabel(availabilityStatus)}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: _getStatusColor(
+                                        availabilityStatus),
+                                  ),
+                                ),
+                              ],
                               const SizedBox(width: 2),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_drop_down_rounded,
                                 size: 16,
-                                color: _getStatusColor(availabilityStatus),
+                                color: _primary,
                               ),
                             ],
                           ),
@@ -333,13 +401,13 @@ class DoctorHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
 
-                      // Notification Bell Action with Badge
+                      // Notification Bell with Badge
                       Stack(
                         children: [
                           IconButton(
                             icon: Icon(
                               Icons.notifications_none_rounded,
-                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                              color: _primaryText(isDark),
                             ),
                             tooltip: 'Notifications',
                             onPressed: onNotificationTap,
@@ -378,7 +446,7 @@ class DoctorHeader extends StatelessWidget {
                           isDark
                               ? Icons.light_mode_rounded
                               : Icons.dark_mode_rounded,
-                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                          color: _primaryText(isDark),
                         ),
                         tooltip: isDark
                             ? 'Switch to Light Mode'
@@ -387,7 +455,7 @@ class DoctorHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
 
-                      // Doctor Profile Shortcut Pill (Patient Header Style)
+                      // Doctor Profile Shortcut Pill
                       InkWell(
                         onTap: onProfileTap,
                         borderRadius: BorderRadius.circular(20),
@@ -397,22 +465,20 @@ class DoctorHeader extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.black.withValues(alpha: 0.03),
+                            color: _surface(isDark),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: HealthifyGlassTheme.getGlassBorder(isDark),
-                            ),
+                            border: Border.all(color: _border(isDark)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               CircleAvatar(
                                 radius: 13,
-                                backgroundColor: primary,
+                                backgroundColor: _primary,
                                 child: Text(
-                                  doctorName.isNotEmpty ? doctorName[0] : 'D',
+                                  doctorName.isNotEmpty
+                                      ? doctorName[0]
+                                      : 'D',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -420,20 +486,22 @@ class DoctorHeader extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                doctorName,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+                              if (!isCompact) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  doctorName,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: _primaryText(isDark),
+                                  ),
                                 ),
-                              ),
+                              ],
                               const SizedBox(width: 4),
                               Icon(
                                 Icons.keyboard_arrow_down_rounded,
                                 size: 16,
-                                color: HealthifyGlassTheme.getTextSecondary(isDark),
+                                color: _secondaryText(isDark),
                               ),
                             ],
                           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/animated_components.dart';
 import '../../shared/widgets/glass_components.dart';
 
 class DoctorQuickOverviewCards extends StatelessWidget {
@@ -40,38 +41,44 @@ class DoctorQuickOverviewCards extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
+    final cards = [
+      _buildAppointmentsCard(context),
+      _buildPatientsCard(context),
+      _buildPendingReportsCard(context),
+      _buildEmergencyCard(context),
+      _buildFollowUpsCard(context),
+    ];
+
     if (width >= 1200) {
       return Row(
-        children: [
-          Expanded(child: _buildAppointmentsCard(context)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildPatientsCard(context)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildPendingReportsCard(context)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildEmergencyCard(context)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildFollowUpsCard(context)),
-        ],
+        children: List.generate(
+          cards.length,
+          (i) => Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: i < cards.length - 1 ? 12.0 : 0),
+              child: FadeSlideIn(index: i, child: cards[i]),
+            ),
+          ),
+        ),
       );
     } else if (width >= 700) {
       return Column(
         children: [
           Row(
             children: [
-              Expanded(child: _buildAppointmentsCard(context)),
+              Expanded(child: FadeSlideIn(index: 0, child: cards[0])),
               const SizedBox(width: 12),
-              Expanded(child: _buildPatientsCard(context)),
+              Expanded(child: FadeSlideIn(index: 1, child: cards[1])),
               const SizedBox(width: 12),
-              Expanded(child: _buildPendingReportsCard(context)),
+              Expanded(child: FadeSlideIn(index: 2, child: cards[2])),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildEmergencyCard(context)),
+              Expanded(child: FadeSlideIn(index: 3, child: cards[3])),
               const SizedBox(width: 12),
-              Expanded(child: _buildFollowUpsCard(context)),
+              Expanded(child: FadeSlideIn(index: 4, child: cards[4])),
             ],
           ),
         ],
@@ -80,17 +87,16 @@ class DoctorQuickOverviewCards extends StatelessWidget {
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: [
-            SizedBox(width: 220, child: _buildAppointmentsCard(context)),
-            const SizedBox(width: 10),
-            SizedBox(width: 220, child: _buildPatientsCard(context)),
-            const SizedBox(width: 10),
-            SizedBox(width: 220, child: _buildPendingReportsCard(context)),
-            const SizedBox(width: 10),
-            SizedBox(width: 220, child: _buildEmergencyCard(context)),
-            const SizedBox(width: 10),
-            SizedBox(width: 220, child: _buildFollowUpsCard(context)),
-          ],
+          children: List.generate(
+            cards.length,
+            (i) => Padding(
+              padding: EdgeInsets.only(right: i < cards.length - 1 ? 10.0 : 0),
+              child: SizedBox(
+                width: 220,
+                child: FadeSlideIn(index: i, child: cards[i]),
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -100,7 +106,7 @@ class DoctorQuickOverviewCards extends StatelessWidget {
     return _buildOverviewCard(
       context: context,
       title: "Today's Appointments",
-      value: '$totalAppointments',
+      numValue: totalAppointments,
       subtitle: '$completedAppointments Done • $upcomingAppointments Next',
       trend: '+12% vs yesterday',
       trendIcon: Icons.trending_up_rounded,
@@ -115,7 +121,7 @@ class DoctorQuickOverviewCards extends StatelessWidget {
     return _buildOverviewCard(
       context: context,
       title: "Today's Patients",
-      value: '$totalPatients',
+      numValue: totalPatients,
       subtitle: '$newPatients New • $followUpPatients Follow-ups',
       trend: '4 OPD slots open',
       trendIcon: Icons.info_outline_rounded,
@@ -130,7 +136,7 @@ class DoctorQuickOverviewCards extends StatelessWidget {
     return _buildOverviewCard(
       context: context,
       title: 'Pending Reports',
-      value: '$pendingReports',
+      numValue: pendingReports,
       subtitle: '$urgentReports Urgent Review',
       badge: urgentReports > 0 ? '$urgentReports Urgent' : null,
       badgeColor: Colors.amber.shade800,
@@ -144,7 +150,7 @@ class DoctorQuickOverviewCards extends StatelessWidget {
     return _buildOverviewCard(
       context: context,
       title: 'Emergency Cases',
-      value: '$emergencyCount',
+      numValue: emergencyCount,
       subtitle: '$criticalEmergencyCount Critical ICU',
       badge: criticalEmergencyCount > 0 ? 'Critical' : null,
       badgeColor: Colors.redAccent,
@@ -158,7 +164,7 @@ class DoctorQuickOverviewCards extends StatelessWidget {
     return _buildOverviewCard(
       context: context,
       title: 'Patient Follow-ups',
-      value: '$followUpsToday',
+      numValue: followUpsToday,
       subtitle: 'Required today',
       icon: Icons.health_and_safety_rounded,
       color: const Color(0xFF0284C7),
@@ -169,7 +175,7 @@ class DoctorQuickOverviewCards extends StatelessWidget {
   Widget _buildOverviewCard({
     required BuildContext context,
     required String title,
-    required String value,
+    required num numValue,
     required String subtitle,
     required IconData icon,
     required Color color,
@@ -221,8 +227,8 @@ class DoctorQuickOverviewCards extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                value,
+              AnimatedCounter(
+                value: numValue,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,

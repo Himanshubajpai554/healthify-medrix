@@ -333,6 +333,16 @@ class HospitalBedData {
   });
 
   bool get isStale => DateTime.now().difference(lastUpdated).inMinutes >= 60;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HospitalBedData &&
+          runtimeType == other.runtimeType &&
+          hospital.id == other.hospital.id;
+
+  @override
+  int get hashCode => hospital.id.hashCode;
 }
 
 /// Blood group stock detail for blood bank discovery feature

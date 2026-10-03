@@ -313,6 +313,8 @@ class EmergencyTableView extends StatelessWidget {
                           fontSize: 14.5,
                           color: HealthifyGlassTheme.getTextPrimary(isDark),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         '${item.patientAge}y • ${item.patientGender} • Blood ${item.bloodGroup}',
@@ -320,10 +322,13 @@ class EmergencyTableView extends StatelessWidget {
                           fontSize: 11.5,
                           color: HealthifyGlassTheme.getTextSecondary(isDark),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 6),
                 _buildPriorityBadge(item.priority, isDark),
               ],
             ),
@@ -334,13 +339,24 @@ class EmergencyTableView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.access_time_rounded, size: 15, color: HealthifyGlassTheme.getTextSecondary(isDark)),
-                    const SizedBox(width: 4),
-                    Text('Arrival: ${formatTime(item.arrivalTime)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: HealthifyGlassTheme.getTextPrimary(isDark))),
-                  ],
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.access_time_rounded, size: 15, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          'Arrival: ${formatTime(item.arrivalTime)}',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 6),
                 _buildStatusBadge(item.status, isDark),
               ],
             ),
@@ -361,6 +377,8 @@ class EmergencyTableView extends StatelessWidget {
                 fontSize: 11.5,
                 color: HealthifyGlassTheme.getTextSecondary(isDark),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 14),
 

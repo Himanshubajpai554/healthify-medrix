@@ -21,7 +21,8 @@ import 'widgets/ticket_detail_drawer.dart';
 import 'widgets/troubleshooting_section.dart';
 
 class DoctorHelpSupportScreen extends StatefulWidget {
-  const DoctorHelpSupportScreen({super.key});
+  final bool embedInDashboard;
+  const DoctorHelpSupportScreen({super.key, this.embedInDashboard = false});
 
   @override
   State<DoctorHelpSupportScreen> createState() =>
@@ -30,7 +31,8 @@ class DoctorHelpSupportScreen extends StatefulWidget {
 
 class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
   final DoctorHelpService _helpService = DoctorHelpService();
-  final DoctorNotificationService _notificationService = DoctorNotificationService();
+  final DoctorNotificationService _notificationService =
+      DoctorNotificationService();
 
   int _selectedNavIndex = 11; // Help & Support index
   bool _isSidebarExpanded = true;
@@ -100,23 +102,24 @@ class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
       context: context,
       builder: (ctx) {
         return ContactSupportModal(
-          onSubmitTicket: ({
-            required subject,
-            required category,
-            required priority,
-            required description,
-            required attachments,
-          }) async {
-            final ticketId = await _helpService.createSupportTicket(
-              subject: subject,
-              category: category,
-              priority: priority,
-              description: description,
-              attachments: attachments,
-            );
-            setState(() {});
-            return ticketId;
-          },
+          onSubmitTicket:
+              ({
+                required subject,
+                required category,
+                required priority,
+                required description,
+                required attachments,
+              }) async {
+                final ticketId = await _helpService.createSupportTicket(
+                  subject: subject,
+                  category: category,
+                  priority: priority,
+                  description: description,
+                  attachments: attachments,
+                );
+                setState(() {});
+                return ticketId;
+              },
         );
       },
     );
@@ -138,6 +141,57 @@ class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
+
+    if (widget.embedInDashboard) {
+      final adminContact = _helpService.getHospitalAdminContact();
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            HelpHeader(
+              searchQuery: _searchQuery,
+              onSearchChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            QuickHelpActions(
+              onSearchCenterTap: () {
+                setState(() {
+                  _selectedCategory = null;
+                });
+              },
+              onContactSupportTap: _openContactSupportModal,
+              onReportProblemTap: _openContactSupportModal,
+              onContactAdminTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Contacting Hospital Admin ${adminContact.adminName}...',
+                    ),
+                    backgroundColor: HealthifyGlassTheme.primaryTeal,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            HospitalAdminContactCard(contact: adminContact),
+            const SizedBox(height: 20),
+            CommonTopicsGrid(
+              selectedCategory: _selectedCategory,
+              onCategorySelected: (cat) {
+                setState(() {
+                  _selectedCategory = cat;
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    }
     final articles = _helpService.getHelpArticles(
       searchQuery: _searchQuery,
       category: _selectedCategory,
@@ -194,11 +248,13 @@ class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
                     onSearchTap: () {},
                     onProfileTap: () {},
                     onThemeToggle: () {
-                      themeNotifier.value = themeNotifier.value == ThemeMode.light
+                      themeNotifier.value =
+                          themeNotifier.value == ThemeMode.light
                           ? ThemeMode.dark
                           : ThemeMode.light;
                     },
-                    unreadNotificationsCount: _notificationService.getUnreadCount(),
+                    unreadNotificationsCount: _notificationService
+                        .getUnreadCount(),
                   ),
 
                   // Workspace Body
@@ -235,8 +291,11 @@ class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
                                 onContactAdminTap: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Contacting Hospital Admin ${adminContact.adminName}...'),
-                                      backgroundColor: HealthifyGlassTheme.primaryTeal,
+                                      content: Text(
+                                        'Contacting Hospital Admin ${adminContact.adminName}...',
+                                      ),
+                                      backgroundColor:
+                                          HealthifyGlassTheme.primaryTeal,
                                     ),
                                   );
                                 },
@@ -255,7 +314,9 @@ class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
                               const SizedBox(height: 16),
 
                               // 4. Main Section: FAQ Accordions + Opened Article/Ticket Drawer
-                              if (isDesktop && (_selectedArticle != null || _selectedTicket != null)) ...[
+                              if (isDesktop &&
+                                  (_selectedArticle != null ||
+                                      _selectedTicket != null)) ...[
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -292,14 +353,19 @@ class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
                                                 });
                                               },
                                               onSendReply: (msg) async {
-                                                await _helpService.replyToTicket(
-                                                  _selectedTicket!.id,
-                                                  msg,
-                                                );
+                                                await _helpService
+                                                    .replyToTicket(
+                                                      _selectedTicket!.id,
+                                                      msg,
+                                                    );
                                                 setState(() {
                                                   _selectedTicket = _helpService
                                                       .getDoctorTickets()
-                                                      .firstWhere((t) => t.id == _selectedTicket!.id);
+                                                      .firstWhere(
+                                                        (t) =>
+                                                            t.id ==
+                                                            _selectedTicket!.id,
+                                                      );
                                                 });
                                               },
                                             ),
@@ -373,50 +439,118 @@ class _DoctorHelpSupportScreenState extends State<DoctorHelpSupportScreen> {
   Widget _buildFeedbackAndLinksCard(bool isDark) {
     return GlassCard(
       padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          const GlassIconContainer(
-            icon: Icons.feedback_outlined,
-            size: 40,
-            iconSize: 20,
-            color: HealthifyGlassTheme.primaryTeal,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 500;
+          if (isNarrow) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Have Feedback or Feature Suggestions?',
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.bold,
-                    color: HealthifyGlassTheme.getTextPrimary(isDark),
-                  ),
+                Row(
+                  children: [
+                    const GlassIconContainer(
+                      icon: Icons.feedback_outlined,
+                      size: 40,
+                      iconSize: 20,
+                      color: HealthifyGlassTheme.primaryTeal,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Have Feedback or Feature Suggestions?',
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            ),
+                          ),
+                          Text(
+                            'Help us improve clinical workflows by sharing your feedback with our product team.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: HealthifyGlassTheme.getTextSecondary(isDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Help us improve clinical workflows by sharing your feedback with our product team.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: HealthifyGlassTheme.getTextSecondary(isDark),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: GlassPrimaryButton(
+                    height: 38,
+                    onPressed: _openFeedbackModal,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.rate_review_rounded, size: 15, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text(
+                          'Send Feedback',
+                          style: TextStyle(fontSize: 12, color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          GlassPrimaryButton(
-            height: 38,
-            onPressed: _openFeedbackModal,
-            child: const Row(
-              children: [
-                Icon(Icons.rate_review_rounded, size: 15, color: Colors.white),
-                SizedBox(width: 5),
-                Text('Send Feedback', style: TextStyle(fontSize: 12, color: Colors.white)),
-              ],
-            ),
-          ),
-        ],
+            );
+          }
+
+          return Row(
+            children: [
+              const GlassIconContainer(
+                icon: Icons.feedback_outlined,
+                size: 40,
+                iconSize: 20,
+                color: HealthifyGlassTheme.primaryTeal,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Have Feedback or Feature Suggestions?',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: HealthifyGlassTheme.getTextPrimary(isDark),
+                      ),
+                    ),
+                    Text(
+                      'Help us improve clinical workflows by sharing your feedback with our product team.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: HealthifyGlassTheme.getTextSecondary(isDark),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              GlassPrimaryButton(
+                height: 38,
+                onPressed: _openFeedbackModal,
+                child: const Row(
+                  children: [
+                    Icon(Icons.rate_review_rounded, size: 15, color: Colors.white),
+                    SizedBox(width: 5),
+                    Text(
+                      'Send Feedback',
+                      style: TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

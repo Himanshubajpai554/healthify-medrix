@@ -124,38 +124,21 @@ class NotificationListItem extends StatelessWidget {
                       // Subtitle / Entity / Patient Info Badge & Relative Time
                       Row(
                         children: [
-                          Text(
-                            notification.category.label,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: notification.category.color,
+                          Expanded(
+                            child: Text(
+                              notification.relatedPatientName != null
+                                  ? '${notification.category.label} • 👤 ${notification.relatedPatientName!}'
+                                  : notification.category.label,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: notification.category.color,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (notification.relatedPatientName != null) ...[
-                            Text(
-                              ' • ',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: HealthifyGlassTheme.getTextMuted(isDark),
-                              ),
-                            ),
-                            Icon(
-                              Icons.person_outline_rounded,
-                              size: 12,
-                              color: HealthifyGlassTheme.getTextSecondary(isDark),
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              notification.relatedPatientName!,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: HealthifyGlassTheme.getTextSecondary(isDark),
-                              ),
-                            ),
-                          ],
-                          const Spacer(),
+                          const SizedBox(width: 6),
                           Text(
                             _formatRelativeTime(notification.timestamp),
                             style: TextStyle(
@@ -189,61 +172,130 @@ class NotificationListItem extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Action Toolbar
+            // Action Toolbar (Redesigned modern glass pill buttons with guaranteed zero horizontal overflow)
             Padding(
               padding: const EdgeInsets.only(left: 26),
-              child: Row(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  if (notification.actionLabel != null && notification.targetRoute != null) ...[
-                    GlassPrimaryButton(
-                      height: 32,
-                      onPressed: onPerformAction,
-                      child: Row(
-                        children: [
-                          const Icon(Icons.launch_rounded, size: 13, color: Colors.white),
-                          const SizedBox(width: 5),
-                          Text(
-                            notification.actionLabel!,
-                            style: const TextStyle(fontSize: 11.5, color: Colors.white),
+                  if (notification.actionLabel != null && notification.targetRoute != null)
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onPerformAction,
+                        borderRadius: BorderRadius.circular(16),
+                        child: Ink(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0D9488), Color(0xFF0F766E)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0D9488).withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  notification.actionLabel!,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                  ],
 
-                  if (!notification.isRead) ...[
-                    GlassSecondaryButton(
-                      height: 32,
-                      onPressed: onMarkRead,
-                      child: const Row(
-                        children: [
-                          Icon(Icons.check_rounded, size: 13),
-                          SizedBox(width: 4),
-                          Text(
-                            'Mark Read',
-                            style: TextStyle(fontSize: 11.5),
+                  if (!notification.isRead)
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onMarkRead,
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: HealthifyGlassTheme.primaryTeal.withValues(alpha: isDark ? 0.18 : 0.10),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
+                              width: 1.0,
+                            ),
                           ),
-                        ],
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_outline_rounded, size: 13, color: HealthifyGlassTheme.primaryTeal),
+                              SizedBox(width: 4),
+                              Text(
+                                'Mark Read',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: HealthifyGlassTheme.primaryTeal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                  ],
-
-                  const Spacer(),
 
                   // Dismiss Button
                   Tooltip(
                     message: 'Dismiss notification',
-                    child: InkWell(
-                      onTap: onDismiss,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 16,
-                          color: HealthifyGlassTheme.getTextMuted(isDark),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onDismiss,
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent.withValues(alpha: isDark ? 0.12 : 0.08),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.25),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.close_rounded,
+                                size: 13,
+                                color: isDark ? Colors.red.shade300 : Colors.red.shade700,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                'Dismiss',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.red.shade300 : Colors.red.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

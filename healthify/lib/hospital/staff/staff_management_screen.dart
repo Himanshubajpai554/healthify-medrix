@@ -75,6 +75,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<StaffRole>(
+                    isExpanded: true,
                     initialValue: selectedRole,
                     decoration: const InputDecoration(labelText: 'Role'),
                     items: StaffRole.values.map((role) {

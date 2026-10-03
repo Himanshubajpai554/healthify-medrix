@@ -36,12 +36,16 @@ class OverdueFollowUpsSection extends StatelessWidget {
                 child: const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 20),
               ),
               const SizedBox(width: 10),
-              Text(
-                'Overdue Follow-ups',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Flexible(
+                child: Text(
+                  'Overdue Follow-ups',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -70,76 +74,114 @@ class OverdueFollowUpsSection extends StatelessWidget {
             separatorBuilder: (context, index) => const Divider(height: 16),
             itemBuilder: (context, index) {
               final item = overdueFollowUps[index];
-              return Row(
-                children: [
-                  // Days Overdue Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 520;
+                  final badgeWidget = Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.redAccent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
                     ),
                     child: Text(
-                      '${item.daysOverdue} days overdue',
+                      '${item.daysOverdue}d overdue',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: Colors.redAccent,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 14),
-                  // Patient & Original Date & Reason
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
+                  );
+
+                  final infoWidget = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
                               item.patientName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: isDark ? Colors.white : const Color(0xFF0F172A),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
                               '• Orig: ${item.followUpDate.day}/${item.followUpDate.month}/${item.followUpDate.year}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: isDark ? Colors.white54 : const Color(0xFF64748B),
                               ),
                             ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '${item.department} • ${item.reason}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  );
+
+                  final actionsWidget = Row(
+                    mainAxisSize: isNarrow ? MainAxisSize.max : MainAxisSize.min,
+                    mainAxisAlignment: isNarrow ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    children: [
+                      GlassSecondaryButton(
+                        onPressed: () => onOpenPatient(item),
+                        height: 32,
+                        child: const Text('Open Patient', style: TextStyle(fontSize: 11)),
+                      ),
+                      const SizedBox(width: 8),
+                      GlassPrimaryButton(
+                        onPressed: () => onReschedule(item),
+                        height: 32,
+                        child: const Text('Schedule', style: TextStyle(fontSize: 11)),
+                      ),
+                    ],
+                  );
+
+                  if (isNarrow) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            badgeWidget,
+                            const SizedBox(width: 8),
+                            Expanded(child: infoWidget),
                           ],
                         ),
-                        Text(
-                          '${item.department} • ${item.reason}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                          ),
-                        ),
+                        const SizedBox(height: 8),
+                        actionsWidget,
                       ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GlassSecondaryButton(
-                    onPressed: () => onOpenPatient(item),
-                    height: 34,
-                    child: const Text('Open Patient', style: TextStyle(fontSize: 11)),
-                  ),
-                  const SizedBox(width: 8),
-                  GlassPrimaryButton(
-                    onPressed: () => onReschedule(item),
-                    height: 34,
-                    child: const Text('Schedule New Date', style: TextStyle(fontSize: 11)),
-                  ),
-                ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      badgeWidget,
+                      const SizedBox(width: 12),
+                      Expanded(child: infoWidget),
+                      const SizedBox(width: 12),
+                      actionsWidget,
+                    ],
+                  );
+                },
               );
             },
           ),

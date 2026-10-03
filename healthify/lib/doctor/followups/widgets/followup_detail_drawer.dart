@@ -82,12 +82,16 @@ class _FollowUpDetailDrawerState extends State<FollowUpDetailDrawer> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            'Follow-up Detail',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          Flexible(
+                            child: Text(
+                              'Follow-up Detail',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 10),

@@ -21,50 +21,52 @@ class MedrixErrorState extends StatelessWidget {
 
     return Center(
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         borderRadius: 20,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const GlassIconContainer(
-              icon: Icons.error_outline_rounded,
-              color: Colors.redAccent,
-              size: 64,
-              iconSize: 36,
-              borderRadius: 20,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: HealthifyGlassTheme.getTextPrimary(isDark),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const GlassIconContainer(
+                icon: Icons.error_outline_rounded,
+                color: Colors.redAccent,
+                size: 64,
+                iconSize: 36,
+                borderRadius: 20,
               ),
-            ),
-            const SizedBox(height: 8),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: Text(
-                errorMessage,
+              const SizedBox(height: 20),
+              Text(
+                title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 13,
-                  color: HealthifyGlassTheme.getTextSecondary(isDark),
-                  height: 1.4,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: HealthifyGlassTheme.getTextPrimary(isDark),
                 ),
               ),
-            ),
-            if (onRetry != null) ...[
-              const SizedBox(height: 24),
-              AppRetryButton(
-                onPressed: onRetry!,
-                label: retryLabel,
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: Text(
+                  errorMessage,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: HealthifyGlassTheme.getTextSecondary(isDark),
+                    height: 1.4,
+                  ),
+                ),
               ),
+              if (onRetry != null) ...[
+                const SizedBox(height: 24),
+                AppRetryButton(
+                  onPressed: onRetry!,
+                  label: retryLabel,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -62,7 +62,10 @@ class AppointmentsHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 10,
+                      runSpacing: 4,
                       children: [
                         Text(
                           'Appointments',
@@ -72,16 +75,20 @@ class AppointmentsHeader extends StatelessWidget {
                             color: HealthifyGlassTheme.getTextPrimary(isDark),
                           ),
                         ),
-                        const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: HealthifyGlassTheme.primaryTeal.withValues(
                               alpha: isDark ? 0.22 : 0.12,
                             ),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3),
+                              color: HealthifyGlassTheme.primaryTeal.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
                           child: const Text(
@@ -111,12 +118,17 @@ class AppointmentsHeader extends StatelessWidget {
 
               // Availability Dropdown Selector
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: _getStatusBgColor(availabilityStatus, isDark),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: _getStatusColor(availabilityStatus).withValues(alpha: 0.4),
+                    color: _getStatusColor(
+                      availabilityStatus,
+                    ).withValues(alpha: 0.4),
                   ),
                 ),
                 child: PopupMenuButton<DoctorAvailability>(
@@ -155,7 +167,11 @@ class AppointmentsHeader extends StatelessWidget {
                       value: DoctorAvailability.available,
                       child: Row(
                         children: [
-                          Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFF10B981),
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text('Available'),
                         ],
@@ -165,7 +181,11 @@ class AppointmentsHeader extends StatelessWidget {
                       value: DoctorAvailability.busy,
                       child: Row(
                         children: [
-                          Icon(Icons.remove_circle_rounded, color: Colors.amber, size: 18),
+                          Icon(
+                            Icons.remove_circle_rounded,
+                            color: Colors.amber,
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text('Busy'),
                         ],
@@ -175,7 +195,11 @@ class AppointmentsHeader extends StatelessWidget {
                       value: DoctorAvailability.offline,
                       child: Row(
                         children: [
-                          Icon(Icons.do_not_disturb_on_rounded, color: Colors.grey, size: 18),
+                          Icon(
+                            Icons.do_not_disturb_on_rounded,
+                            color: Colors.grey,
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text('Offline'),
                         ],
@@ -188,7 +212,10 @@ class AppointmentsHeader extends StatelessWidget {
 
               // Search Button
               IconButton(
-                icon: Icon(Icons.search_rounded, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+                ),
                 onPressed: onSearchTap,
                 tooltip: 'Search Patients & Appointments',
               ),
@@ -197,7 +224,10 @@ class AppointmentsHeader extends StatelessWidget {
               Stack(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.notifications_outlined, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                    icon: Icon(
+                      Icons.notifications_outlined,
+                      color: HealthifyGlassTheme.getTextPrimary(isDark),
+                    ),
                     onPressed: onNotificationTap,
                     tooltip: 'Notifications',
                   ),
@@ -211,10 +241,17 @@ class AppointmentsHeader extends StatelessWidget {
                           color: Colors.redAccent,
                           shape: BoxShape.circle,
                         ),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
                         child: Text(
                           '$unreadNotificationsCount',
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -242,7 +279,11 @@ class AppointmentsHeader extends StatelessWidget {
                   backgroundColor: HealthifyGlassTheme.primaryTeal,
                   child: Text(
                     doctorName.isNotEmpty ? doctorName[0] : 'D',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -262,7 +303,13 @@ class AppointmentsHeader extends StatelessWidget {
                     children: [
                       Icon(Icons.add_rounded, size: 18),
                       SizedBox(width: 6),
-                      Text('+ Add Availability', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                      Text(
+                        '+ Add Availability',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -275,7 +322,13 @@ class AppointmentsHeader extends StatelessWidget {
                     children: [
                       Icon(Icons.calendar_month_rounded, size: 16),
                       SizedBox(width: 6),
-                      Text('View Schedule', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                      Text(
+                        'View Schedule',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -283,7 +336,9 @@ class AppointmentsHeader extends StatelessWidget {
                 // View Mode Switcher (List View / Calendar View)
                 Container(
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -294,9 +349,14 @@ class AppointmentsHeader extends StatelessWidget {
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
-                            color: !isCalendarView ? HealthifyGlassTheme.primaryTeal : Colors.transparent,
+                            color: !isCalendarView
+                                ? HealthifyGlassTheme.primaryTeal
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -304,7 +364,11 @@ class AppointmentsHeader extends StatelessWidget {
                               Icon(
                                 Icons.view_list_rounded,
                                 size: 16,
-                                color: !isCalendarView ? Colors.white : HealthifyGlassTheme.getTextSecondary(isDark),
+                                color: !isCalendarView
+                                    ? Colors.white
+                                    : HealthifyGlassTheme.getTextSecondary(
+                                        isDark,
+                                      ),
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -312,7 +376,11 @@ class AppointmentsHeader extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: !isCalendarView ? Colors.white : HealthifyGlassTheme.getTextSecondary(isDark),
+                                  color: !isCalendarView
+                                      ? Colors.white
+                                      : HealthifyGlassTheme.getTextSecondary(
+                                          isDark,
+                                        ),
                                 ),
                               ),
                             ],
@@ -325,9 +393,14 @@ class AppointmentsHeader extends StatelessWidget {
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
-                            color: isCalendarView ? HealthifyGlassTheme.primaryTeal : Colors.transparent,
+                            color: isCalendarView
+                                ? HealthifyGlassTheme.primaryTeal
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -335,7 +408,11 @@ class AppointmentsHeader extends StatelessWidget {
                               Icon(
                                 Icons.calendar_view_week_rounded,
                                 size: 16,
-                                color: isCalendarView ? Colors.white : HealthifyGlassTheme.getTextSecondary(isDark),
+                                color: isCalendarView
+                                    ? Colors.white
+                                    : HealthifyGlassTheme.getTextSecondary(
+                                        isDark,
+                                      ),
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -343,7 +420,11 @@ class AppointmentsHeader extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: isCalendarView ? Colors.white : HealthifyGlassTheme.getTextSecondary(isDark),
+                                  color: isCalendarView
+                                      ? Colors.white
+                                      : HealthifyGlassTheme.getTextSecondary(
+                                          isDark,
+                                        ),
                                 ),
                               ),
                             ],

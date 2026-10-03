@@ -87,7 +87,12 @@ class _TodayAppointmentsSectionState extends State<TodayAppointmentsSection> {
               const SizedBox(width: 8),
               GlassSecondaryButton(
                 height: 36,
-                onPressed: widget.onViewAll,
+                onPressed: () {
+                  setState(() {
+                    _selectedFilter = 'All';
+                  });
+                  widget.onViewAll();
+                },
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -213,45 +218,53 @@ class _TodayAppointmentsSectionState extends State<TodayAppointmentsSection> {
         children: [
           Row(
             children: [
-              // Appointment Time & Token Badge
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: HealthifyGlassTheme.primaryTeal.withValues(
-                    alpha: isDark ? 0.22 : 0.12,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${apt.appointmentTime} • ${apt.tokenNumber}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: HealthifyGlassTheme.primaryTeal,
-                  ),
+              // Appointment Time & Token Badge & Next In Line
+              Expanded(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: HealthifyGlassTheme.primaryTeal.withValues(
+                          alpha: isDark ? 0.22 : 0.12,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${apt.appointmentTime} • ${apt.tokenNumber}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.primaryTeal,
+                        ),
+                      ),
+                    ),
+                    if (isNext)
+                      Container(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+                        ),
+                        child: const Text(
+                          'NEXT IN LINE',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 10),
-              if (isNext)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-                  ),
-                  child: const Text(
-                    'NEXT IN LINE',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.amber,
-                    ),
-                  ),
-                ),
-              const Spacer(),
+              const SizedBox(width: 8),
               _buildStatusBadge(apt.status),
             ],
           ),
@@ -280,6 +293,8 @@ class _TodayAppointmentsSectionState extends State<TodayAppointmentsSection> {
                   children: [
                     Text(
                       '${patient.name} (${patient.age} yrs)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -289,6 +304,8 @@ class _TodayAppointmentsSectionState extends State<TodayAppointmentsSection> {
                     const SizedBox(height: 2),
                     Text(
                       '${apt.appointmentType} • ${apt.department}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
                         color: HealthifyGlassTheme.getTextSecondary(isDark),

@@ -19,7 +19,11 @@ import 'widgets/reschedule_followup_modal.dart';
 import 'widgets/todays_followups_section.dart';
 
 class DoctorFollowUpsScreen extends StatefulWidget {
-  const DoctorFollowUpsScreen({super.key});
+  final bool embedInDashboard;
+  const DoctorFollowUpsScreen({
+    super.key,
+    this.embedInDashboard = false,
+  });
 
   @override
   State<DoctorFollowUpsScreen> createState() => _DoctorFollowUpsScreenState();
@@ -132,6 +136,13 @@ class _DoctorFollowUpsScreenState extends State<DoctorFollowUpsScreen> {
     final isMobile = screenWidth < 768;
 
     final metrics = _followUpService.getSummaryMetrics();
+
+    if (widget.embedInDashboard) {
+      if (isDesktop) {
+        return _buildDesktopLayout(context, isDark, metrics);
+      }
+      return _buildMobileTabletLayout(context, isDark, metrics, isMobile);
+    }
 
     return Scaffold(
       backgroundColor: isDark ? HealthifyGlassTheme.darkBackground : const Color(0xFFF8FAFC),
@@ -325,83 +336,77 @@ class _DoctorFollowUpsScreenState extends State<DoctorFollowUpsScreen> {
   ) {
     final filtered = _filteredFollowUps;
 
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(isMobile ? 12 : 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FollowUpHeader(
-                  searchQuery: _searchQuery,
-                  onSearchChanged: (val) => setState(() => _searchQuery = val),
-                  onClearSearch: () => setState(() => _searchQuery = ''),
-                  onSchedulePressed: () => _openCreateModal(context),
-                  onRefreshPressed: _loadFollowUps,
-                  isCalendarView: _isCalendarView,
-                  onToggleCalendarView: (val) => setState(() => _isCalendarView = val),
-                ),
-                const SizedBox(height: 16),
-
-                FollowUpSummaryCards(
-                  dueTodayCount: metrics['dueToday'] ?? 0,
-                  upcomingCount: metrics['upcoming'] ?? 0,
-                  overdueCount: metrics['overdue'] ?? 0,
-                  completedThisWeekCount: metrics['completedThisWeek'] ?? 0,
-                  selectedStatusFilter: _selectedStatus,
-                  onStatusFilterSelected: (st) => setState(() => _selectedStatus = st),
-                ),
-                const SizedBox(height: 16),
-
-                if (!_isCalendarView && _todaysFollowUps.isNotEmpty) ...[
-                  TodaysFollowUpsSection(
-                    todaysFollowUps: _todaysFollowUps,
-                    onOpenFollowUp: (item) => _openMobileDetailBottomSheet(context, item),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                if (!_isCalendarView && _overdueFollowUps.isNotEmpty) ...[
-                  OverdueFollowUpsSection(
-                    overdueFollowUps: _overdueFollowUps,
-                    onOpenPatient: (_) => Navigator.pushNamed(context, '/doctor-patient-profile'),
-                    onReschedule: (item) => _openRescheduleModal(context, item),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                FollowUpFilterToolbar(
-                  selectedStatus: _selectedStatus,
-                  onStatusChanged: (st) => setState(() => _selectedStatus = st),
-                  selectedDepartment: _selectedDepartment,
-                  onDepartmentChanged: (dept) => setState(() => _selectedDepartment = dept),
-                  availableDepartments: _availableDepartments,
-                  selectedSort: _selectedSort,
-                  onSortChanged: (sort) => setState(() => _selectedSort = sort),
-                  onResetFilters: _resetFilters,
-                ),
-                const SizedBox(height: 16),
-
-                if (_isCalendarView)
-                  FollowUpCalendarView(
-                    followUps: filtered,
-                    onSelectFollowUp: (item) => _openMobileDetailBottomSheet(context, item),
-                  )
-                else
-                  FollowUpTableView(
-                    followUps: filtered,
-                    selectedFollowUpId: _selectedFollowUp?.id,
-                    onSelectFollowUp: (item) => _openMobileDetailBottomSheet(context, item),
-                    onOpenPatient: (_) => Navigator.pushNamed(context, '/doctor-patient-profile'),
-                    onReschedule: (item) => _openRescheduleModal(context, item),
-                    onMoreActions: (item) => _showMoreActionsMenu(context, item),
-                  ),
-              ],
-            ),
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isMobile ? 12 : 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FollowUpHeader(
+            searchQuery: _searchQuery,
+            onSearchChanged: (val) => setState(() => _searchQuery = val),
+            onClearSearch: () => setState(() => _searchQuery = ''),
+            onSchedulePressed: () => _openCreateModal(context),
+            onRefreshPressed: _loadFollowUps,
+            isCalendarView: _isCalendarView,
+            onToggleCalendarView: (val) => setState(() => _isCalendarView = val),
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+
+          FollowUpSummaryCards(
+            dueTodayCount: metrics['dueToday'] ?? 0,
+            upcomingCount: metrics['upcoming'] ?? 0,
+            overdueCount: metrics['overdue'] ?? 0,
+            completedThisWeekCount: metrics['completedThisWeek'] ?? 0,
+            selectedStatusFilter: _selectedStatus,
+            onStatusFilterSelected: (st) => setState(() => _selectedStatus = st),
+          ),
+          const SizedBox(height: 16),
+
+          if (!_isCalendarView && _todaysFollowUps.isNotEmpty) ...[
+            TodaysFollowUpsSection(
+              todaysFollowUps: _todaysFollowUps,
+              onOpenFollowUp: (item) => _openMobileDetailBottomSheet(context, item),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          if (!_isCalendarView && _overdueFollowUps.isNotEmpty) ...[
+            OverdueFollowUpsSection(
+              overdueFollowUps: _overdueFollowUps,
+              onOpenPatient: (_) => Navigator.pushNamed(context, '/doctor-patient-profile'),
+              onReschedule: (item) => _openRescheduleModal(context, item),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          FollowUpFilterToolbar(
+            selectedStatus: _selectedStatus,
+            onStatusChanged: (st) => setState(() => _selectedStatus = st),
+            selectedDepartment: _selectedDepartment,
+            onDepartmentChanged: (dept) => setState(() => _selectedDepartment = dept),
+            availableDepartments: _availableDepartments,
+            selectedSort: _selectedSort,
+            onSortChanged: (sort) => setState(() => _selectedSort = sort),
+            onResetFilters: _resetFilters,
+          ),
+          const SizedBox(height: 16),
+
+          if (_isCalendarView)
+            FollowUpCalendarView(
+              followUps: filtered,
+              onSelectFollowUp: (item) => _openMobileDetailBottomSheet(context, item),
+            )
+          else
+            FollowUpTableView(
+              followUps: filtered,
+              selectedFollowUpId: _selectedFollowUp?.id,
+              onSelectFollowUp: (item) => _openMobileDetailBottomSheet(context, item),
+              onOpenPatient: (_) => Navigator.pushNamed(context, '/doctor-patient-profile'),
+              onReschedule: (item) => _openRescheduleModal(context, item),
+              onMoreActions: (item) => _showMoreActionsMenu(context, item),
+            ),
+        ],
+      ),
     );
   }
 

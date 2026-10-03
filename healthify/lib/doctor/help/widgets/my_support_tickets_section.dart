@@ -112,12 +112,15 @@ class MySupportTicketsSection extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          ticket.id,
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: HealthifyGlassTheme.primaryTeal,
+                        Flexible(
+                          child: Text(
+                            ticket.id,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              color: HealthifyGlassTheme.primaryTeal,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -139,7 +142,7 @@ class MySupportTicketsSection extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         Text(
                           _formatRelativeTime(ticket.lastUpdated),
                           style: TextStyle(

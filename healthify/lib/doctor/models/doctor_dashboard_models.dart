@@ -145,6 +145,8 @@ class DoctorAppointmentModel {
 
   DoctorAppointmentModel copyWith({
     AppointmentStatus? status,
+    String? appointmentTime,
+    DateTime? date,
     String? checkedInTime,
     String? waitingDuration,
     String? cancellationReason,
@@ -153,7 +155,7 @@ class DoctorAppointmentModel {
     return DoctorAppointmentModel(
       id: id,
       patient: patient,
-      appointmentTime: appointmentTime,
+      appointmentTime: appointmentTime ?? this.appointmentTime,
       appointmentType: appointmentType,
       department: department,
       status: status ?? this.status,
@@ -166,7 +168,7 @@ class DoctorAppointmentModel {
       consultationMode: consultationMode,
       cancellationReason: cancellationReason ?? this.cancellationReason,
       previousVisitDate: previousVisitDate,
-      date: date,
+      date: date ?? this.date,
     );
   }
 }

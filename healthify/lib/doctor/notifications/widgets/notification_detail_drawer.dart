@@ -216,67 +216,142 @@ class NotificationDetailDrawer extends StatelessWidget {
           if (notification.actionLabel != null && notification.targetRoute != null) ...[
             SizedBox(
               width: double.infinity,
-              child: GlassPrimaryButton(
-                height: 44,
-                onPressed: onPerformAction,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.launch_rounded, size: 18, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Navigate to ${notification.actionLabel}',
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onPerformAction,
+                  borderRadius: BorderRadius.circular(18),
+                  child: Ink(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0D9488), Color(0xFF0F766E)],
                       ),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0D9488).withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'Navigate to ${notification.actionLabel}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
           ],
 
           // Secondary Action Controls
           Row(
             children: [
               Expanded(
-                child: GlassSecondaryButton(
-                  height: 40,
-                  onPressed: onMarkReadToggle,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        notification.isRead ? Icons.mark_email_unread_rounded : Icons.check_rounded,
-                        size: 16,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onMarkReadToggle,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: HealthifyGlassTheme.primaryTeal.withValues(alpha: isDark ? 0.20 : 0.10),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
+                          width: 1.0,
+                        ),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        notification.isRead ? 'Mark Unread' : 'Mark as Read',
-                        style: const TextStyle(fontSize: 12.5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            notification.isRead ? Icons.mark_email_unread_rounded : Icons.check_circle_outline_rounded,
+                            size: 16,
+                            color: HealthifyGlassTheme.primaryTeal,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              notification.isRead ? 'Mark Unread' : 'Mark as Read',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: HealthifyGlassTheme.primaryTeal,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: GlassSecondaryButton(
-                  height: 40,
-                  onPressed: onDismiss,
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
-                      SizedBox(width: 6),
-                      Text(
-                        'Dismiss',
-                        style: TextStyle(fontSize: 12.5, color: Colors.redAccent),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onDismiss,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: isDark ? 0.14 : 0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.3),
+                          width: 1.0,
+                        ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.delete_outline_rounded,
+                            size: 16,
+                            color: isDark ? Colors.red.shade300 : Colors.red.shade700,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Dismiss',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.red.shade300 : Colors.red.shade700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -300,12 +375,18 @@ class NotificationDetailDrawer extends StatelessWidget {
               color: HealthifyGlassTheme.getTextSecondary(isDark),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: valueColor ?? HealthifyGlassTheme.getTextPrimary(isDark),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: valueColor ?? HealthifyGlassTheme.getTextPrimary(isDark),
+              ),
             ),
           ),
         ],

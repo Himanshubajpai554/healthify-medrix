@@ -26,11 +26,17 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
       final repository = RepositoryScope.of(context).departmentRepository;
       final departments = await repository.getDepartments('HOSP-101');
       if (mounted) {
-        setState(() => _uiState = departments.isEmpty ? UiState.empty() : UiState.success(departments));
+        setState(
+          () => _uiState = departments.isEmpty
+              ? UiState.empty()
+              : UiState.success(departments),
+        );
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _uiState = UiState.error('Failed to load departments: $e'));
+        setState(
+          () => _uiState = UiState.error('Failed to load departments: $e'),
+        );
       }
     }
   }
@@ -38,10 +44,12 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
   List<Department> get _filteredDepartments {
     final list = _uiState.data ?? [];
     return list.where((d) {
-      final matchesSearch = d.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+      final matchesSearch =
+          d.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           d.code.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           d.description.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesStatus = _selectedStatus == 'All' ||
+      final matchesStatus =
+          _selectedStatus == 'All' ||
           (_selectedStatus == 'Active' && d.isActive) ||
           (_selectedStatus == 'Inactive' && !d.isActive);
       return matchesSearch && matchesStatus;
@@ -52,9 +60,15 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
     final nameController = TextEditingController(text: existing?.name ?? '');
     final codeController = TextEditingController(text: existing?.code ?? '');
-    final descriptionController = TextEditingController(text: existing?.description ?? '');
-    final locationController = TextEditingController(text: existing?.location ?? '');
-    final phoneController = TextEditingController(text: existing?.contactPhone ?? '');
+    final descriptionController = TextEditingController(
+      text: existing?.description ?? '',
+    );
+    final locationController = TextEditingController(
+      text: existing?.location ?? '',
+    );
+    final phoneController = TextEditingController(
+      text: existing?.contactPhone ?? '',
+    );
 
     showDialog(
       context: context,
@@ -63,7 +77,10 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
             ? HealthifyGlassTheme.darkBackground.withValues(alpha: 0.95)
             : Colors.white.withValues(alpha: 0.95),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(existing == null ? 'Add New Department' : 'Edit Department', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          existing == null ? 'Add New Department' : 'Edit Department',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: SizedBox(
           width: 500,
           child: SingleChildScrollView(
@@ -72,22 +89,30 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Department Name (e.g. Cardiology)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Department Name (e.g. Cardiology)',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: codeController,
-                  decoration: const InputDecoration(labelText: 'Department Code (e.g. CARD)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Department Code (e.g. CARD)',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: locationController,
-                  decoration: const InputDecoration(labelText: 'Building & Floor Location'),
+                  decoration: const InputDecoration(
+                    labelText: 'Building & Floor Location',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'Contact Extension / Phone'),
+                  decoration: const InputDecoration(
+                    labelText: 'Contact Extension / Phone',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -108,7 +133,9 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
             height: 42,
             onPressed: () async {
               Navigator.pop(context);
-              final repository = RepositoryScope.of(context).departmentRepository;
+              final repository = RepositoryScope.of(
+                context,
+              ).departmentRepository;
               if (existing == null) {
                 final newDep = Department(
                   id: 'DEP-${DateTime.now().millisecondsSinceEpoch}',
@@ -136,7 +163,9 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               }
               _loadDepartments();
             },
-            child: Text(existing == null ? 'Create Department' : 'Save Changes'),
+            child: Text(
+              existing == null ? 'Create Department' : 'Save Changes',
+            ),
           ),
         ],
       ),
@@ -145,11 +174,16 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
 
   void _toggleDepartmentStatus(Department department) async {
     final repository = RepositoryScope.of(context).departmentRepository;
-    await repository.updateDepartmentStatus(department.id, !department.isActive);
+    await repository.updateDepartmentStatus(
+      department.id,
+      !department.isActive,
+    );
     _loadDepartments();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Department "${department.name}" status updated.')),
+        SnackBar(
+          content: Text('Department "${department.name}" status updated.'),
+        ),
       );
     }
   }
@@ -182,7 +216,10 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Configure hospital departments, staffing, and clinical leadership',
-                    style: TextStyle(fontSize: 13, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: HealthifyGlassTheme.getTextSecondary(isDark),
+                    ),
                   ),
                 ],
               ),
@@ -225,11 +262,19 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                 DropdownButton<String>(
                   value: _selectedStatus,
                   underline: const SizedBox(),
-                  dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
+                  dropdownColor: isDark
+                      ? const Color(0xFF0F2928)
+                      : Colors.white,
                   items: ['All', 'Active', 'Inactive'].map((status) {
                     return DropdownMenuItem(
                       value: status,
-                      child: Text('Status: $status', style: TextStyle(color: HealthifyGlassTheme.getTextPrimary(isDark), fontSize: 13)),
+                      child: Text(
+                        'Status: $status',
+                        style: TextStyle(
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                          fontSize: 13,
+                        ),
+                      ),
                     );
                   }).toList(),
                   onChanged: (val) {
@@ -246,7 +291,10 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
           if (_uiState.isLoading)
             const MedrixLoadingState(message: 'Loading department matrix...')
           else if (_uiState.isError)
-            MedrixErrorState(errorMessage: _uiState.errorMessage ?? 'Error', onRetry: _loadDepartments)
+            MedrixErrorState(
+              errorMessage: _uiState.errorMessage ?? 'Error',
+              onRetry: _loadDepartments,
+            )
           else if (_filteredDepartments.isEmpty)
             MedrixEmptyState(
               title: 'No Departments Found',
@@ -273,11 +321,36 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
         dataRowMinHeight: 64,
         dataRowMaxHeight: 64,
         columns: const [
-          DataColumn(label: Text('Code & Name', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Location & Phone', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Doctors / Staff', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
+          DataColumn(
+            label: Text(
+              'Code & Name',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Location & Phone',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Doctors / Staff',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Status',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Actions',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
         rows: _filteredDepartments.map((dep) {
           final isDepActive = dep.isActive;
@@ -291,21 +364,44 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.15),
+                            color: HealthifyGlassTheme.primaryTeal.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             dep.code,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: HealthifyGlassTheme.primaryTeal),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              color: HealthifyGlassTheme.primaryTeal,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(dep.name, style: TextStyle(fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+                        Text(
+                          dep.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: HealthifyGlassTheme.getTextPrimary(isDark),
+                          ),
+                        ),
                       ],
                     ),
-                    Text(dep.description, style: TextStyle(fontSize: 11.5, color: HealthifyGlassTheme.getTextSecondary(isDark)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      dep.description,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: HealthifyGlassTheme.getTextSecondary(isDark),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
@@ -314,25 +410,49 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(dep.location ?? 'Main Block', style: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextPrimary(isDark))),
-                    Text(dep.contactPhone ?? 'Ext 101', style: TextStyle(fontSize: 11.5, color: HealthifyGlassTheme.getTextSecondary(isDark))),
+                    Text(
+                      dep.location ?? 'Main Block',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: HealthifyGlassTheme.getTextPrimary(isDark),
+                      ),
+                    ),
+                    Text(
+                      dep.contactPhone ?? 'Ext 101',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: HealthifyGlassTheme.getTextSecondary(isDark),
+                      ),
+                    ),
                   ],
                 ),
               ),
               DataCell(
-                Text('${dep.doctorCount} Doctors • ${dep.totalStaff} Staff', style: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+                Text(
+                  '${dep.doctorCount} Doctors • ${dep.totalStaff} Staff',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                  ),
+                ),
               ),
               DataCell(
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: (isDepActive ? const Color(0xFF10B981) : Colors.grey).withValues(alpha: 0.15),
+                    color: (isDepActive ? const Color(0xFF10B981) : Colors.grey)
+                        .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     isDepActive ? 'Active' : 'Inactive',
                     style: TextStyle(
-                      color: isDepActive ? const Color(0xFF10B981) : Colors.grey,
+                      color: isDepActive
+                          ? const Color(0xFF10B981)
+                          : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -348,8 +468,15 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                       tooltip: 'Edit Department',
                     ),
                     IconButton(
-                      icon: Icon(isDepActive ? Icons.block_rounded : Icons.check_circle_outline_rounded, size: 18),
-                      color: isDepActive ? Colors.redAccent : const Color(0xFF10B981),
+                      icon: Icon(
+                        isDepActive
+                            ? Icons.block_rounded
+                            : Icons.check_circle_outline_rounded,
+                        size: 18,
+                      ),
+                      color: isDepActive
+                          ? Colors.redAccent
+                          : const Color(0xFF10B981),
                       onPressed: () => _toggleDepartmentStatus(dep),
                       tooltip: isDepActive ? 'Deactivate' : 'Activate',
                     ),
@@ -383,15 +510,34 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.15),
+                          color: HealthifyGlassTheme.primaryTeal.withValues(
+                            alpha: 0.15,
+                          ),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(dep.code, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: HealthifyGlassTheme.primaryTeal)),
+                        child: Text(
+                          dep.code,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                            color: HealthifyGlassTheme.primaryTeal,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      Text(dep.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+                      Text(
+                        dep.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
                     ],
                   ),
                   Switch(
@@ -401,12 +547,24 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(dep.description, style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark))),
+              Text(
+                dep.description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: HealthifyGlassTheme.getTextSecondary(isDark),
+                ),
+              ),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('${dep.doctorCount} Doctors • ${dep.totalStaff} Staff', style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark))),
+                  Text(
+                    '${dep.doctorCount} Doctors • ${dep.totalStaff} Staff',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: HealthifyGlassTheme.getTextSecondary(isDark),
+                    ),
+                  ),
                   TextButton.icon(
                     onPressed: () => _showAddOrEditDepartmentModal(dep),
                     icon: const Icon(Icons.edit_outlined, size: 16),

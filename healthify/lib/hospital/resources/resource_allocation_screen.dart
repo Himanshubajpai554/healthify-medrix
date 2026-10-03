@@ -571,6 +571,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<HospitalResourceType>(
+                  isExpanded: true,
                   initialValue: selectedType,
                   decoration: const InputDecoration(labelText: 'Resource Category', border: OutlineInputBorder()),
                   items: HospitalResourceType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.name.toUpperCase()))).toList(),
@@ -586,6 +587,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<AllocationPriority>(
+                  isExpanded: true,
                   initialValue: selectedPriority,
                   decoration: const InputDecoration(labelText: 'Priority Level', border: OutlineInputBorder()),
                   items: AllocationPriority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))).toList(),

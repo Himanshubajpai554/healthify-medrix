@@ -387,13 +387,16 @@ class _ConsultationOverviewTabState extends State<ConsultationOverviewTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildSectionTitle('D. CLINICAL NOTES & VISIBILITY', Icons.edit_note_rounded, const Color(0xFF6366F1)),
+                    Expanded(
+                      child: _buildSectionTitle('D. CLINICAL NOTES & VISIBILITY', Icons.edit_note_rounded, const Color(0xFF6366F1)),
+                    ),
+                    const SizedBox(width: 8),
                     GlassSecondaryButton(
                       height: 34,
                       onPressed: widget.onSaveNote,
                       child: const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.save_outlined, size: 14, color: AppTheme.primaryTeal),
                           SizedBox(width: 4),
@@ -406,65 +409,85 @@ class _ConsultationOverviewTabState extends State<ConsultationOverviewTab> {
                 const SizedBox(height: 12),
 
                 // Note Visibility Selection Toggle
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: widget.consultation.noteVisibility == NoteVisibility.internalPrivate
-                        ? Colors.indigo.withValues(alpha: 0.10)
-                        : AppTheme.primaryTeal.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: widget.consultation.noteVisibility == NoteVisibility.internalPrivate
-                          ? Colors.indigo.withValues(alpha: 0.25)
-                          : AppTheme.primaryTeal.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        widget.consultation.noteVisibility == NoteVisibility.internalPrivate ? Icons.lock_outline_rounded : Icons.visibility_outlined,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isNarrow = constraints.maxWidth < 550;
+                    final iconWidget = Icon(
+                      widget.consultation.noteVisibility == NoteVisibility.internalPrivate ? Icons.lock_outline_rounded : Icons.visibility_outlined,
+                      color: widget.consultation.noteVisibility == NoteVisibility.internalPrivate ? Colors.indigo : AppTheme.primaryTeal,
+                      size: 18,
+                    );
+                    final textWidget = Text(
+                      widget.consultation.noteVisibility == NoteVisibility.internalPrivate
+                          ? 'INTERNAL PRIVATE NOTE: Visible ONLY to doctors & clinical care team in Medrix EHR.'
+                          : 'PATIENT VISIBLE NOTE: Accessible to patient in Consultation Summary on Patient App.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                         color: widget.consultation.noteVisibility == NoteVisibility.internalPrivate ? Colors.indigo : AppTheme.primaryTeal,
-                        size: 18,
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.consultation.noteVisibility == NoteVisibility.internalPrivate
-                                  ? 'INTERNAL PRIVATE NOTE: Visible ONLY to doctors & clinical care team in Medrix EHR.'
-                                  : 'PATIENT VISIBLE NOTE: Accessible to patient in Consultation Summary on Patient App.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: widget.consultation.noteVisibility == NoteVisibility.internalPrivate ? Colors.indigo : AppTheme.primaryTeal,
-                              ),
-                            ),
-                          ],
+                    );
+                    final segmentedButtonWidget = SegmentedButton<NoteVisibility>(
+                      segments: const [
+                        ButtonSegment(
+                          value: NoteVisibility.internalPrivate,
+                          label: Text('Internal (Private)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          icon: Icon(Icons.lock_rounded, size: 14),
+                        ),
+                        ButtonSegment(
+                          value: NoteVisibility.patientVisible,
+                          label: Text('Patient Visible', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          icon: Icon(Icons.public_rounded, size: 14),
+                        ),
+                      ],
+                      selected: {widget.consultation.noteVisibility},
+                      onSelectionChanged: (newSelection) {
+                        widget.onChanged(widget.consultation.copyWith(noteVisibility: newSelection.first));
+                      },
+                    );
+
+                    return Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: widget.consultation.noteVisibility == NoteVisibility.internalPrivate
+                            ? Colors.indigo.withValues(alpha: 0.10)
+                            : AppTheme.primaryTeal.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: widget.consultation.noteVisibility == NoteVisibility.internalPrivate
+                              ? Colors.indigo.withValues(alpha: 0.25)
+                              : AppTheme.primaryTeal.withValues(alpha: 0.25),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      SegmentedButton<NoteVisibility>(
-                        segments: const [
-                          ButtonSegment(
-                            value: NoteVisibility.internalPrivate,
-                            label: Text('Internal (Private)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            icon: Icon(Icons.lock_rounded, size: 14),
-                          ),
-                          ButtonSegment(
-                            value: NoteVisibility.patientVisible,
-                            label: Text('Patient Visible', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            icon: Icon(Icons.public_rounded, size: 14),
-                          ),
-                        ],
-                        selected: {widget.consultation.noteVisibility},
-                        onSelectionChanged: (newSelection) {
-                          widget.onChanged(widget.consultation.copyWith(noteVisibility: newSelection.first));
-                        },
-                      ),
-                    ],
-                  ),
+                      child: isNarrow
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    iconWidget,
+                                    const SizedBox(width: 10),
+                                    Expanded(child: textWidget),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: segmentedButtonWidget,
+                                ),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                iconWidget,
+                                const SizedBox(width: 10),
+                                Expanded(child: textWidget),
+                                const SizedBox(width: 10),
+                                segmentedButtonWidget,
+                              ],
+                            ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 14),
@@ -490,12 +513,17 @@ class _ConsultationOverviewTabState extends State<ConsultationOverviewTab> {
 
   Widget _buildSectionTitle(String title, IconData icon, Color color) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 18, color: color),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+        Flexible(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+          ),
         ),
       ],
     );

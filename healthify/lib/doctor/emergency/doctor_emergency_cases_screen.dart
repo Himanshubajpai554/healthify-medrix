@@ -16,7 +16,11 @@ import 'widgets/transfer_emergency_case_modal.dart';
 import 'widgets/update_emergency_status_modal.dart';
 
 class DoctorEmergencyCasesScreen extends StatefulWidget {
-  const DoctorEmergencyCasesScreen({super.key});
+  final bool embedInDashboard;
+  const DoctorEmergencyCasesScreen({
+    super.key,
+    this.embedInDashboard = false,
+  });
 
   @override
   State<DoctorEmergencyCasesScreen> createState() => _DoctorEmergencyCasesScreenState();
@@ -141,6 +145,13 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     final isMobile = screenWidth < 768;
 
     final metrics = _emergencyService.getSummaryMetrics();
+
+    if (widget.embedInDashboard) {
+      if (isDesktop) {
+        return _buildDesktopLayout(context, isDark, metrics);
+      }
+      return _buildMobileTabletLayout(context, isDark, metrics, isMobile);
+    }
 
     return Scaffold(
       backgroundColor: isDark ? HealthifyGlassTheme.darkBackground : const Color(0xFFF8FAFC),
@@ -312,62 +323,56 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
   ) {
     final filtered = _filteredCases;
 
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(isMobile ? 12 : 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                EmergencyHeader(
-                  searchQuery: _searchQuery,
-                  onSearchChanged: (val) => setState(() => _searchQuery = val),
-                  onClearSearch: () => setState(() => _searchQuery = ''),
-                  onNewEmergencyPressed: () => _openCreateCaseModal(context),
-                  onRefreshPressed: _loadCases,
-                ),
-                const SizedBox(height: 16),
-
-                EmergencySummaryCards(
-                  activeCount: metrics['active'] ?? 0,
-                  criticalCount: metrics['critical'] ?? 0,
-                  waitingCount: metrics['waiting'] ?? 0,
-                  inTreatmentCount: metrics['inTreatment'] ?? 0,
-                  resolvedTodayCount: metrics['resolvedToday'] ?? 0,
-                  selectedStatusFilter: _selectedStatus,
-                  onStatusFilterSelected: (st) => setState(() => _selectedStatus = st),
-                ),
-                const SizedBox(height: 16),
-
-                EmergencyFilterToolbar(
-                  selectedStatus: _selectedStatus,
-                  onStatusChanged: (st) => setState(() => _selectedStatus = st),
-                  selectedPriority: _selectedPriority,
-                  onPriorityChanged: (p) => setState(() => _selectedPriority = p),
-                  selectedDepartment: _selectedDepartment,
-                  onDepartmentChanged: (dept) => setState(() => _selectedDepartment = dept),
-                  availableDepartments: _availableDepartments,
-                  selectedDoctor: _selectedDoctor,
-                  onDoctorChanged: (doc) => setState(() => _selectedDoctor = doc),
-                  availableDoctors: _availableDoctors,
-                  onResetFilters: _resetFilters,
-                ),
-                const SizedBox(height: 16),
-
-                EmergencyTableView(
-                  cases: filtered,
-                  selectedCaseId: _selectedCase?.id,
-                  onSelectCase: (caseModel) => _openMobileDetailBottomSheet(context, caseModel),
-                  onUpdateStatus: (caseModel) => _openUpdateStatusModal(context, caseModel),
-                  onTransferCase: (caseModel) => _openTransferModal(context, caseModel),
-                  onResolveCase: (caseModel) => _openResolveModal(context, caseModel),
-                ),
-              ],
-            ),
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isMobile ? 12 : 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          EmergencyHeader(
+            searchQuery: _searchQuery,
+            onSearchChanged: (val) => setState(() => _searchQuery = val),
+            onClearSearch: () => setState(() => _searchQuery = ''),
+            onNewEmergencyPressed: () => _openCreateCaseModal(context),
+            onRefreshPressed: _loadCases,
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+
+          EmergencySummaryCards(
+            activeCount: metrics['active'] ?? 0,
+            criticalCount: metrics['critical'] ?? 0,
+            waitingCount: metrics['waiting'] ?? 0,
+            inTreatmentCount: metrics['inTreatment'] ?? 0,
+            resolvedTodayCount: metrics['resolvedToday'] ?? 0,
+            selectedStatusFilter: _selectedStatus,
+            onStatusFilterSelected: (st) => setState(() => _selectedStatus = st),
+          ),
+          const SizedBox(height: 16),
+
+          EmergencyFilterToolbar(
+            selectedStatus: _selectedStatus,
+            onStatusChanged: (st) => setState(() => _selectedStatus = st),
+            selectedPriority: _selectedPriority,
+            onPriorityChanged: (p) => setState(() => _selectedPriority = p),
+            selectedDepartment: _selectedDepartment,
+            onDepartmentChanged: (dept) => setState(() => _selectedDepartment = dept),
+            availableDepartments: _availableDepartments,
+            selectedDoctor: _selectedDoctor,
+            onDoctorChanged: (doc) => setState(() => _selectedDoctor = doc),
+            availableDoctors: _availableDoctors,
+            onResetFilters: _resetFilters,
+          ),
+          const SizedBox(height: 16),
+
+          EmergencyTableView(
+            cases: filtered,
+            selectedCaseId: _selectedCase?.id,
+            onSelectCase: (caseModel) => _openMobileDetailBottomSheet(context, caseModel),
+            onUpdateStatus: (caseModel) => _openUpdateStatusModal(context, caseModel),
+            onTransferCase: (caseModel) => _openTransferModal(context, caseModel),
+            onResolveCase: (caseModel) => _openResolveModal(context, caseModel),
+          ),
+        ],
+      ),
     );
   }
 

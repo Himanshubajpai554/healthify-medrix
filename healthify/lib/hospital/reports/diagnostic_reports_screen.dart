@@ -954,6 +954,7 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<ReportType>(
+                  isExpanded: true,
                   initialValue: selectedType,
                   decoration: const InputDecoration(labelText: 'Report Type', border: OutlineInputBorder()),
                   items: ReportType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.name.toUpperCase()))).toList(),

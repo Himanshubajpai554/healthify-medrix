@@ -141,6 +141,7 @@ class _AddBloodUnitsModalState extends State<AddBloodUnitsModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _bloodGroup,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -171,6 +172,7 @@ class _AddBloodUnitsModalState extends State<AddBloodUnitsModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _component,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -238,6 +240,7 @@ class _AddBloodUnitsModalState extends State<AddBloodUnitsModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _storage,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -268,6 +271,7 @@ class _AddBloodUnitsModalState extends State<AddBloodUnitsModal> {
                           ),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<InventoryUnitStatus>(
+                            isExpanded: true,
                             initialValue: _status,
                             dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                             style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),

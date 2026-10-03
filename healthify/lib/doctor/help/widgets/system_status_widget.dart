@@ -66,7 +66,7 @@ class SystemStatusWidget extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 10,
-                childAspectRatio: isDesktop ? 3.5 : 3.8,
+                childAspectRatio: isDesktop ? 3.5 : 3.0,
                 children: services.map((service) {
                   final isOperational = service.status == 'Operational';
 

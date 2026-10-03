@@ -18,21 +18,27 @@ class PatientSnapshotCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.person_pin_rounded, color: AppTheme.primaryTeal, size: 18),
-              SizedBox(width: 8),
-              Text(
-                'Recorded Patient Snapshot',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+              const Icon(Icons.person_pin_rounded, color: AppTheme.primaryTeal, size: 18),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Recorded Patient Snapshot',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
                 ),
               ),
-              Spacer(),
+              const SizedBox(width: 8),
               Text(
                 'EHR Verified Data Only',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 11, color: AppTheme.textMuted, fontStyle: FontStyle.italic),
               ),
             ],

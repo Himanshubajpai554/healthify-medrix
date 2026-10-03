@@ -1165,7 +1165,8 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(eq['name'] as String, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: textColor)),
+                              Expanded(child: Text(eq['name'] as String, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: textColor))),
+                              const SizedBox(width: 8),
                               Text('$avail / $total Ready', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
                             ],
                           ),

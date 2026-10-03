@@ -99,13 +99,16 @@ class ReportsHeader extends StatelessWidget {
                   child: GlassSecondaryButton(
                     onPressed: onRefreshPressed,
                     height: 42,
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.refresh_rounded, size: 18),
-                        SizedBox(width: 6),
-                        Text('Refresh', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                      ],
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.refresh_rounded, size: 18),
+                          SizedBox(width: 6),
+                          Text('Refresh', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -114,13 +117,16 @@ class ReportsHeader extends StatelessWidget {
                   child: GlassPrimaryButton(
                     onPressed: onUploadPressed,
                     height: 42,
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.upload_file_rounded, size: 18),
-                        SizedBox(width: 6),
-                        Text('Upload Report', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                      ],
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.upload_file_rounded, size: 18),
+                          SizedBox(width: 6),
+                          Text('Upload Report', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
                 ),

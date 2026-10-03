@@ -577,14 +577,18 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'MEDRIX CENTRAL LABORATORY',
-                  style: TextStyle(
-                    color: Color(0xFF0D9488),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                const Expanded(
+                  child: Text(
+                    'MEDRIX CENTRAL LABORATORY',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Color(0xFF0D9488),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   'OFFICIAL REPORT',
                   style: TextStyle(
@@ -646,12 +650,15 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
                 child: const Icon(Icons.auto_awesome, size: 16, color: Colors.white),
               ),
               const SizedBox(width: 10),
-              Text(
-                'AI Clinical Report Summary',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+              Expanded(
+                child: Text(
+                  'AI Clinical Report Summary',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                  ),
                 ),
               ),
             ],
@@ -872,7 +879,9 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
           ),
           const SizedBox(height: 12),
           // Toggle Note Privacy
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               ChoiceChip(
                 label: const Text('Internal Note (Private)'),
@@ -886,7 +895,6 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
                   }
                 },
               ),
-              const SizedBox(width: 10),
               ChoiceChip(
                 label: const Text('Patient-Visible Note'),
                 selected: !_isPrivateNote,
@@ -988,12 +996,15 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
             children: [
               const Icon(Icons.person_pin_rounded, size: 22, color: HealthifyGlassTheme.primaryTeal),
               const SizedBox(width: 8),
-              Text(
-                'Patient Context & History (${report.patientName})',
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.bold,
-                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+              Expanded(
+                child: Text(
+                  'Patient Context & History (${report.patientName})',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                  ),
                 ),
               ),
             ],
@@ -1102,12 +1113,15 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
             children: [
               const Icon(Icons.history_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
               const SizedBox(width: 8),
-              Text(
-                'Report Audit Trail & Access History',
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.bold,
-                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+              Expanded(
+                child: Text(
+                  'Report Audit Trail & Access History',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                  ),
                 ),
               ),
             ],
@@ -1149,14 +1163,18 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              item.action,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            Expanded(
+                              child: Text(
+                                item.action,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Text(
                               ReportDetailDrawer.formatDateTime(item.timestamp),
                               style: TextStyle(

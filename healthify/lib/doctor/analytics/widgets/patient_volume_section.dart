@@ -23,26 +23,29 @@ class PatientVolumeSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Patient Visits & Volume',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Patient Visits & Volume',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Activity count breakdown by patient visit type',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    Text(
+                      'Activity count breakdown by patient visit type',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -62,41 +65,80 @@ class PatientVolumeSection extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildVolumeTile(
-                  label: 'New Patients',
-                  count: patientVolume.newPatients,
-                  total: total,
-                  color: const Color(0xFF3B82F6),
-                  icon: Icons.person_add_rounded,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildVolumeTile(
-                  label: 'Returning Patients',
-                  count: patientVolume.returningPatients,
-                  total: total,
-                  color: const Color(0xFF0D9488),
-                  icon: Icons.people_rounded,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildVolumeTile(
-                  label: 'Follow-up Visits',
-                  count: patientVolume.followUpVisits,
-                  total: total,
-                  color: const Color(0xFFD97706),
-                  icon: Icons.event_repeat_rounded,
-                  isDark: isDark,
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 600;
+
+              if (isCompact) {
+                return Column(
+                  children: [
+                    _buildVolumeTile(
+                      label: 'New Patients',
+                      count: patientVolume.newPatients,
+                      total: total,
+                      color: const Color(0xFF3B82F6),
+                      icon: Icons.person_add_rounded,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildVolumeTile(
+                      label: 'Returning Patients',
+                      count: patientVolume.returningPatients,
+                      total: total,
+                      color: const Color(0xFF0D9488),
+                      icon: Icons.people_rounded,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildVolumeTile(
+                      label: 'Follow-up Visits',
+                      count: patientVolume.followUpVisits,
+                      total: total,
+                      color: const Color(0xFFD97706),
+                      icon: Icons.event_repeat_rounded,
+                      isDark: isDark,
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildVolumeTile(
+                      label: 'New Patients',
+                      count: patientVolume.newPatients,
+                      total: total,
+                      color: const Color(0xFF3B82F6),
+                      icon: Icons.person_add_rounded,
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildVolumeTile(
+                      label: 'Returning Patients',
+                      count: patientVolume.returningPatients,
+                      total: total,
+                      color: const Color(0xFF0D9488),
+                      icon: Icons.people_rounded,
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildVolumeTile(
+                      label: 'Follow-up Visits',
+                      count: patientVolume.followUpVisits,
+                      total: total,
+                      color: const Color(0xFFD97706),
+                      icon: Icons.event_repeat_rounded,
+                      isDark: isDark,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -114,7 +156,7 @@ class PatientVolumeSection extends StatelessWidget {
     final pct = total > 0 ? (count / total * 100).toStringAsFixed(0) : '0';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(12),
@@ -142,19 +184,19 @@ class PatientVolumeSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 '$count',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
+              const SizedBox(width: 6),
               Text(
                 '$pct% share',
                 style: TextStyle(

@@ -22,30 +22,36 @@ class ConsultationActivitySection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Consultation Activity',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Consultation Activity',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Recorded OPD and emergency consultation output',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    Text(
+                      'Recorded OPD and emergency consultation output',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               GlassSecondaryButton(
                 onPressed: () => Navigator.pushNamed(context, '/doctor-consultation'),
                 height: 34,
-                child: const Text('Open Consultation', style: TextStyle(fontSize: 11)),
+                child: const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('Open Consultation', style: TextStyle(fontSize: 11)),
+                ),
               ),
             ],
           ),
@@ -62,7 +68,7 @@ class ConsultationActivitySection extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: width > 700 ? 1.8 : 1.6,
+                childAspectRatio: width > 700 ? 1.8 : 1.35,
                 children: [
                   _metricBox(
                     label: 'Consultations Completed',
@@ -116,7 +122,7 @@ class ConsultationActivitySection extends StatelessWidget {
     bool isUnavailable = false,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(12),

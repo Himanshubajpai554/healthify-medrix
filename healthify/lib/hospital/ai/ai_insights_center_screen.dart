@@ -371,7 +371,8 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Capacity Pressure: ${_hospitalForecast!.overallCapacityPressure.name.toUpperCase()}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+                          Expanded(child: Text('Capacity Pressure: ${_hospitalForecast!.overallCapacityPressure.name.toUpperCase()}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange))),
+                          const SizedBox(width: 8),
                           Text('${(_hospitalForecast!.confidence * 100).toStringAsFixed(0)}% model confidence', style: const TextStyle(fontSize: 11, color: Colors.grey)),
                         ],
                       ),
@@ -482,7 +483,12 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
             children: [
               Icon(icon, color: HealthifyGlassTheme.primaryTeal),
               const SizedBox(width: 8),
-              Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                ),
+              ),
             ],
           ),
           Text(subtitle, style: TextStyle(fontSize: 11, color: HealthifyGlassTheme.getTextSecondary(isDark))),
@@ -534,16 +540,18 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
                 Row(
                   children: [
                     const Text('Additional ICU Beds: '),
-                    Slider(
-                      value: _simulatedIcuBeds.toDouble(),
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: '+$_simulatedIcuBeds Beds',
-                      onChanged: (val) {
-                        setState(() => _simulatedIcuBeds = val.round());
-                        _loadData();
-                      },
+                    Expanded(
+                      child: Slider(
+                        value: _simulatedIcuBeds.toDouble(),
+                        min: 1,
+                        max: 10,
+                        divisions: 9,
+                        label: '+$_simulatedIcuBeds Beds',
+                        onChanged: (val) {
+                          setState(() => _simulatedIcuBeds = val.round());
+                          _loadData();
+                        },
+                      ),
                     ),
                     Text('+$_simulatedIcuBeds Beds', style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
@@ -605,11 +613,12 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
   // ---------------------------------------------------------------------------
   Widget _buildInsightDetailDrawer(bool isDark) {
     final ins = _selectedInsight!;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
-        width: 450,
+        width: screenWidth < 500 ? screenWidth * 0.9 : 450,
         height: double.infinity,
         decoration: _glassDecoration(isDark),
         padding: const EdgeInsets.all(20),
@@ -620,7 +629,7 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('AI Insight: ${ins.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Expanded(child: Text('AI Insight: ${ins.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
                   IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() => _selectedInsight = null)),
                 ],
               ),

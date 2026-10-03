@@ -72,6 +72,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: gender,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -92,6 +93,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: department,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -112,6 +114,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: priority,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -224,6 +227,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: dept,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -244,6 +248,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: shift,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -350,6 +355,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 18),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: wardType,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -379,6 +385,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: bedId,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -474,6 +481,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 18),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: bloodGroup,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -494,6 +502,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
+                    isExpanded: true,
                     initialValue: units,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -514,6 +523,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: priority,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -623,6 +633,7 @@ class QuickActionsModals {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: reportType,
                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),

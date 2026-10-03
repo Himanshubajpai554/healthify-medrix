@@ -201,7 +201,10 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 4,
                   children: [
                     Text(
                       'Emergency Case ${item.id}',
@@ -211,9 +214,7 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                         color: HealthifyGlassTheme.getTextPrimary(isDark),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     _buildPriorityBadge(item.priority, isDark),
-                    const SizedBox(width: 6),
                     _buildStatusBadge(item.status, isDark),
                   ],
                 ),
@@ -407,19 +408,27 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
           const SizedBox(height: 12),
 
           // Emergency Contact Action Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 10,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.contact_phone_rounded, size: 18, color: HealthifyGlassTheme.primaryTeal),
                   const SizedBox(width: 8),
-                  Text(
-                    'Emergency Contact: ${item.emergencyContactName} (${item.emergencyContactRelation}) • ${item.emergencyContactPhone}',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: HealthifyGlassTheme.getTextPrimary(isDark),
+                  Flexible(
+                    child: Text(
+                      'Emergency Contact: ${item.emergencyContactName} (${item.emergencyContactRelation}) • ${item.emergencyContactPhone}',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: HealthifyGlassTheme.getTextPrimary(isDark),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

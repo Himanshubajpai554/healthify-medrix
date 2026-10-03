@@ -676,6 +676,7 @@ class _HospitalSettingsScreenState extends State<HospitalSettingsScreen>
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: h.operatingMode,
                 decoration: InputDecoration(
 
@@ -933,6 +934,7 @@ class _HospitalSettingsScreenState extends State<HospitalSettingsScreen>
               Text('Trauma Center Level Designation', style: TextStyle(fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: em.traumaLevel,
                 decoration: InputDecoration(
 

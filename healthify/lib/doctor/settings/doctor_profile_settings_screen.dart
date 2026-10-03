@@ -21,7 +21,11 @@ import 'widgets/security_settings_section.dart';
 import 'widgets/settings_nav_sidebar.dart';
 
 class DoctorProfileSettingsScreen extends StatefulWidget {
-  const DoctorProfileSettingsScreen({super.key});
+  final bool embedInDashboard;
+  const DoctorProfileSettingsScreen({
+    super.key,
+    this.embedInDashboard = false,
+  });
 
   @override
   State<DoctorProfileSettingsScreen> createState() =>
@@ -186,6 +190,23 @@ class _DoctorProfileSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
+
+    if (widget.embedInDashboard) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ProfileSettingsHeader(
+              profile: _profile,
+              professionalInfo: _professionalInfo,
+            ),
+            const SizedBox(height: 16),
+            _buildActiveSettingsContent(),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       body: Container(

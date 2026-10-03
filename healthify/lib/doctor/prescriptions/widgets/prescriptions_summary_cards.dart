@@ -35,7 +35,9 @@ class PrescriptionsSummaryCards extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 14,
           crossAxisSpacing: 14,
-          childAspectRatio: width > 900 ? 2.1 : (width > 550 ? 2.2 : 1.7),
+          childAspectRatio: width > 900
+              ? 2.1
+              : (width > 550 ? 2.2 : (width < 380 ? 0.98 : 1.05)),
           children: [
             _buildCard(
               context: context,
@@ -103,7 +105,7 @@ class PrescriptionsSummaryCards extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
               ? color.withValues(alpha: isDark ? 0.2 : 0.12)
@@ -127,57 +129,61 @@ class PrescriptionsSummaryCards extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: isDark ? 0.25 : 0.12),
-                    borderRadius: BorderRadius.circular(10),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: isDark ? 0.25 : 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, size: 17, color: color),
                   ),
-                  child: Icon(icon, size: 20, color: color),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
+                  const SizedBox(width: 8),
+                  Text(
                     title,
                     style: TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                       color: HealthifyGlassTheme.getTextSecondary(isDark),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: HealthifyGlassTheme.getTextPrimary(isDark),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: HealthifyGlassTheme.getTextPrimary(isDark),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11,
-                color: HealthifyGlassTheme.getTextSecondary(
-                  isDark,
-                ).withValues(alpha: 0.8),
+              const SizedBox(height: 1),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  color: HealthifyGlassTheme.getTextSecondary(
+                    isDark,
+                  ).withValues(alpha: 0.8),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -25,7 +25,7 @@ class NotificationsSummaryCards extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 550 ? 2 : 2);
-        final cardAspectRatio = constraints.maxWidth > 900 ? 2.1 : (constraints.maxWidth > 550 ? 2.2 : 1.9);
+        final cardAspectRatio = constraints.maxWidth > 900 ? 2.1 : (constraints.maxWidth > 550 ? 2.0 : 1.05);
 
         return GridView.count(
           crossAxisCount: crossAxisCount,
@@ -95,26 +95,27 @@ class NotificationsSummaryCards extends StatelessWidget {
       ),
       child: GlassCard(
         onTap: () => onSelectCategory(categoryTarget),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
           children: [
             GlassIconContainer(
               icon: icon,
-              size: 40,
-              iconSize: 20,
+              size: 38,
+              iconSize: 19,
               color: color,
               borderRadius: 12,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: HealthifyGlassTheme.getTextSecondary(isDark),
                     ),
@@ -122,12 +123,16 @@ class NotificationsSummaryCards extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    '$count',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: isSelected ? color : HealthifyGlassTheme.getTextPrimary(isDark),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '$count',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: isSelected ? color : HealthifyGlassTheme.getTextPrimary(isDark),
+                      ),
                     ),
                   ),
                 ],

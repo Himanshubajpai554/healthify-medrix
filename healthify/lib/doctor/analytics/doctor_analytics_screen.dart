@@ -23,7 +23,11 @@ import 'widgets/report_analytics_section.dart';
 import 'widgets/workload_distribution_section.dart';
 
 class DoctorAnalyticsScreen extends StatefulWidget {
-  const DoctorAnalyticsScreen({super.key});
+  final bool embedInDashboard;
+  const DoctorAnalyticsScreen({
+    super.key,
+    this.embedInDashboard = false,
+  });
 
   @override
   State<DoctorAnalyticsScreen> createState() => _DoctorAnalyticsScreenState();
@@ -78,6 +82,13 @@ class _DoctorAnalyticsScreenState extends State<DoctorAnalyticsScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth >= 1024;
     final isMobile = screenWidth < 768;
+
+    if (widget.embedInDashboard) {
+      if (_isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return _buildAnalyticsContent(context, isDark, isDesktop, isMobile);
+    }
 
     return Scaffold(
       backgroundColor: isDark ? HealthifyGlassTheme.darkBackground : const Color(0xFFF8FAFC),

@@ -210,13 +210,16 @@ class DoctorModals {
                             ),
                           );
                         },
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check_circle_rounded, size: 18),
-                            SizedBox(width: 8),
-                            Text('Complete Consultation'),
-                          ],
+                        child: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle_rounded, size: 18),
+                              SizedBox(width: 8),
+                              Text('Complete Consultation'),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -458,7 +461,7 @@ class DoctorModals {
                       radius: 26,
                       backgroundColor: HealthifyGlassTheme.primaryTeal,
                       backgroundImage: NetworkImage(patient.avatarUrl),
-                      onForegroundImageError: (exception, stackTrace) {},
+                      onBackgroundImageError: (exception, stackTrace) {},
                       child: Text(patient.name[0], style: const TextStyle(color: Colors.white, fontSize: 18)),
                     ),
                     const SizedBox(width: 14),
@@ -689,61 +692,86 @@ class DoctorModals {
   static void showRescheduleModal({
     required BuildContext context,
     required DoctorAppointmentModel appointment,
-    required VoidCallback onRescheduled,
+    required ValueChanged<String> onRescheduled,
   }) {
+    String selectedSlot = 'Tomorrow, 10:00 AM';
+    final availableSlots = [
+      'Tomorrow, 10:00 AM',
+      'Tomorrow, 02:30 PM',
+      'Next Mon, 09:30 AM',
+    ];
+
     showHealthifyGlassBottomSheet(
       context: context,
       builder: (context) {
         final isDark = HealthifyGlassTheme.isDarkMode(context);
 
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Reschedule Appointment',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: HealthifyGlassTheme.getTextPrimary(isDark),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Rescheduling session for ${appointment.patient.name} (Originally ${appointment.appointmentTime})',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: HealthifyGlassTheme.getTextSecondary(isDark),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Wrap(
-                spacing: 8,
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ChoiceChip(label: Text('Tomorrow, 10:00 AM'), selected: true),
-                  ChoiceChip(label: Text('Tomorrow, 02:30 PM'), selected: false),
-                  ChoiceChip(label: Text('Next Mon, 09:30 AM'), selected: false),
+                  Text(
+                    'Reschedule Appointment',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: HealthifyGlassTheme.getTextPrimary(isDark),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Rescheduling session for ${appointment.patient.name} (Originally ${appointment.appointmentTime})',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: HealthifyGlassTheme.getTextSecondary(isDark),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: availableSlots.map((slot) {
+                      final isSelected = selectedSlot == slot;
+                      return ChoiceChip(
+                        label: Text(slot),
+                        selected: isSelected,
+                        selectedColor: HealthifyGlassTheme.primaryTeal,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? Colors.white
+                              : HealthifyGlassTheme.getTextPrimary(isDark),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        onSelected: (val) {
+                          if (val) setState(() => selectedSlot = slot);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  GlassPrimaryButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onRescheduled(selectedSlot);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Appointment for ${appointment.patient.name} rescheduled to $selectedSlot.'),
+                          backgroundColor: HealthifyGlassTheme.primaryTeal,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    child: const Center(child: Text('Confirm Reschedule')),
+                  ),
                 ],
               ),
-              const SizedBox(height: 24),
-              GlassPrimaryButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  onRescheduled();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Appointment for ${appointment.patient.name} rescheduled.'),
-                      backgroundColor: HealthifyGlassTheme.primaryTeal,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                child: const Center(child: Text('Confirm Reschedule')),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

@@ -80,7 +80,7 @@ class DoctorHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    final isCompact = screenWidth < 650;
+    final isCompact = screenWidth < 850;
 
     return ClipRRect(
       child: BackdropFilter(
@@ -92,9 +92,7 @@ class DoctorHeader extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: _surfaceStrong(isDark),
-            border: Border(
-              bottom: BorderSide(color: _border(isDark)),
-            ),
+            border: Border(bottom: BorderSide(color: _border(isDark))),
           ),
           child: Row(
             children: [
@@ -106,8 +104,7 @@ class DoctorHeader extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color:
-                            _primary.withValues(alpha: isDark ? 0.14 : 0.11),
+                        color: _primary.withValues(alpha: isDark ? 0.14 : 0.11),
                         borderRadius: BorderRadius.circular(9),
                         border: Border.all(
                           color: _primary.withValues(alpha: 0.12),
@@ -189,16 +186,15 @@ class DoctorHeader extends StatelessWidget {
                             child: Container(
                               width: 190,
                               height: 36,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? Colors.white.withValues(alpha: 0.05)
                                     : Colors.black.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _border(isDark),
-                                ),
+                                border: Border.all(color: _border(isDark)),
                               ),
                               child: Row(
                                 children: [
@@ -235,47 +231,55 @@ class DoctorHeader extends StatelessWidget {
                         ),
 
                       // Emergency Quick Assist Pill
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => EmergencyHospitalsModal.show(context),
-                          borderRadius: BorderRadius.circular(14),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.redAccent.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color:
-                                    Colors.redAccent.withValues(alpha: 0.3),
+                      if (screenWidth >= 650)
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => EmergencyHospitalsModal.show(context),
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 7,
                               ),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(
-                                  Icons.warning_amber_rounded,
-                                  size: 15,
-                                  color: Colors.redAccent,
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: Colors.redAccent.withValues(alpha: 0.3),
                                 ),
-                                SizedBox(width: 5),
-                                Text(
-                                  '24/7 ER Assist',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.bold,
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 15,
                                     color: Colors.redAccent,
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: 5),
+                                  Text(
+                                    '24/7 ER Assist',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.redAccent,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                        )
+                      else
+                        IconButton(
+                          icon: const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.redAccent,
+                          ),
+                          tooltip: '24/7 ER Assist',
+                          onPressed: () => EmergencyHospitalsModal.show(context),
                         ),
-                      ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 6),
 
                       // Doctor Status & Portal Switcher Pill
                       Container(
@@ -304,8 +308,7 @@ class DoctorHeader extends StatelessWidget {
                                 width: 7,
                                 height: 7,
                                 decoration: BoxDecoration(
-                                  color:
-                                      _getStatusColor(availabilityStatus),
+                                  color: _getStatusColor(availabilityStatus),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -331,8 +334,7 @@ class DoctorHeader extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: _getStatusColor(
-                                        availabilityStatus),
+                                    color: _getStatusColor(availabilityStatus),
                                   ),
                                 ),
                               ],
@@ -476,9 +478,7 @@ class DoctorHeader extends StatelessWidget {
                                 radius: 13,
                                 backgroundColor: _primary,
                                 child: Text(
-                                  doctorName.isNotEmpty
-                                      ? doctorName[0]
-                                      : 'D',
+                                  doctorName.isNotEmpty ? doctorName[0] : 'D',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,

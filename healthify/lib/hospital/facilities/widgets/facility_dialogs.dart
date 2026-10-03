@@ -439,6 +439,7 @@ class _AddEditFacilityModalState extends State<AddEditFacilityModal> {
                           ),
                           const SizedBox(height: 12),
                           DropdownButtonFormField<String>(
+                            isExpanded: true,
                             initialValue: _category,
                             dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                             style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -510,6 +511,7 @@ class _AddEditFacilityModalState extends State<AddEditFacilityModal> {
                           ),
                           const SizedBox(height: 12),
                           DropdownButtonFormField<String>(
+                            isExpanded: true,
                             initialValue: _availability,
                             dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                             style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),

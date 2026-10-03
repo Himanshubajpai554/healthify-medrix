@@ -28,20 +28,25 @@ class AIActivitySummaryCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.auto_awesome_rounded, color: isDark ? Colors.purple.shade300 : Colors.purple.shade700, size: 20),
-              const SizedBox(width: 10),
-              Text(
-                'AI Activity Summary',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.purple.shade200 : Colors.purple.shade900,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'AI Activity Summary',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.purple.shade200 : Colors.purple.shade900,
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               GlassSecondaryButton(
                 onPressed: onRefreshSummary,
                 height: 32,
                 child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.refresh_rounded, size: 14),
                     SizedBox(width: 4),

@@ -127,36 +127,38 @@ class _TicketDetailDrawerState extends State<TicketDetailDrawer> {
           ),
           const SizedBox(height: 12),
 
-          Expanded(
-            child: ListView.builder(
-              itemCount: widget.ticket.messages.length,
-              itemBuilder: (context, idx) {
-                final msg = widget.ticket.messages[idx];
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: widget.ticket.messages.length,
+            itemBuilder: (context, idx) {
+              final msg = widget.ticket.messages[idx];
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: msg.isDoctor
+                        ? HealthifyGlassTheme.primaryTeal.withValues(alpha: isDark ? 0.15 : 0.08)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.04)
+                            : Colors.black.withValues(alpha: 0.03)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
                       color: msg.isDoctor
-                          ? HealthifyGlassTheme.primaryTeal.withValues(alpha: isDark ? 0.15 : 0.08)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.04)
-                              : Colors.black.withValues(alpha: 0.03)),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: msg.isDoctor
-                            ? HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)
-                            : HealthifyGlassTheme.getGlassBorder(isDark),
-                      ),
+                          ? HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)
+                          : HealthifyGlassTheme.getGlassBorder(isDark),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
                               msg.senderName,
                               style: TextStyle(
                                 fontSize: 12.5,
@@ -165,31 +167,34 @@ class _TicketDetailDrawerState extends State<TicketDetailDrawer> {
                                     ? HealthifyGlassTheme.primaryTeal
                                     : HealthifyGlassTheme.getTextPrimary(isDark),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            Text(
-                              _formatTime(msg.timestamp),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: HealthifyGlassTheme.getTextMuted(isDark),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          msg.messageText,
-                          style: TextStyle(
-                            fontSize: 13,
-                            height: 1.4,
-                            color: HealthifyGlassTheme.getTextPrimary(isDark),
                           ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _formatTime(msg.timestamp),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: HealthifyGlassTheme.getTextMuted(isDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        msg.messageText,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
 
           const SizedBox(height: 16),
@@ -198,40 +203,83 @@ class _TicketDetailDrawerState extends State<TicketDetailDrawer> {
 
           // Reply Composer
           if (widget.ticket.status != SupportTicketStatus.closed) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _replyCtrl,
-                    style: TextStyle(fontSize: 13, color: HealthifyGlassTheme.getTextPrimary(isDark)),
-                    decoration: InputDecoration(
-                      hintText: 'Type your reply message...',
-                      hintStyle: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextMuted(isDark)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      filled: true,
-                      fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: HealthifyGlassTheme.getGlassBorder(isDark)),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 340;
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        controller: _replyCtrl,
+                        style: TextStyle(fontSize: 13, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                        decoration: InputDecoration(
+                          hintText: 'Type your reply message...',
+                          hintStyle: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextMuted(isDark)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          filled: true,
+                          fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: HealthifyGlassTheme.getGlassBorder(isDark)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      GlassPrimaryButton(
+                        height: 40,
+                        onPressed: _isSending ? null : _handleSend,
+                        child: _isSending
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.send_rounded, size: 15, color: Colors.white),
+                                  SizedBox(width: 5),
+                                  Text('Reply', style: TextStyle(fontSize: 12, color: Colors.white)),
+                                ],
+                              ),
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _replyCtrl,
+                        style: TextStyle(fontSize: 13, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                        decoration: InputDecoration(
+                          hintText: 'Type your reply message...',
+                          hintStyle: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextMuted(isDark)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          filled: true,
+                          fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: HealthifyGlassTheme.getGlassBorder(isDark)),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GlassPrimaryButton(
-                  height: 42,
-                  onPressed: _isSending ? null : _handleSend,
-                  child: _isSending
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Row(
-                          children: [
-                            Icon(Icons.send_rounded, size: 15, color: Colors.white),
-                            SizedBox(width: 4),
-                            Text('Reply', style: TextStyle(fontSize: 12, color: Colors.white)),
-                          ],
-                        ),
-                ),
-              ],
+                    const SizedBox(width: 8),
+                    GlassPrimaryButton(
+                      height: 42,
+                      onPressed: _isSending ? null : _handleSend,
+                      child: _isSending
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Row(
+                              children: [
+                                Icon(Icons.send_rounded, size: 15, color: Colors.white),
+                                SizedBox(width: 4),
+                                Text('Reply', style: TextStyle(fontSize: 12, color: Colors.white)),
+                              ],
+                            ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ],

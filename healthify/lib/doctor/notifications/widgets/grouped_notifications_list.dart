@@ -47,13 +47,17 @@ class GroupedNotificationsList extends StatelessWidget {
               padding: const EdgeInsets.only(top: 14, bottom: 8, left: 4),
               child: Row(
                 children: [
-                  Text(
-                    groupTitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.1,
-                      color: HealthifyGlassTheme.getTextMuted(isDark),
+                  Flexible(
+                    child: Text(
+                      groupTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                        color: HealthifyGlassTheme.getTextMuted(isDark),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),

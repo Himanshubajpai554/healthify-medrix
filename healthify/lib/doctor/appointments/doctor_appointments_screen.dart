@@ -26,19 +26,22 @@ import 'widgets/reschedule_appointment_dialog.dart';
 import 'widgets/waiting_queue_widget.dart';
 
 class DoctorAppointmentsScreen extends StatefulWidget {
+  final bool embedInDashboard;
   final String doctorName;
   final String doctorId;
   final String specialty;
 
   const DoctorAppointmentsScreen({
     super.key,
+    this.embedInDashboard = false,
     this.doctorName = 'Dr. Sarah Jenkins',
     this.doctorId = 'DOC-4019',
     this.specialty = 'Lead Cardiologist',
   });
 
   @override
-  State<DoctorAppointmentsScreen> createState() => _DoctorAppointmentsScreenState();
+  State<DoctorAppointmentsScreen> createState() =>
+      _DoctorAppointmentsScreenState();
 }
 
 class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
@@ -85,9 +88,14 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to sign out of the Doctor Portal?'),
+        content: const Text(
+          'Are you sure you want to sign out of the Doctor Portal?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () {
@@ -140,7 +148,10 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
               const SizedBox(height: 8),
               Text(
                 'Switch your view between Patient, Doctor, and Hospital Administrator screens.',
-                style: TextStyle(color: HealthifyGlassTheme.getTextSecondary(isDark), fontSize: 13),
+                style: TextStyle(
+                  color: HealthifyGlassTheme.getTextSecondary(isDark),
+                  fontSize: 13,
+                ),
               ),
               const SizedBox(height: 20),
               _buildRoleTile(
@@ -215,16 +226,24 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           title,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isSelected ? color : HealthifyGlassTheme.getTextPrimary(isDark),
+            color: isSelected
+                ? color
+                : HealthifyGlassTheme.getTextPrimary(isDark),
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+          style: TextStyle(
+            fontSize: 12,
+            color: HealthifyGlassTheme.getTextSecondary(isDark),
+          ),
         ),
         trailing: isSelected
             ? Icon(Icons.check_circle_rounded, color: color)
-            : Icon(Icons.chevron_right_rounded, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+            : Icon(
+                Icons.chevron_right_rounded,
+                color: HealthifyGlassTheme.getTextSecondary(isDark),
+              ),
       ),
     );
   }
@@ -285,22 +304,26 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
       }
 
       // Status Filter
-      if (_selectedStatusFilter != null && apt.status != _selectedStatusFilter) {
+      if (_selectedStatusFilter != null &&
+          apt.status != _selectedStatusFilter) {
         return false;
       }
 
       // Type Filter
-      if (_selectedTypeFilter != 'All Types' && apt.appointmentType != _selectedTypeFilter) {
+      if (_selectedTypeFilter != 'All Types' &&
+          apt.appointmentType != _selectedTypeFilter) {
         return false;
       }
 
       // Department Filter
-      if (_selectedDepartmentFilter != 'All Departments' && apt.department != _selectedDepartmentFilter) {
+      if (_selectedDepartmentFilter != 'All Departments' &&
+          apt.department != _selectedDepartmentFilter) {
         return false;
       }
 
       // Mode Filter
-      if (_selectedModeFilter != 'All Modes' && apt.consultationMode != _selectedModeFilter) {
+      if (_selectedModeFilter != 'All Modes' &&
+          apt.consultationMode != _selectedModeFilter) {
         return false;
       }
 
@@ -333,6 +356,10 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.embedInDashboard) {
+      return SingleChildScrollView(child: _buildAppointmentsWorkspaceContent());
+    }
+
     final isDark = HealthifyGlassTheme.isDarkMode(context);
     final isDesktop = Responsive.isDesktop(context);
     final unreadCount = _notifications.where((n) => !n.isRead).length;
@@ -354,7 +381,8 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                   }
                 },
                 isExpanded: _isSidebarExpanded,
-                onToggleExpand: () => setState(() => _isSidebarExpanded = !_isSidebarExpanded),
+                onToggleExpand: () =>
+                    setState(() => _isSidebarExpanded = !_isSidebarExpanded),
                 availabilityStatus: _availabilityStatus,
                 onLogout: _handleLogout,
                 onRoleSwitcherTap: _showRoleSwitcherModal,
@@ -370,28 +398,35 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                     AppointmentsHeader(
                       doctorName: widget.doctorName,
                       availabilityStatus: _availabilityStatus,
-                      onAvailabilityChanged: (status) => setState(() => _availabilityStatus = status),
-                      onNotificationTap: () => DoctorModals.showNotificationsPane(
-                        context: context,
-                        notifications: _notifications,
-                        onMarkAllRead: () {
-                          setState(() {
-                            _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
-                          });
-                          Navigator.pop(context);
-                        },
-                      ),
+                      onAvailabilityChanged: (status) =>
+                          setState(() => _availabilityStatus = status),
+                      onNotificationTap: () =>
+                          DoctorModals.showNotificationsPane(
+                            context: context,
+                            notifications: _notifications,
+                            onMarkAllRead: () {
+                              setState(() {
+                                _notifications = _notifications
+                                    .map((n) => n.copyWith(isRead: true))
+                                    .toList();
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
                       onSearchTap: _showSearchModal,
                       onProfileTap: _showRoleSwitcherModal,
                       onThemeToggle: _toggleTheme,
                       onAddAvailability: () => AvailabilityPanelModal.show(
                         context: context,
                         currentConfig: _availabilityConfig,
-                        onSave: (cfg) => setState(() => _availabilityConfig = cfg),
+                        onSave: (cfg) =>
+                            setState(() => _availabilityConfig = cfg),
                       ),
-                      onViewSchedule: () => setState(() => _isCalendarView = !_isCalendarView),
+                      onViewSchedule: () =>
+                          setState(() => _isCalendarView = !_isCalendarView),
                       isCalendarView: _isCalendarView,
-                      onToggleCalendarView: () => setState(() => _isCalendarView = !_isCalendarView),
+                      onToggleCalendarView: () =>
+                          setState(() => _isCalendarView = !_isCalendarView),
                       unreadNotificationsCount: unreadCount,
                     ),
 
@@ -424,13 +459,16 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
         child: AppointmentsHeader(
           doctorName: widget.doctorName,
           availabilityStatus: _availabilityStatus,
-          onAvailabilityChanged: (status) => setState(() => _availabilityStatus = status),
+          onAvailabilityChanged: (status) =>
+              setState(() => _availabilityStatus = status),
           onNotificationTap: () => DoctorModals.showNotificationsPane(
             context: context,
             notifications: _notifications,
             onMarkAllRead: () {
               setState(() {
-                _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
+                _notifications = _notifications
+                    .map((n) => n.copyWith(isRead: true))
+                    .toList();
               });
               Navigator.pop(context);
             },
@@ -443,9 +481,11 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
             currentConfig: _availabilityConfig,
             onSave: (cfg) => setState(() => _availabilityConfig = cfg),
           ),
-          onViewSchedule: () => setState(() => _isCalendarView = !_isCalendarView),
+          onViewSchedule: () =>
+              setState(() => _isCalendarView = !_isCalendarView),
           isCalendarView: _isCalendarView,
-          onToggleCalendarView: () => setState(() => _isCalendarView = !_isCalendarView),
+          onToggleCalendarView: () =>
+              setState(() => _isCalendarView = !_isCalendarView),
           unreadNotificationsCount: unreadCount,
         ),
       ),
@@ -458,7 +498,9 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: HealthifyGlassTheme.getGlassSurface(isDark, isStrong: true),
-          border: Border(top: BorderSide(color: HealthifyGlassTheme.getGlassBorder(isDark))),
+          border: Border(
+            top: BorderSide(color: HealthifyGlassTheme.getGlassBorder(isDark)),
+          ),
         ),
         child: BottomNavigationBar(
           currentIndex: _mobileBottomNavIndex,
@@ -475,11 +517,26 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           selectedItemColor: HealthifyGlassTheme.primaryTeal,
           unselectedItemColor: HealthifyGlassTheme.getTextSecondary(isDark),
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_today_rounded), label: 'Appointments'),
-            BottomNavigationBarItem(icon: Icon(Icons.people_alt_rounded), label: 'Patients'),
-            BottomNavigationBarItem(icon: Icon(Icons.emergency_rounded), label: 'Emergency'),
-            BottomNavigationBarItem(icon: Icon(Icons.insights_rounded), label: 'Analytics'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_rounded),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today_rounded),
+              label: 'Appointments',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.people_alt_rounded),
+              label: 'Patients',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.emergency_rounded),
+              label: 'Emergency',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.insights_rounded),
+              label: 'Analytics',
+            ),
           ],
         ),
       ),
@@ -500,8 +557,14 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
         // 1. Emergency Admissions Banner (if active emergency cases exist)
         EmergencyAppointmentsBanner(
           emergencyCases: _emergencyCases,
-          onViewPatient: (item) => DoctorModals.showPatientProfileModal(context: context, patient: item.patient),
-          onOpenMedicalRecord: (item) => DoctorModals.showPatientProfileModal(context: context, patient: item.patient),
+          onViewPatient: (item) => DoctorModals.showPatientProfileModal(
+            context: context,
+            patient: item.patient,
+          ),
+          onOpenMedicalRecord: (item) => DoctorModals.showPatientProfileModal(
+            context: context,
+            patient: item.patient,
+          ),
         ),
 
         // 2. Date Navigation Bar (Desktop & Mobile)
@@ -509,8 +572,11 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           selectedDate: _selectedDate,
           onDateSelected: (date) => setState(() => _selectedDate = date),
           onSelectToday: () => setState(() => _selectedDate = DateTime.now()),
-          onSelectTomorrow: () => setState(() => _selectedDate = DateTime.now().add(const Duration(days: 1))),
-          onSelectThisWeek: () => setState(() => _selectedDate = DateTime.now()),
+          onSelectTomorrow: () => setState(
+            () => _selectedDate = DateTime.now().add(const Duration(days: 1)),
+          ),
+          onSelectThisWeek: () =>
+              setState(() => _selectedDate = DateTime.now()),
           onSelectCustomDate: _selectCustomDate,
         ),
         const SizedBox(height: 16),
@@ -518,13 +584,28 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
         // 3. Compact Appointments Summary Cards
         AppointmentsSummaryCards(
           totalCount: _appointments.length,
-          upcomingCount: _appointments.where((a) => a.status == AppointmentStatus.upcoming).length,
-          waitingCount: _appointments.where((a) => a.status == AppointmentStatus.waiting || a.status == AppointmentStatus.checkedIn).length,
-          completedCount: _appointments.where((a) => a.status == AppointmentStatus.completed).length,
-          cancelledCount: _appointments.where((a) => a.status == AppointmentStatus.cancelled).length,
-          noShowCount: _appointments.where((a) => a.status == AppointmentStatus.noShow).length,
+          upcomingCount: _appointments
+              .where((a) => a.status == AppointmentStatus.upcoming)
+              .length,
+          waitingCount: _appointments
+              .where(
+                (a) =>
+                    a.status == AppointmentStatus.waiting ||
+                    a.status == AppointmentStatus.checkedIn,
+              )
+              .length,
+          completedCount: _appointments
+              .where((a) => a.status == AppointmentStatus.completed)
+              .length,
+          cancelledCount: _appointments
+              .where((a) => a.status == AppointmentStatus.cancelled)
+              .length,
+          noShowCount: _appointments
+              .where((a) => a.status == AppointmentStatus.noShow)
+              .length,
           activeFilterStatus: _selectedStatusFilter,
-          onSelectStatusFilter: (status) => setState(() => _selectedStatusFilter = status),
+          onSelectStatusFilter: (status) =>
+              setState(() => _selectedStatusFilter = status),
         ),
         const SizedBox(height: 16),
 
@@ -534,7 +615,8 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           onStartConsultation: () => DoctorModals.showStartConsultationModal(
             context: context,
             appointment: nextAppointment,
-            onConsultationCompleted: () => _markAppointmentCompleted(nextAppointment),
+            onConsultationCompleted: () =>
+                _markAppointmentCompleted(nextAppointment),
           ),
           onViewPatient: () => DoctorModals.showPatientProfileModal(
             context: context,
@@ -548,11 +630,13 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           searchQuery: _searchQuery,
           onSearchChanged: (query) => setState(() => _searchQuery = query),
           selectedStatus: _selectedStatusFilter,
-          onStatusChanged: (status) => setState(() => _selectedStatusFilter = status),
+          onStatusChanged: (status) =>
+              setState(() => _selectedStatusFilter = status),
           selectedType: _selectedTypeFilter,
           onTypeChanged: (type) => setState(() => _selectedTypeFilter = type),
           selectedDepartment: _selectedDepartmentFilter,
-          onDepartmentChanged: (dept) => setState(() => _selectedDepartmentFilter = dept),
+          onDepartmentChanged: (dept) =>
+              setState(() => _selectedDepartmentFilter = dept),
           selectedMode: _selectedModeFilter,
           onModeChanged: (mode) => setState(() => _selectedModeFilter = mode),
           onClearFilters: _clearAllFilters,
@@ -566,14 +650,28 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
             onSelectAppointment: (apt) => AppointmentDetailDrawer.show(
               context: context,
               appointment: apt,
-              onStartConsultation: () => DoctorModals.showStartConsultationModal(
+              onStartConsultation: () =>
+                  DoctorModals.showStartConsultationModal(
+                    context: context,
+                    appointment: apt,
+                    onConsultationCompleted: () =>
+                        _markAppointmentCompleted(apt),
+                  ),
+              onViewPatient: () => DoctorModals.showPatientProfileModal(
+                context: context,
+                patient: apt.patient,
+              ),
+              onReschedule: () => RescheduleAppointmentDialog.show(
                 context: context,
                 appointment: apt,
-                onConsultationCompleted: () => _markAppointmentCompleted(apt),
+                onRescheduled: (newSlot) =>
+                    _rescheduleAppointment(apt, newSlot),
               ),
-              onViewPatient: () => DoctorModals.showPatientProfileModal(context: context, patient: apt.patient),
-              onReschedule: () => RescheduleAppointmentDialog.show(context: context, appointment: apt, onRescheduled: (_) {}),
-              onCancel: () => CancelAppointmentDialog.show(context: context, appointment: apt, onConfirmedCancel: (_) {}),
+              onCancel: () => CancelAppointmentDialog.show(
+                context: context,
+                appointment: apt,
+                onConfirmedCancel: (_) {},
+              ),
             ),
           )
         else if (filteredList.isEmpty)
@@ -594,28 +692,48 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                 flex: 70,
                 child: AppointmentsTableView(
                   appointments: filteredList,
-                  onStartConsultation: (apt) => DoctorModals.showStartConsultationModal(
+                  onStartConsultation: (apt) =>
+                      DoctorModals.showStartConsultationModal(
+                        context: context,
+                        appointment: apt,
+                        onConsultationCompleted: () =>
+                            _markAppointmentCompleted(apt),
+                      ),
+                  onViewPatient: (apt) => DoctorModals.showPatientProfileModal(
                     context: context,
-                    appointment: apt,
-                    onConsultationCompleted: () => _markAppointmentCompleted(apt),
+                    patient: apt.patient,
                   ),
-                  onViewPatient: (apt) => DoctorModals.showPatientProfileModal(context: context, patient: apt.patient),
                   onViewDetails: (apt) => AppointmentDetailDrawer.show(
                     context: context,
                     appointment: apt,
-                    onStartConsultation: () => DoctorModals.showStartConsultationModal(
+                    onStartConsultation: () =>
+                        DoctorModals.showStartConsultationModal(
+                          context: context,
+                          appointment: apt,
+                          onConsultationCompleted: () =>
+                              _markAppointmentCompleted(apt),
+                        ),
+                    onViewPatient: () => DoctorModals.showPatientProfileModal(
+                      context: context,
+                      patient: apt.patient,
+                    ),
+                    onReschedule: () => RescheduleAppointmentDialog.show(
                       context: context,
                       appointment: apt,
-                      onConsultationCompleted: () => _markAppointmentCompleted(apt),
+                      onRescheduled: (newSlot) =>
+                          _rescheduleAppointment(apt, newSlot),
                     ),
-                    onViewPatient: () => DoctorModals.showPatientProfileModal(context: context, patient: apt.patient),
-                    onReschedule: () => RescheduleAppointmentDialog.show(context: context, appointment: apt, onRescheduled: (_) {}),
-                    onCancel: () => CancelAppointmentDialog.show(context: context, appointment: apt, onConfirmedCancel: (_) {}),
+                    onCancel: () => CancelAppointmentDialog.show(
+                      context: context,
+                      appointment: apt,
+                      onConfirmedCancel: (_) {},
+                    ),
                   ),
                   onReschedule: (apt) => RescheduleAppointmentDialog.show(
                     context: context,
                     appointment: apt,
-                    onRescheduled: (_) {},
+                    onRescheduled: (newSlot) =>
+                        _rescheduleAppointment(apt, newSlot),
                   ),
                   onCancel: (apt) => CancelAppointmentDialog.show(
                     context: context,
@@ -624,7 +742,10 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                       setState(() {
                         _appointments = _appointments.map((a) {
                           if (a.id == apt.id) {
-                            return a.copyWith(status: AppointmentStatus.cancelled, cancellationReason: reason);
+                            return a.copyWith(
+                              status: AppointmentStatus.cancelled,
+                              cancellationReason: reason,
+                            );
                           }
                           return a;
                         }).toList();
@@ -634,7 +755,9 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                   onCallPatient: (apt) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Calling ${apt.patient.name} to Consultation Desk 1'),
+                        content: Text(
+                          'Calling ${apt.patient.name} to Consultation Desk 1',
+                        ),
                         backgroundColor: HealthifyGlassTheme.primaryTeal,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -658,13 +781,15 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                       DoctorModals.showStartConsultationModal(
                         context: context,
                         appointment: apt,
-                        onConsultationCompleted: () => _markAppointmentCompleted(apt),
+                        onConsultationCompleted: () =>
+                            _markAppointmentCompleted(apt),
                       );
                     },
-                    onViewPatient: (queueItem) => DoctorModals.showPatientProfileModal(
-                      context: context,
-                      patient: queueItem.patient,
-                    ),
+                    onViewPatient: (queueItem) =>
+                        DoctorModals.showPatientProfileModal(
+                          context: context,
+                          patient: queueItem.patient,
+                        ),
                   ),
                 ),
               ],
@@ -679,6 +804,23 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
       _appointments = _appointments.map((a) {
         if (a.id == appointment.id) {
           return a.copyWith(status: AppointmentStatus.completed);
+        }
+        return a;
+      }).toList();
+    });
+  }
+
+  void _rescheduleAppointment(
+    DoctorAppointmentModel appointment,
+    String newSlot,
+  ) {
+    setState(() {
+      _appointments = _appointments.map((a) {
+        if (a.id == appointment.id) {
+          return a.copyWith(
+            appointmentTime: newSlot,
+            status: AppointmentStatus.upcoming,
+          );
         }
         return a;
       }).toList();

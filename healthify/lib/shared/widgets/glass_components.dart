@@ -491,8 +491,7 @@ class GlassPrimaryButton extends StatelessWidget {
       onTap: isLoading ? null : onPressed,
       child: SizedBox(
         height: height,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+        child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
@@ -503,26 +502,36 @@ class GlassPrimaryButton extends StatelessWidget {
               ),
             ],
           ),
-          child: ElevatedButton(
-            onPressed: isLoading ? null : onPressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: color,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(borderRadius),
+          child: Material(
+            color: color,
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: InkWell(
+              onTap: isLoading ? null : onPressed,
+              borderRadius: BorderRadius.circular(borderRadius),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                alignment: Alignment.center,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : DefaultTextStyle(
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          child: child,
+                        ),
+                ),
               ),
             ),
-            child: isLoading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : child,
           ),
         ),
       ),
@@ -556,22 +565,35 @@ class GlassSecondaryButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-            child: OutlinedButton(
-              onPressed: onPressed,
-              style: OutlinedButton.styleFrom(
-                backgroundColor: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.white.withValues(alpha: 0.70),
-                foregroundColor: HealthifyGlassTheme.primaryTeal,
-                side: BorderSide(
-                  color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
-                  width: 1.5,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
+            child: Material(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white.withValues(alpha: 0.70),
+              child: InkWell(
+                onTap: onPressed,
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(borderRadius),
+                    border: Border.all(
+                      color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: DefaultTextStyle(
+                      style: TextStyle(
+                        color: HealthifyGlassTheme.primaryTeal,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      child: child,
+                    ),
+                  ),
                 ),
               ),
-              child: child,
             ),
           ),
         ),

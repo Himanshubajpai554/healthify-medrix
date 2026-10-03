@@ -45,12 +45,19 @@ class AddClinicalNoteModal {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: HealthifyGlassTheme.getTextPrimary(isDark),
+                                color: HealthifyGlassTheme.getTextPrimary(
+                                  isDark,
+                                ),
                               ),
                             ),
                             Text(
                               'Patient: ${patient.name} (${patient.mrn})',
-                              style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: HealthifyGlassTheme.getTextSecondary(
+                                  isDark,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -61,20 +68,48 @@ class AddClinicalNoteModal {
 
                   Text(
                     'Select Note Type',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: HealthifyGlassTheme.getTextPrimary(isDark),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildChoiceChip('Consultation Note', ClinicalNoteType.consultationNote, noteType, (val) => setState(() => noteType = val)),
+                        _buildChoiceChip(
+                          'Consultation Note',
+                          ClinicalNoteType.consultationNote,
+                          noteType,
+                          (val) => setState(() => noteType = val),
+                          isDark,
+                        ),
                         const SizedBox(width: 6),
-                        _buildChoiceChip('Follow-up Note', ClinicalNoteType.followUpNote, noteType, (val) => setState(() => noteType = val)),
+                        _buildChoiceChip(
+                          'Follow-up Note',
+                          ClinicalNoteType.followUpNote,
+                          noteType,
+                          (val) => setState(() => noteType = val),
+                          isDark,
+                        ),
                         const SizedBox(width: 6),
-                        _buildChoiceChip('Observation', ClinicalNoteType.observation, noteType, (val) => setState(() => noteType = val)),
+                        _buildChoiceChip(
+                          'Observation',
+                          ClinicalNoteType.observation,
+                          noteType,
+                          (val) => setState(() => noteType = val),
+                          isDark,
+                        ),
                         const SizedBox(width: 6),
-                        _buildChoiceChip('Internal Note (Private)', ClinicalNoteType.internalNote, noteType, (val) => setState(() => noteType = val)),
+                        _buildChoiceChip(
+                          'Internal Note (Private)',
+                          ClinicalNoteType.internalNote,
+                          noteType,
+                          (val) => setState(() => noteType = val),
+                          isDark,
+                        ),
                       ],
                     ),
                   ),
@@ -82,18 +117,35 @@ class AddClinicalNoteModal {
 
                   // Private / Public Visibility Distinction Banner
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      color: isInternal ? Colors.indigo.withValues(alpha: 0.15) : HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.12),
+                      color: isInternal
+                          ? Colors.indigo.withValues(alpha: 0.15)
+                          : HealthifyGlassTheme.primaryTeal.withValues(
+                              alpha: 0.12,
+                            ),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: isInternal ? Colors.indigo.withValues(alpha: 0.3) : HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: isInternal
+                            ? Colors.indigo.withValues(alpha: 0.3)
+                            : HealthifyGlassTheme.primaryTeal.withValues(
+                                alpha: 0.3,
+                              ),
+                      ),
                     ),
                     child: Row(
                       children: [
                         Icon(
-                          isInternal ? Icons.lock_outline_rounded : Icons.visibility_outlined,
+                          isInternal
+                              ? Icons.lock_outline_rounded
+                              : Icons.visibility_outlined,
                           size: 16,
-                          color: isInternal ? Colors.indigo : HealthifyGlassTheme.primaryTeal,
+                          color: isInternal
+                              ? Colors.indigo
+                              : HealthifyGlassTheme.primaryTeal,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -104,7 +156,9 @@ class AddClinicalNoteModal {
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.bold,
-                              color: isInternal ? Colors.indigo : HealthifyGlassTheme.primaryTeal,
+                              color: isInternal
+                                  ? Colors.indigo
+                                  : HealthifyGlassTheme.primaryTeal,
                             ),
                           ),
                         ),
@@ -118,7 +172,8 @@ class AddClinicalNoteModal {
                     maxLines: 4,
                     decoration: GlassTextFieldTheme.getDecoration(
                       context: context,
-                      hintText: 'Type clinical findings, patient symptoms, or internal notes...',
+                      hintText:
+                          'Type clinical findings, patient symptoms, or internal notes...',
                       labelText: 'Clinical Note Details',
                     ),
                   ),
@@ -141,8 +196,11 @@ class AddClinicalNoteModal {
                             onNoteAdded();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Clinical note added to ${patient.name}\'s EHR file.'),
-                                backgroundColor: HealthifyGlassTheme.primaryTeal,
+                                content: Text(
+                                  'Clinical note added to ${patient.name}\'s EHR file.',
+                                ),
+                                backgroundColor:
+                                    HealthifyGlassTheme.primaryTeal,
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -161,8 +219,15 @@ class AddClinicalNoteModal {
     );
   }
 
-  static Widget _buildChoiceChip(String label, ClinicalNoteType value, ClinicalNoteType groupValue, ValueChanged<ClinicalNoteType> onSelected) {
+  static Widget _buildChoiceChip(
+    String label,
+    ClinicalNoteType value,
+    ClinicalNoteType groupValue,
+    ValueChanged<ClinicalNoteType> onSelected,
+    bool isDark,
+  ) {
     final isSelected = value == groupValue;
+
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
@@ -170,7 +235,9 @@ class AddClinicalNoteModal {
       labelStyle: TextStyle(
         fontSize: 11.5,
         fontWeight: FontWeight.bold,
-        color: isSelected ? Colors.white : Colors.black87,
+        color: isSelected
+            ? Colors.white
+            : (isDark ? Colors.white : Colors.black),
       ),
       onSelected: (val) {
         if (val) onSelected(value);

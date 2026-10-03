@@ -37,7 +37,7 @@ class EmergencySummaryCards extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: width > 1100 ? 1.8 : (width > 650 ? 2.0 : 1.6),
+          childAspectRatio: width > 1100 ? 1.8 : (width > 650 ? 2.0 : (width < 380 ? 0.98 : 1.05)),
           children: [
             _buildCard(
               context: context,
@@ -116,7 +116,7 @@ class EmergencySummaryCards extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? color.withValues(alpha: isDark ? 0.2 : 0.12)
@@ -140,23 +140,27 @@ class EmergencySummaryCards extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: isDark ? 0.25 : 0.12),
-                    borderRadius: BorderRadius.circular(8),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: isDark ? 0.25 : 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, size: 18, color: color),
                   ),
-                  child: Icon(icon, size: 18, color: color),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
+                  const SizedBox(width: 8),
+                  Text(
                     title,
                     style: TextStyle(
                       fontSize: 12,
@@ -166,29 +170,29 @@ class EmergencySummaryCards extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: HealthifyGlassTheme.getTextPrimary(isDark),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: HealthifyGlassTheme.getTextPrimary(isDark),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 10.5,
-                color: HealthifyGlassTheme.getTextSecondary(isDark).withValues(alpha: 0.8),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  color: HealthifyGlassTheme.getTextSecondary(isDark).withValues(alpha: 0.8),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

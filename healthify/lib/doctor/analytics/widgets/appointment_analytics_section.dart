@@ -48,46 +48,90 @@ class AppointmentAnalyticsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          LayoutBuilder(
+            builder: (context, headerConstraints) {
+              final isNarrow = headerConstraints.maxWidth < 600;
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Appointments Over Time',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Recorded daily appointment volume and status breakdown',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 6,
+                      children: [
+                        _legendDot('Completed', const Color(0xFF10B981), isDark),
+                        _legendDot('Upcoming', const Color(0xFF3B82F6), isDark),
+                        _legendDot('Cancelled', const Color(0xFFEF4444), isDark),
+                        _legendDot('No Show', Colors.amber.shade800, isDark),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Appointments Over Time',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Appointments Over Time',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
+                        ),
+                        Text(
+                          'Recorded daily appointment volume and status breakdown',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    'Recorded daily appointment volume and status breakdown',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                    ),
+                  const SizedBox(width: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 6,
+                    children: [
+                      _legendDot('Completed', const Color(0xFF10B981), isDark),
+                      _legendDot('Upcoming', const Color(0xFF3B82F6), isDark),
+                      _legendDot('Cancelled', const Color(0xFFEF4444), isDark),
+                      _legendDot('No Show', Colors.amber.shade800, isDark),
+                    ],
                   ),
                 ],
-              ),
-              // Legend
-              Wrap(
-                spacing: 12,
-                children: [
-                  _legendDot('Completed', const Color(0xFF10B981), isDark),
-                  _legendDot('Upcoming', const Color(0xFF3B82F6), isDark),
-                  _legendDot('Cancelled', const Color(0xFFEF4444), isDark),
-                  _legendDot('No Show', Colors.amber.shade800, isDark),
-                ],
-              ),
-            ],
+              );
+            },
           ),
           const SizedBox(height: 20),
 
           // Custom Bar Chart Representation
           SizedBox(
-            height: 180,
+            height: 195,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -108,13 +152,13 @@ class AppointmentAnalyticsSection extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           if (upcoming > 0)
-                            _barSegment(height: (upcoming / maxVal) * 140, color: const Color(0xFF3B82F6)),
+                            _barSegment(height: (upcoming / maxVal) * 125, color: const Color(0xFF3B82F6)),
                           if (cancelled > 0)
-                            _barSegment(height: (cancelled / maxVal) * 140, color: const Color(0xFFEF4444)),
+                            _barSegment(height: (cancelled / maxVal) * 125, color: const Color(0xFFEF4444)),
                           if (noShow > 0)
-                            _barSegment(height: (noShow / maxVal) * 140, color: Colors.amber.shade800),
+                            _barSegment(height: (noShow / maxVal) * 125, color: Colors.amber.shade800),
                           if (completed > 0)
-                            _barSegment(height: (completed / maxVal) * 140, color: const Color(0xFF10B981)),
+                            _barSegment(height: (completed / maxVal) * 125, color: const Color(0xFF10B981)),
                           if (total == 0)
                             Container(width: 20, height: 4, color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                         ],
@@ -141,8 +185,8 @@ class AppointmentAnalyticsSection extends StatelessWidget {
 
   Widget _barSegment({required double height, required Color color}) {
     return Container(
-      width: 22,
-      height: height.clamp(4.0, 140.0),
+      width: 20,
+      height: height.clamp(4.0, 125.0),
       margin: const EdgeInsets.only(bottom: 2),
       decoration: BoxDecoration(
         color: color,
@@ -214,20 +258,26 @@ class AppointmentAnalyticsSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                CircleAvatar(radius: 4, backgroundColor: color),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+            Expanded(
+              child: Row(
+                children: [
+                  CircleAvatar(radius: 4, backgroundColor: color),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             Text(
               '$count (${(pct * 100).toStringAsFixed(0)}%)',
               style: TextStyle(

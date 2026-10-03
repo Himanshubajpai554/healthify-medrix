@@ -22,30 +22,36 @@ class FollowUpAnalyticsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Follow-up Activity Overview',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Follow-up Activity Overview',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Care continuity tracking and upcoming visit pipeline',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    Text(
+                      'Care continuity tracking and upcoming visit pipeline',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               GlassSecondaryButton(
                 onPressed: () => Navigator.pushNamed(context, '/doctor-followups'),
                 height: 34,
-                child: const Text('View Follow-ups', style: TextStyle(fontSize: 11)),
+                child: const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('View Follow-ups', style: TextStyle(fontSize: 11)),
+                ),
               ),
             ],
           ),

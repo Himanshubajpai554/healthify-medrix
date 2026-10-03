@@ -22,30 +22,36 @@ class EmergencyAnalyticsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Emergency Case Activity',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Emergency Case Activity',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Operational volume of emergency room encounters',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    Text(
+                      'Operational volume of emergency room encounters',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               GlassSecondaryButton(
                 onPressed: () => Navigator.pushNamed(context, '/doctor-emergency'),
                 height: 34,
-                child: const Text('View Emergency Cases', style: TextStyle(fontSize: 11)),
+                child: const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('View Emergency Cases', style: TextStyle(fontSize: 11)),
+                ),
               ),
             ],
           ),

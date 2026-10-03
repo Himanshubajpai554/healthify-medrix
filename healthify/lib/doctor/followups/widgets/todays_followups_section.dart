@@ -34,12 +34,16 @@ class TodaysFollowUpsSection extends StatelessWidget {
                 child: const Icon(Icons.today_rounded, color: Color(0xFFD97706), size: 20),
               ),
               const SizedBox(width: 10),
-              Text(
-                "Today's Follow-ups",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Flexible(
+                child: Text(
+                  "Today's Follow-ups",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -94,6 +98,8 @@ class TodaysFollowUpsSection extends StatelessWidget {
                       children: [
                         Text(
                           item.patientName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,

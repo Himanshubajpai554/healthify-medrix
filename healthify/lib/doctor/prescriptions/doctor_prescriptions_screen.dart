@@ -15,7 +15,11 @@ import 'widgets/prescriptions_summary_cards.dart';
 import 'widgets/prescriptions_table_view.dart';
 
 class DoctorPrescriptionsScreen extends StatefulWidget {
-  const DoctorPrescriptionsScreen({super.key});
+  final bool embedInDashboard;
+  const DoctorPrescriptionsScreen({
+    super.key,
+    this.embedInDashboard = false,
+  });
 
   @override
   State<DoctorPrescriptionsScreen> createState() => _DoctorPrescriptionsScreenState();
@@ -138,6 +142,13 @@ class _DoctorPrescriptionsScreenState extends State<DoctorPrescriptionsScreen> {
     final isMobile = screenWidth < 768;
 
     final metrics = _prescriptionService.getSummaryMetrics();
+
+    if (widget.embedInDashboard) {
+      if (isDesktop) {
+        return _buildDesktopLayout(context, isDark, metrics);
+      }
+      return _buildMobileTabletLayout(context, isDark, metrics, isMobile);
+    }
 
     return Scaffold(
       backgroundColor: isDark ? HealthifyGlassTheme.darkBackground : const Color(0xFFF8FAFC),

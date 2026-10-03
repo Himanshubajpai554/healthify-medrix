@@ -14,7 +14,11 @@ import 'widgets/reports_table_view.dart';
 import 'widgets/upload_report_modal.dart';
 
 class DoctorReportsScreen extends StatefulWidget {
-  const DoctorReportsScreen({super.key});
+  final bool embedInDashboard;
+  const DoctorReportsScreen({
+    super.key,
+    this.embedInDashboard = false,
+  });
 
   @override
   State<DoctorReportsScreen> createState() => _DoctorReportsScreenState();
@@ -129,6 +133,13 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
     final isMobile = screenWidth < 768;
 
     final metrics = _reportsService.getSummaryMetrics();
+
+    if (widget.embedInDashboard) {
+      if (isDesktop) {
+        return _buildDesktopLayout(context, isDark, metrics);
+      }
+      return _buildMobileTabletLayout(context, isDark, metrics, isMobile);
+    }
 
     return Scaffold(
       backgroundColor: isDark ? HealthifyGlassTheme.darkBackground : const Color(0xFFF8FAFC),

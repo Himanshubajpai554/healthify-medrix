@@ -25,7 +25,7 @@ class FollowUpHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    final isCompact = screenWidth < 768;
+    final isCompact = screenWidth < 850;
 
     return GlassCard(
       padding: const EdgeInsets.all(20),

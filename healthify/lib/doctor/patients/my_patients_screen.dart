@@ -22,12 +22,14 @@ import 'widgets/patients_table_view.dart';
 import 'widgets/schedule_followup_modal.dart';
 
 class MyPatientsScreen extends StatefulWidget {
+  final bool embedInDashboard;
   final String doctorName;
   final String doctorId;
   final String specialty;
 
   const MyPatientsScreen({
     super.key,
+    this.embedInDashboard = false,
     this.doctorName = 'Dr. Sarah Jenkins',
     this.doctorId = 'DOC-4019',
     this.specialty = 'Lead Cardiologist',
@@ -300,6 +302,12 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.embedInDashboard) {
+      return SingleChildScrollView(
+        child: _buildPatientsWorkspaceContent(),
+      );
+    }
+
     final isDark = HealthifyGlassTheme.isDarkMode(context);
     final isDesktop = Responsive.isDesktop(context);
     final unreadCount = _notifications.where((n) => !n.isRead).length;

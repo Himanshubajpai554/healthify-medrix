@@ -124,7 +124,11 @@ class EmergencyCasesWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -142,20 +146,24 @@ class EmergencyCasesWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(),
-              Icon(
-                Icons.access_time_rounded,
-                size: 14,
-                color: HealthifyGlassTheme.getTextSecondary(isDark),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'Arrived: ${item.arrivalTime}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: HealthifyGlassTheme.getTextSecondary(isDark),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 14,
+                    color: HealthifyGlassTheme.getTextSecondary(isDark),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Arrived: ${item.arrivalTime}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: HealthifyGlassTheme.getTextSecondary(isDark),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

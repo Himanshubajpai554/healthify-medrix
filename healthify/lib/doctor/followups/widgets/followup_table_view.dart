@@ -318,14 +318,19 @@ class FollowUpTableView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      item.patientName,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    Expanded(
+                      child: Text(
+                        item.patientName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -349,9 +354,13 @@ class FollowUpTableView extends StatelessWidget {
                   children: [
                     Icon(Icons.event_rounded, size: 14, color: isDark ? Colors.white54 : const Color(0xFF64748B)),
                     const SizedBox(width: 6),
-                    Text(
-                      'Follow-up: ${formatDate(item.followUpDate)} at ${item.followUpTime}',
-                      style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : const Color(0xFF475569)),
+                    Expanded(
+                      child: Text(
+                        'Follow-up: ${formatDate(item.followUpDate)} at ${item.followUpTime}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : const Color(0xFF475569)),
+                      ),
                     ),
                   ],
                 ),
@@ -360,9 +369,13 @@ class FollowUpTableView extends StatelessWidget {
                   children: [
                     Icon(Icons.history_rounded, size: 14, color: isDark ? Colors.white54 : const Color(0xFF64748B)),
                     const SizedBox(width: 6),
-                    Text(
-                      'Last Visit: ${item.previousConsultation != null ? formatDate(item.previousConsultation!.date) : "None"} • ${item.department}',
-                      style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : const Color(0xFF475569)),
+                    Expanded(
+                      child: Text(
+                        'Last Visit: ${item.previousConsultation != null ? formatDate(item.previousConsultation!.date) : "None"} • ${item.department}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : const Color(0xFF475569)),
+                      ),
                     ),
                   ],
                 ),
@@ -380,16 +393,20 @@ class FollowUpTableView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    GlassSecondaryButton(
-                      onPressed: () => onOpenPatient(item),
-                      height: 34,
-                      child: const Text('Open Patient', style: TextStyle(fontSize: 11)),
+                    Flexible(
+                      child: GlassSecondaryButton(
+                        onPressed: () => onOpenPatient(item),
+                        height: 34,
+                        child: const Text('Open Patient', style: TextStyle(fontSize: 11)),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    GlassPrimaryButton(
-                      onPressed: () => onSelectFollowUp(item),
-                      height: 34,
-                      child: const Text('View Details', style: TextStyle(fontSize: 11)),
+                    Flexible(
+                      child: GlassPrimaryButton(
+                        onPressed: () => onSelectFollowUp(item),
+                        height: 34,
+                        child: const Text('View Details', style: TextStyle(fontSize: 11)),
+                      ),
                     ),
                   ],
                 ),

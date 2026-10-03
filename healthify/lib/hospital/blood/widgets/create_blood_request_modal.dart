@@ -137,6 +137,7 @@ class _CreateBloodRequestModalState extends State<CreateBloodRequestModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _department,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -167,6 +168,7 @@ class _CreateBloodRequestModalState extends State<CreateBloodRequestModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _bloodGroup,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -233,6 +235,7 @@ class _CreateBloodRequestModalState extends State<CreateBloodRequestModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<RequestPriority>(
+                                      isExpanded: true,
                                       initialValue: _priority,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),

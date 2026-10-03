@@ -20,7 +20,11 @@ class QuickHelpActions extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 550 ? 2 : 2);
-        final cardAspectRatio = constraints.maxWidth > 900 ? 1.7 : (constraints.maxWidth > 550 ? 1.8 : 1.55);
+        final cardAspectRatio = constraints.maxWidth > 900
+            ? 1.7
+            : (constraints.maxWidth > 550
+                ? 1.6
+                : (constraints.maxWidth < 380 ? 0.92 : 0.98));
 
         return GridView.count(
           crossAxisCount: crossAxisCount,
@@ -85,7 +89,7 @@ class QuickHelpActions extends StatelessWidget {
 
     return GlassCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,11 +135,18 @@ class QuickHelpActions extends StatelessWidget {
             height: 32,
             onPressed: onTap,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(buttonLabel, style: const TextStyle(fontSize: 11.5)),
+                Text(
+                  buttonLabel,
+                  style: const TextStyle(fontSize: 11),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_forward_rounded, size: 13),
+                const Icon(Icons.arrow_forward_rounded, size: 12),
               ],
             ),
           ),

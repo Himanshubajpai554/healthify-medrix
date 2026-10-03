@@ -14,60 +14,99 @@ class ReportAnalyticsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
 
-    return GlassCard(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 600;
+
+        return GlassCard(
+          padding: EdgeInsets.all(isCompact ? 14 : 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              if (isCompact) ...[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Report Review Activity',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Diagnostic reports received, reviewed, and pending',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    GlassSecondaryButton(
+                      onPressed: () => Navigator.pushNamed(context, '/doctor-reports'),
+                      height: 32,
+                      child: const Text('View Reports', style: TextStyle(fontSize: 11)),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Report Review Activity',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            'Diagnostic reports received, reviewed, and pending',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GlassSecondaryButton(
+                      onPressed: () => Navigator.pushNamed(context, '/doctor-reports'),
+                      height: 34,
+                      child: const Text('View Reports', style: TextStyle(fontSize: 11)),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 16),
+
+              Row(
                 children: [
-                  Text(
-                    'Report Review Activity',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                  ),
-                  Text(
-                    'Diagnostic reports received, reviewed, and pending',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                    ),
-                  ),
+                  Expanded(child: _chip('Received', reports.reportsReceived, const Color(0xFF8B5CF6), isDark, isCompact)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _chip('Reviewed', reports.reportsReviewed, const Color(0xFF10B981), isDark, isCompact)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _chip('Pending', reports.pendingReview, Colors.amber.shade800, isDark, isCompact)),
                 ],
               ),
-              GlassSecondaryButton(
-                onPressed: () => Navigator.pushNamed(context, '/doctor-reports'),
-                height: 34,
-                child: const Text('View Reports', style: TextStyle(fontSize: 11)),
-              ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(child: _chip('Received', reports.reportsReceived, const Color(0xFF8B5CF6), isDark)),
-              const SizedBox(width: 8),
-              Expanded(child: _chip('Reviewed', reports.reportsReviewed, const Color(0xFF10B981), isDark)),
-              const SizedBox(width: 8),
-              Expanded(child: _chip('Pending', reports.pendingReview, Colors.amber.shade800, isDark)),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _chip(String label, int count, Color color, bool isDark) {
+  Widget _chip(String label, int count, Color color, bool isDark, bool isCompact) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 4 : 10, vertical: isCompact ? 8 : 12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
@@ -77,14 +116,14 @@ class ReportAnalyticsSection extends StatelessWidget {
         children: [
           Text(
             '$count',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+            style: TextStyle(fontSize: isCompact ? 15 : 18, fontWeight: FontWeight.bold, color: color),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: isDark ? Colors.white70 : const Color(0xFF475569)),
+            style: TextStyle(fontSize: isCompact ? 10 : 11, color: isDark ? Colors.white70 : const Color(0xFF475569)),
           ),
         ],
       ),

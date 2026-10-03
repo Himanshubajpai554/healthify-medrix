@@ -9,7 +9,9 @@ class ScheduleFollowupModal {
     required VoidCallback onFollowupScheduled,
   }) {
     String selectedDateStr = 'Oct 08, 2026';
-    final reasonController = TextEditingController(text: 'Review lab test results & blood pressure');
+    final reasonController = TextEditingController(
+      text: 'Review lab test results & blood pressure',
+    );
 
     showHealthifyGlassBottomSheet(
       context: context,
@@ -43,12 +45,19 @@ class ScheduleFollowupModal {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: HealthifyGlassTheme.getTextPrimary(isDark),
+                                color: HealthifyGlassTheme.getTextPrimary(
+                                  isDark,
+                                ),
                               ),
                             ),
                             Text(
                               'Patient: ${patient.name} (${patient.mrn})',
-                              style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: HealthifyGlassTheme.getTextSecondary(
+                                  isDark,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -59,7 +68,11 @@ class ScheduleFollowupModal {
 
                   Text(
                     'Select Follow-up Timeframe',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: HealthifyGlassTheme.getTextPrimary(isDark),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -70,27 +83,48 @@ class ScheduleFollowupModal {
                         label: const Text('In 1 Week (Oct 08)'),
                         selected: selectedDateStr == 'Oct 08, 2026',
                         selectedColor: HealthifyGlassTheme.primaryTeal,
-                        labelStyle: TextStyle(color: selectedDateStr == 'Oct 08, 2026' ? Colors.white : Colors.black87, fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(
+                          color: selectedDateStr == 'Oct 15, 2026'
+                              ? Colors.white
+                              : (isDark ? Colors.white : Colors.black),
+                          fontWeight: FontWeight.bold,
+                        ),
                         onSelected: (val) {
-                          if (val) setState(() => selectedDateStr = 'Oct 08, 2026');
+                          if (val) {
+                            setState(() => selectedDateStr = 'Oct 08, 2026');
+                          }
                         },
                       ),
                       ChoiceChip(
                         label: const Text('In 2 Weeks (Oct 15)'),
                         selected: selectedDateStr == 'Oct 15, 2026',
                         selectedColor: HealthifyGlassTheme.primaryTeal,
-                        labelStyle: TextStyle(color: selectedDateStr == 'Oct 15, 2026' ? Colors.white : Colors.black87, fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(
+                          color: selectedDateStr == 'Oct 15, 2026'
+                              ? Colors.white
+                              : (isDark ? Colors.white : Colors.black),
+                          fontWeight: FontWeight.bold,
+                        ),
                         onSelected: (val) {
-                          if (val) setState(() => selectedDateStr = 'Oct 15, 2026');
+                          if (val) {
+                            setState(() => selectedDateStr = 'Oct 15, 2026');
+                          }
                         },
                       ),
                       ChoiceChip(
                         label: const Text('In 1 Month (Nov 01)'),
                         selected: selectedDateStr == 'Nov 01, 2026',
                         selectedColor: HealthifyGlassTheme.primaryTeal,
-                        labelStyle: TextStyle(color: selectedDateStr == 'Nov 01, 2026' ? Colors.white : Colors.black87, fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(
+                          color: selectedDateStr == 'Oct 15, 2026'
+                              ? Colors.white
+                              : (isDark ? Colors.white : Colors.black),
+                          fontWeight: FontWeight.bold,
+                        ),
                         onSelected: (val) {
-                          if (val) setState(() => selectedDateStr = 'Nov 01, 2026');
+                          if (val) {
+                            setState(() => selectedDateStr = 'Nov 01, 2026');
+                          }
                         },
                       ),
                     ],
@@ -103,7 +137,9 @@ class ScheduleFollowupModal {
                       context: context,
                       hintText: 'e.g. Review lab test results & blood pressure',
                       labelText: 'Follow-up Purpose / Clinical Reason',
-                      prefixIcon: const Icon(Icons.assignment_turned_in_rounded),
+                      prefixIcon: const Icon(
+                        Icons.assignment_turned_in_rounded,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -125,8 +161,11 @@ class ScheduleFollowupModal {
                             onFollowupScheduled();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Follow-up for ${patient.name} scheduled for $selectedDateStr.'),
-                                backgroundColor: HealthifyGlassTheme.primaryTeal,
+                                content: Text(
+                                  'Follow-up for ${patient.name} scheduled for $selectedDateStr.',
+                                ),
+                                backgroundColor:
+                                    HealthifyGlassTheme.primaryTeal,
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );

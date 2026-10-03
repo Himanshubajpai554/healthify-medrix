@@ -23,7 +23,7 @@ class NotificationsHeader extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 650;
+        final isMobile = constraints.maxWidth < 850;
 
         return GlassCard(
           padding: const EdgeInsets.all(20),
@@ -46,12 +46,16 @@ class NotificationsHeader extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              'Notifications',
-                              style: TextStyle(
-                                fontSize: isMobile ? 20 : 24,
-                                fontWeight: FontWeight.bold,
-                                color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            Flexible(
+                              child: Text(
+                                'Notifications',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: isMobile ? 20 : 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -89,40 +93,98 @@ class NotificationsHeader extends StatelessWidget {
                   ),
                   if (!isMobile) ...[
                     const SizedBox(width: 12),
-                    Row(
-                      children: [
-                        if (unreadCount > 0) ...[
-                          GlassSecondaryButton(
-                            height: 40,
-                            onPressed: onMarkAllRead,
-                            child: const Row(
-                              children: [
-                                Icon(Icons.done_all_rounded, size: 16),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Mark All as Read',
-                                  style: TextStyle(fontSize: 12.5),
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (unreadCount > 0) ...[
+                            Flexible(
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: onMarkAllRead,
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: HealthifyGlassTheme.primaryTeal.withValues(alpha: isDark ? 0.20 : 0.10),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.done_all_rounded, size: 16, color: HealthifyGlassTheme.primaryTeal),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            'Mark All as Read',
+                                            style: const TextStyle(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: HealthifyGlassTheme.primaryTeal,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                          ],
+                          Flexible(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: onOpenPreferences,
+                                borderRadius: BorderRadius.circular(20),
+                                child: Ink(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF0D9488), Color(0xFF0F766E)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF0D9488).withValues(alpha: 0.3),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.tune_rounded, size: 16, color: Colors.white),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          'Preferences',
+                                          style: const TextStyle(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 10),
                         ],
-                        GlassPrimaryButton(
-                          height: 40,
-                          onPressed: onOpenPreferences,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.tune_rounded, size: 16, color: Colors.white),
-                              SizedBox(width: 6),
-                              Text(
-                                'Preferences',
-                                style: TextStyle(fontSize: 12.5, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ],
@@ -133,38 +195,90 @@ class NotificationsHeader extends StatelessWidget {
                   children: [
                     if (unreadCount > 0) ...[
                       Expanded(
-                        child: GlassSecondaryButton(
-                          height: 38,
-                          onPressed: onMarkAllRead,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.done_all_rounded, size: 16),
-                              SizedBox(width: 6),
-                              Text(
-                                'Mark All Read',
-                                style: TextStyle(fontSize: 12),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onMarkAllRead,
+                            borderRadius: BorderRadius.circular(18),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: HealthifyGlassTheme.primaryTeal.withValues(alpha: isDark ? 0.20 : 0.10),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.4),
+                                  width: 1.0,
+                                ),
                               ),
-                            ],
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.done_all_rounded, size: 15, color: HealthifyGlassTheme.primaryTeal),
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Mark All Read',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: HealthifyGlassTheme.primaryTeal,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                     ],
                     Expanded(
-                      child: GlassPrimaryButton(
-                        height: 38,
-                        onPressed: onOpenPreferences,
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.tune_rounded, size: 16, color: Colors.white),
-                            SizedBox(width: 6),
-                            Text(
-                              'Preferences',
-                              style: TextStyle(fontSize: 12, color: Colors.white),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: onOpenPreferences,
+                          borderRadius: BorderRadius.circular(18),
+                          child: Ink(
+                            padding: const EdgeInsets.symmetric(vertical: 9),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF0D9488), Color(0xFF0F766E)],
+                              ),
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF0D9488).withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                          ],
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.tune_rounded, size: 15, color: Colors.white),
+                                SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'Preferences',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),

@@ -173,6 +173,7 @@ class _AddDoctorModalState extends State<AddDoctorModal> {
                                   ),
                                   const SizedBox(height: 6),
                                   DropdownButtonFormField<String>(
+                                    isExpanded: true,
                                     initialValue: _department,
                                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -208,6 +209,7 @@ class _AddDoctorModalState extends State<AddDoctorModal> {
                                   ),
                                   const SizedBox(height: 6),
                                   DropdownButtonFormField<DoctorStatus>(
+                                    isExpanded: true,
                                     initialValue: _status,
                                     dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                     style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),

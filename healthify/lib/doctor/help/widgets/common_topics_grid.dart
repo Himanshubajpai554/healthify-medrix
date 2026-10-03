@@ -22,13 +22,16 @@ class CommonTopicsGrid extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'BROWSE HELP TOPICS',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.1,
-                color: HealthifyGlassTheme.getTextMuted(isDark),
+            Expanded(
+              child: Text(
+                'BROWSE HELP TOPICS',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                  color: HealthifyGlassTheme.getTextMuted(isDark),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             if (selectedCategory != null)

@@ -138,6 +138,7 @@ class _RecordDonationModalState extends State<RecordDonationModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _bloodGroup,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -168,6 +169,7 @@ class _RecordDonationModalState extends State<RecordDonationModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _donationType,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -234,6 +236,7 @@ class _RecordDonationModalState extends State<RecordDonationModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _screeningStatus,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),

@@ -26,50 +26,62 @@ class PendingReportsWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const GlassIconContainer(
-                    icon: Icons.assignment_late_rounded,
-                    size: 38,
-                    iconSize: 20,
-                    color: Colors.amber,
-                    borderRadius: 10,
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Reports Requiring Review',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: HealthifyGlassTheme.getTextPrimary(isDark),
-                        ),
+              Expanded(
+                child: Row(
+                  children: [
+                    const GlassIconContainer(
+                      icon: Icons.assignment_late_rounded,
+                      size: 38,
+                      iconSize: 20,
+                      color: Colors.amber,
+                      borderRadius: 10,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Reports Requiring Review',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Laboratory & Radiology results awaiting clinical sign-off',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: HealthifyGlassTheme.getTextSecondary(isDark),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Laboratory & Radiology results awaiting clinical sign-off',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: HealthifyGlassTheme.getTextSecondary(isDark),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(10),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  '${reports.where((r) => !r.isReviewed).length} Pending',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber.shade900,
+              ),
+              const SizedBox(width: 8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${reports.where((r) => !r.isReviewed).length} Pending',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber.shade900,
+                    ),
                   ),
                 ),
               ),
@@ -101,6 +113,115 @@ class PendingReportsWidget extends StatelessWidget {
     final patient = report.patient;
     final isUrgent = report.priority == ReportPriority.urgent;
 
+    Widget buildIconBox() {
+      return Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: (isUrgent ? Colors.amber : HealthifyGlassTheme.primaryTeal)
+              .withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          report.reportType.contains('X-Ray') || report.reportType.contains('ECG')
+              ? Icons.monitor_heart_rounded
+              : Icons.science_rounded,
+          color: isUrgent ? Colors.amber.shade800 : HealthifyGlassTheme.primaryTeal,
+          size: 22,
+        ),
+      );
+    }
+
+    Widget buildDetails() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  report.reportType,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.bold,
+                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isUrgent) ...[
+                const SizedBox(width: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'URGENT',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 3),
+          Text(
+            'Patient: ${patient.name} (${patient.mrn}) • ${report.date}',
+            style: TextStyle(
+              fontSize: 12,
+              color: HealthifyGlassTheme.getTextSecondary(isDark),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
+    }
+
+    Widget buildActionButton({bool fullWidth = false}) {
+      final btn = GlassPrimaryButton(
+        height: 38,
+        onPressed: () => onReviewReport(report),
+        color: report.isReviewed
+            ? const Color(0xFF10B981)
+            : HealthifyGlassTheme.primaryTeal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              report.isReviewed
+                  ? Icons.check_circle_rounded
+                  : Icons.rate_review_rounded,
+              size: 15,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              report.isReviewed ? 'Reviewed' : 'Review Report',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (fullWidth) {
+        return SizedBox(width: double.infinity, child: btn);
+      }
+      return FittedBox(fit: BoxFit.scaleDown, child: btn);
+    }
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -113,101 +234,35 @@ class PendingReportsWidget extends StatelessWidget {
           width: isUrgent ? 1.4 : 1.0,
         ),
       ),
-      child: Row(
-        children: [
-          // Icon Box
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: (isUrgent ? Colors.amber : HealthifyGlassTheme.primaryTeal)
-                  .withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              report.reportType.contains('X-Ray') || report.reportType.contains('ECG')
-                  ? Icons.monitor_heart_rounded
-                  : Icons.science_rounded,
-              color: isUrgent ? Colors.amber.shade800 : HealthifyGlassTheme.primaryTeal,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-
-          // Patient & Report details
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 420) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(
-                      report.reportType,
-                      style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.bold,
-                        color: HealthifyGlassTheme.getTextPrimary(isDark),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (isUrgent)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'URGENT',
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
+                    buildIconBox(),
+                    const SizedBox(width: 14),
+                    Expanded(child: buildDetails()),
                   ],
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  'Patient: ${patient.name} (${patient.mrn}) • ${report.date}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: HealthifyGlassTheme.getTextSecondary(isDark),
-                  ),
-                ),
+                const SizedBox(height: 12),
+                buildActionButton(fullWidth: true),
               ],
-            ),
-          ),
+            );
+          }
 
-          // Action Button
-          GlassPrimaryButton(
-            height: 38,
-            onPressed: () => onReviewReport(report),
-            color: report.isReviewed
-                ? const Color(0xFF10B981)
-                : HealthifyGlassTheme.primaryTeal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  report.isReviewed
-                      ? Icons.check_circle_rounded
-                      : Icons.rate_review_rounded,
-                  size: 15,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  report.isReviewed ? 'Reviewed' : 'Review Report',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          return Row(
+            children: [
+              buildIconBox(),
+              const SizedBox(width: 14),
+              Expanded(child: buildDetails()),
+              const SizedBox(width: 12),
+              buildActionButton(),
+            ],
+          );
+        },
       ),
     );
   }

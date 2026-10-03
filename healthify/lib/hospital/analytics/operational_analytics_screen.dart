@@ -340,29 +340,36 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
   Widget _buildBedTrendBar(bool isDark) {
     return SizedBox(
       height: 120,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: _bedMetrics.map((m) {
-          final h = (m.occupancyRate / 100) * 100;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text('${m.occupancyRate.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Container(
-                width: 28,
-                height: h,
-                decoration: BoxDecoration(
-                  color: HealthifyGlassTheme.primaryTeal,
-                  borderRadius: BorderRadius.circular(6),
-                ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.bottomCenter,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: _bedMetrics.map((m) {
+            final h = ((m.occupancyRate / 100) * 50).clamp(6.0, 50.0);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('${m.occupancyRate.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 24,
+                    height: h,
+                    decoration: BoxDecoration(
+                      color: HealthifyGlassTheme.primaryTeal,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ],
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -370,29 +377,36 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
   Widget _buildIcuTrendBar(bool isDark) {
     return SizedBox(
       height: 120,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: _icuMetrics.map((m) {
-          final h = (m.utilizationRate / 100) * 100;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text('${m.utilizationRate.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Container(
-                width: 28,
-                height: h,
-                decoration: BoxDecoration(
-                  color: Colors.redAccent,
-                  borderRadius: BorderRadius.circular(6),
-                ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.bottomCenter,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: _icuMetrics.map((m) {
+            final h = ((m.utilizationRate / 100) * 50).clamp(6.0, 50.0);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('${m.utilizationRate.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 24,
+                    height: h,
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ],
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -400,29 +414,36 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
   Widget _buildOpdTrendBar(bool isDark) {
     return SizedBox(
       height: 120,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: _opdMetrics.map((m) {
-          final h = (m.utilizationRate / 100) * 100;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text('${m.utilizationRate.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Container(
-                width: 28,
-                height: h,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(6),
-                ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.bottomCenter,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: _opdMetrics.map((m) {
+            final h = ((m.utilizationRate / 100) * 50).clamp(6.0, 50.0);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('${m.utilizationRate.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 24,
+                    height: h,
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ],
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -430,29 +451,36 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
   Widget _buildErThroughputBar(bool isDark) {
     return SizedBox(
       height: 120,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: _erMetrics.map((m) {
-          final h = (m.averageTriageToDoctorMinutes / 20) * 100;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text('${m.averageTriageToDoctorMinutes.toStringAsFixed(1)}m', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Container(
-                width: 28,
-                height: h.clamp(10, 100),
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(6),
-                ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.bottomCenter,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: _erMetrics.map((m) {
+            final h = ((m.averageTriageToDoctorMinutes / 20) * 50).clamp(6.0, 50.0);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('${m.averageTriageToDoctorMinutes.toStringAsFixed(1)}m', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 24,
+                    height: h,
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ],
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -481,29 +509,36 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
   Widget _buildEquipmentDowntimeBar(bool isDark) {
     return SizedBox(
       height: 100,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: _equipmentMetrics.map((m) {
-          final h = (m.downtimeRatio / 5) * 80;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text('${m.downtimeRatio.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Container(
-                width: 28,
-                height: h.clamp(10, 80),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(6),
-                ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.bottomCenter,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: _equipmentMetrics.map((m) {
+            final h = ((m.downtimeRatio / 5) * 50).clamp(6.0, 50.0);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('${m.downtimeRatio.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 24,
+                    height: h,
+                    decoration: BoxDecoration(
+                      color: Colors.amber,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(m.date.day.toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ],
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

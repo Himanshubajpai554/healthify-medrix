@@ -352,15 +352,19 @@ class PrescriptionsTableView extends StatelessWidget {
               children: [
                 Icon(Icons.person_rounded, size: 16, color: HealthifyGlassTheme.getTextSecondary(isDark)),
                 const SizedBox(width: 6),
-                Text(
-                  '${rx.patientName} (${rx.patientId})',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                Expanded(
+                  child: Text(
+                    '${rx.patientName} (${rx.patientId})',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: HealthifyGlassTheme.getTextPrimary(isDark),
+                    ),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 Text(
                   '${rx.medicines.length} Medicines',
                   style: TextStyle(

@@ -112,10 +112,17 @@ class TroubleshootingSection extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        GlassSecondaryButton(
-                          height: 32,
-                          onPressed: onContactSupportTap,
-                          child: const Text('Still Having Issues? Contact Support', style: TextStyle(fontSize: 11)),
+                        Flexible(
+                          child: GlassSecondaryButton(
+                            height: 32,
+                            onPressed: onContactSupportTap,
+                            child: const Text(
+                              'Still Having Issues? Contact Support',
+                              style: TextStyle(fontSize: 11),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ),
                       ],
                     ),

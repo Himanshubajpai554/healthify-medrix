@@ -23,7 +23,7 @@ class EmergencyHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    final isCompact = screenWidth < 768;
+    final isCompact = screenWidth < 850;
 
     return GlassCard(
       padding: const EdgeInsets.all(20),
@@ -36,9 +36,13 @@ class EmergencyHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.redAccent.withValues(alpha: isDark ? 0.25 : 0.12),
+                  color: Colors.redAccent.withValues(
+                    alpha: isDark ? 0.25 : 0.12,
+                  ),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                  border: Border.all(
+                    color: Colors.redAccent.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: const Icon(
                   Icons.emergency_rounded,
@@ -51,25 +55,34 @@ class EmergencyHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
                       children: [
                         Text(
                           'Emergency Cases',
                           style: TextStyle(
-                            fontSize: isCompact ? 22 : 26,
+                            fontSize: isCompact ? 20 : 26,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.5,
                             color: HealthifyGlassTheme.getTextPrimary(isDark),
                           ),
                         ),
-                        const SizedBox(width: 10),
                         // Live Update Indicator
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.redAccent.withValues(alpha: isDark ? 0.2 : 0.1),
+                            color: Colors.redAccent.withValues(
+                              alpha: isDark ? 0.2 : 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -116,7 +129,13 @@ class EmergencyHeader extends StatelessWidget {
                     children: [
                       Icon(Icons.refresh_rounded, size: 18),
                       SizedBox(width: 6),
-                      Text('Refresh', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Refresh',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -130,7 +149,13 @@ class EmergencyHeader extends StatelessWidget {
                     children: [
                       Icon(Icons.add_alert_rounded, size: 18),
                       SizedBox(width: 6),
-                      Text('New Emergency Case', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      Text(
+                        'New Emergency Case',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -150,7 +175,13 @@ class EmergencyHeader extends StatelessWidget {
                       children: [
                         Icon(Icons.refresh_rounded, size: 18),
                         SizedBox(width: 6),
-                        Text('Refresh', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Refresh',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -166,7 +197,13 @@ class EmergencyHeader extends StatelessWidget {
                       children: [
                         Icon(Icons.add_alert_rounded, size: 18),
                         SizedBox(width: 6),
-                        Text('New Emergency', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        Text(
+                          'New Emergency',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -202,7 +239,9 @@ class EmergencyHeader extends StatelessWidget {
                     controller: TextEditingController.fromValue(
                       TextEditingValue(
                         text: searchQuery,
-                        selection: TextSelection.collapsed(offset: searchQuery.length),
+                        selection: TextSelection.collapsed(
+                          offset: searchQuery.length,
+                        ),
                       ),
                     ),
                     onChanged: onSearchChanged,
@@ -211,10 +250,13 @@ class EmergencyHeader extends StatelessWidget {
                       color: HealthifyGlassTheme.getTextPrimary(isDark),
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Search emergency cases by patient name, patient ID, case ID, phone number...',
+                      hintText:
+                          'Search emergency cases by patient name, patient ID, case ID, phone number...',
                       hintStyle: TextStyle(
                         fontSize: 13.5,
-                        color: HealthifyGlassTheme.getTextSecondary(isDark).withValues(alpha: 0.7),
+                        color: HealthifyGlassTheme.getTextSecondary(
+                          isDark,
+                        ).withValues(alpha: 0.7),
                       ),
                       border: InputBorder.none,
                       isDense: true,

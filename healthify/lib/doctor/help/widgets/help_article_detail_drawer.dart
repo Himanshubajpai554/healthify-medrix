@@ -197,52 +197,118 @@ class _HelpArticleDetailDrawerState extends State<HelpArticleDetailDrawer> {
                 color: HealthifyGlassTheme.getGlassBorder(isDark),
               ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _ratedHelpful == null
-                        ? 'Was this article helpful?'
-                        : (_ratedHelpful! ? 'Thank you for your feedback!' : 'Thanks! We will improve this guide.'),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: HealthifyGlassTheme.getTextPrimary(isDark),
-                    ),
-                  ),
-                ),
-                if (_ratedHelpful == null) ...[
-                  GlassSecondaryButton(
-                    height: 34,
-                    onPressed: () {
-                      setState(() => _ratedHelpful = true);
-                      widget.onRateHelpful(true);
-                    },
-                    child: const Row(
-                      children: [
-                        Icon(Icons.thumb_up_alt_rounded, size: 14),
-                        SizedBox(width: 4),
-                        Text('Yes', style: TextStyle(fontSize: 12)),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 360;
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _ratedHelpful == null
+                            ? 'Was this article helpful?'
+                            : (_ratedHelpful! ? 'Thank you for your feedback!' : 'Thanks! We will improve this guide.'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
+                      if (_ratedHelpful == null) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GlassSecondaryButton(
+                                height: 34,
+                                onPressed: () {
+                                  setState(() => _ratedHelpful = true);
+                                  widget.onRateHelpful(true);
+                                },
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.thumb_up_alt_rounded, size: 14),
+                                    SizedBox(width: 4),
+                                    Text('Yes', style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: GlassSecondaryButton(
+                                height: 34,
+                                onPressed: () {
+                                  setState(() => _ratedHelpful = false);
+                                  widget.onRateHelpful(false);
+                                },
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.thumb_down_alt_rounded, size: 14),
+                                    SizedBox(width: 4),
+                                    Text('No', style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _ratedHelpful == null
+                            ? 'Was this article helpful?'
+                            : (_ratedHelpful! ? 'Thank you for your feedback!' : 'Thanks! We will improve this guide.'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  GlassSecondaryButton(
-                    height: 34,
-                    onPressed: () {
-                      setState(() => _ratedHelpful = false);
-                      widget.onRateHelpful(false);
-                    },
-                    child: const Row(
-                      children: [
-                        Icon(Icons.thumb_down_alt_rounded, size: 14),
-                        SizedBox(width: 4),
-                        Text('No', style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+                    if (_ratedHelpful == null) ...[
+                      GlassSecondaryButton(
+                        height: 34,
+                        onPressed: () {
+                          setState(() => _ratedHelpful = true);
+                          widget.onRateHelpful(true);
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.thumb_up_alt_rounded, size: 14),
+                            SizedBox(width: 4),
+                            Text('Yes', style: TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GlassSecondaryButton(
+                        height: 34,
+                        onPressed: () {
+                          setState(() => _ratedHelpful = false);
+                          widget.onRateHelpful(false);
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.thumb_down_alt_rounded, size: 14),
+                            SizedBox(width: 4),
+                            Text('No', style: TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
           ),
         ],

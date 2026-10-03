@@ -116,10 +116,18 @@ class PrescriptionsHeader extends StatelessWidget {
                     height: 42,
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.add_rounded, size: 20),
-                        SizedBox(width: 6),
-                        Text('Create Prescription', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        Icon(Icons.add_rounded, size: 18),
+                        SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            'Create Prescription',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ],
                     ),
                   ),

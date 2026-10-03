@@ -184,6 +184,7 @@ class _AddBedModalState extends State<AddBedModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<String>(
+                                      isExpanded: true,
                                       initialValue: _selectedType,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -219,6 +220,7 @@ class _AddBedModalState extends State<AddBedModal> {
                                     ),
                                     const SizedBox(height: 6),
                                     DropdownButtonFormField<int>(
+                                      isExpanded: true,
                                       initialValue: _selectedFloor,
                                       dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                                       style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),
@@ -254,6 +256,7 @@ class _AddBedModalState extends State<AddBedModal> {
                           ),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<BedStatus>(
+                            isExpanded: true,
                             initialValue: _selectedStatus,
                             dropdownColor: isDark ? const Color(0xFF0F2928) : Colors.white,
                             style: TextStyle(color: isDark ? Colors.white : AppTheme.textPrimary),

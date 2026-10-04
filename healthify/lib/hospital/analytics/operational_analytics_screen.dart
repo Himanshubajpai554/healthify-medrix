@@ -177,95 +177,145 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
   }
 
   Widget _buildHeader(bool isDark, bool isDesktop) {
+    final granularityDropdown = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<AnalyticsGranularity>(
+          value: _selectedGranularity,
+          dropdownColor: isDark ? Colors.grey[900] : Colors.white,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+          onChanged: (val) {
+            if (val != null) {
+              setState(() => _selectedGranularity = val);
+              _loadData();
+            }
+          },
+          items: AnalyticsGranularity.values.map((g) => DropdownMenuItem(value: g, child: Text(g.name.toUpperCase()))).toList(),
+        ),
+      ),
+    );
+
+    final dateRangeDropdown = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedDateRange,
+          dropdownColor: isDark ? Colors.grey[900] : Colors.white,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+          onChanged: (val) {
+            if (val != null) {
+              setState(() => _selectedDateRange = val);
+              _loadData();
+            }
+          },
+          items: const [
+            DropdownMenuItem(value: 'Today', child: Text('Today')),
+            DropdownMenuItem(value: '7 Days', child: Text('Last 7 Days')),
+            DropdownMenuItem(value: '30 Days', child: Text('Last 30 Days')),
+            DropdownMenuItem(value: '90 Days', child: Text('Last 90 Days')),
+          ],
+        ),
+      ),
+    );
+
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.all(16),
       decoration: _glassDecoration(isDark),
-      child: Row(
-        children: [
-          const GlassIconContainer(
-            icon: Icons.analytics_rounded,
-            size: 44,
-            iconSize: 24,
-            color: HealthifyGlassTheme.primaryTeal,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: isDesktop
+          ? Row(
               children: [
-                Text(
-                  'HOSPITAL OPERATIONAL ANALYTICS',
-                  style: TextStyle(
-                    fontSize: isDesktop ? 18 : 15,
-                    fontWeight: FontWeight.bold,
-                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                const GlassIconContainer(
+                  icon: Icons.analytics_rounded,
+                  size: 44,
+                  iconSize: 24,
+                  color: HealthifyGlassTheme.primaryTeal,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'HOSPITAL OPERATIONAL ANALYTICS',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
+                      Text(
+                        'Real-Time KPI Metrics, Throughput Velocity & Historical Trends',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: HealthifyGlassTheme.getTextSecondary(isDark),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'Real-Time KPI Metrics, Throughput Velocity & Historical Trends',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: HealthifyGlassTheme.getTextSecondary(isDark),
-                  ),
+                granularityDropdown,
+                const SizedBox(width: 8),
+                dateRangeDropdown,
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const GlassIconContainer(
+                      icon: Icons.analytics_rounded,
+                      size: 40,
+                      iconSize: 22,
+                      color: HealthifyGlassTheme.primaryTeal,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'OPERATIONAL ANALYTICS',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            ),
+                          ),
+                          Text(
+                            'Real-Time KPI Metrics & Trends',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: HealthifyGlassTheme.getTextSecondary(isDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    granularityDropdown,
+                    dateRangeDropdown,
+                  ],
                 ),
               ],
             ),
-          ),
-          // Granularity Selector
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<AnalyticsGranularity>(
-                value: _selectedGranularity,
-                dropdownColor: isDark ? Colors.grey[900] : Colors.white,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() => _selectedGranularity = val);
-                    _loadData();
-                  }
-                },
-                items: AnalyticsGranularity.values.map((g) => DropdownMenuItem(value: g, child: Text(g.name.toUpperCase()))).toList(),
-              ),
-            ),
-          ),
-          // Date Range Dropdown
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedDateRange,
-                dropdownColor: isDark ? Colors.grey[900] : Colors.white,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() => _selectedDateRange = val);
-                    _loadData();
-                  }
-                },
-                items: const [
-                  DropdownMenuItem(value: 'Today', child: Text('Today')),
-                  DropdownMenuItem(value: '7 Days', child: Text('Last 7 Days')),
-                  DropdownMenuItem(value: '30 Days', child: Text('Last 30 Days')),
-                  DropdownMenuItem(value: '90 Days', child: Text('Last 90 Days')),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -276,7 +326,7 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: isDesktop ? 4 : 2,
-      childAspectRatio: isDesktop ? 1.8 : 1.4,
+      childAspectRatio: isDesktop ? 1.8 : 0.95,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
       children: [

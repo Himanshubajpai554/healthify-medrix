@@ -75,205 +75,255 @@ class _TransferEmergencyCaseModalState extends State<TransferEmergencyCaseModal>
   @override
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
+    final isMobileWidth = MediaQuery.of(context).size.width < 540;
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 580),
         child: GlassCard(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    const GlassIconContainer(
-                      icon: Icons.swap_horiz_rounded,
-                      size: 40,
-                      iconSize: 22,
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      const GlassIconContainer(
+                        icon: Icons.swap_horiz_rounded,
+                        size: 40,
+                        iconSize: 22,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Transfer Emergency Case',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Case ID: ${widget.emergencyCase.id} • ${widget.emergencyCase.patientName}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(Icons.close_rounded, color: isDark ? Colors.white70 : const Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Department
+                  Text(
+                    'Destination Department',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : const Color(0xFF475569),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Transfer Emergency Case',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
-                            ),
-                          ),
-                          Text(
-                            'Case ID: ${widget.emergencyCase.id} • ${widget.emergencyCase.patientName}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
+                  ),
+                  const SizedBox(height: 6),
+                  DropdownButtonFormField<String>(
+                    initialValue: _department,
+                    isExpanded: true,
+                    dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                    decoration: _buildInputDecoration(isDark),
+                    items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _department = val);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Ward / Location & Receiving Doctor
+                  if (isMobileWidth) ...[
+                    Text(
+                      'Destination Ward / Bed',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : const Color(0xFF475569),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.close_rounded, color: isDark ? Colors.white70 : const Color(0xFF64748B)),
+                    const SizedBox(height: 6),
+                    DropdownButtonFormField<String>(
+                      initialValue: _ward,
+                      isExpanded: true,
+                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                      decoration: _buildInputDecoration(isDark),
+                      items: _wards.map((w) => DropdownMenuItem(value: w, child: Text(w, overflow: TextOverflow.ellipsis))).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _ward = val);
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Receiving Doctor',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : const Color(0xFF475569),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    DropdownButtonFormField<String>(
+                      initialValue: _doctor,
+                      isExpanded: true,
+                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                      decoration: _buildInputDecoration(isDark),
+                      items: _doctors.map((doc) => DropdownMenuItem(value: doc, child: Text(doc, overflow: TextOverflow.ellipsis))).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _doctor = val);
+                      },
+                    ),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Destination Ward / Bed',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              DropdownButtonFormField<String>(
+                                initialValue: _ward,
+                                isExpanded: true,
+                                dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                                decoration: _buildInputDecoration(isDark),
+                                items: _wards.map((w) => DropdownMenuItem(value: w, child: Text(w, overflow: TextOverflow.ellipsis))).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _ward = val);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Receiving Doctor',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              DropdownButtonFormField<String>(
+                                initialValue: _doctor,
+                                isExpanded: true,
+                                dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                                decoration: _buildInputDecoration(isDark),
+                                items: _doctors.map((doc) => DropdownMenuItem(value: doc, child: Text(doc, overflow: TextOverflow.ellipsis))).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _doctor = val);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 14),
 
-                // Department
-                Text(
-                  'Destination Department',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                  // Reason
+                  Text(
+                    'Reason for Transfer',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : const Color(0xFF475569),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: _department,
-                  dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
-                  decoration: _buildInputDecoration(isDark),
-                  items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _department = val);
-                  },
-                ),
-                const SizedBox(height: 14),
-
-                // Ward / Location
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Destination Ward / Bed',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white70 : const Color(0xFF475569),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          DropdownButtonFormField<String>(
-                            initialValue: _ward,
-                            dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                            style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
-                            decoration: _buildInputDecoration(isDark),
-                            items: _wards.map((w) => DropdownMenuItem(value: w, child: Text(w))).toList(),
-                            onChanged: (val) {
-                              if (val != null) setState(() => _ward = val);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Receiving Doctor',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white70 : const Color(0xFF475569),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          DropdownButtonFormField<String>(
-                            initialValue: _doctor,
-                            dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                            style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
-                            decoration: _buildInputDecoration(isDark),
-                            items: _doctors.map((doc) => DropdownMenuItem(value: doc, child: Text(doc))).toList(),
-                            onChanged: (val) {
-                              if (val != null) setState(() => _doctor = val);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // Reason
-                Text(
-                  'Reason for Transfer',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _reasonController,
+                    style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please enter the reason for transfer.';
+                      }
+                      return null;
+                    },
+                    decoration: _buildInputDecoration(isDark, hint: 'e.g. Requires urgent emergency cardiac catheterization (Primary PCI).'),
                   ),
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _reasonController,
-                  style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter the reason for transfer.';
-                    }
-                    return null;
-                  },
-                  decoration: _buildInputDecoration(isDark, hint: 'e.g. Requires urgent emergency cardiac catheterization (Primary PCI).'),
-                ),
-                const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                // Clinical Handover Notes
-                Text(
-                  'Clinical Handover Notes & Instructions',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                  // Clinical Handover Notes
+                  Text(
+                    'Clinical Handover Notes & Instructions',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : const Color(0xFF475569),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _notesController,
-                  maxLines: 3,
-                  style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
-                  decoration: _buildInputDecoration(isDark, hint: 'e.g. Aspirin 325mg & Clopidogrel 300mg given. Patient continuously monitored on telemetry.'),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _notesController,
+                    maxLines: 3,
+                    style: TextStyle(fontSize: 13, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                    decoration: _buildInputDecoration(isDark, hint: 'e.g. Aspirin 325mg & Clopidogrel 300mg given. Patient continuously monitored on telemetry.'),
+                  ),
+                  const SizedBox(height: 24),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    GlassSecondaryButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      height: 40,
-                      child: const Text('Cancel'),
-                    ),
-                    const SizedBox(width: 12),
-                    GlassPrimaryButton(
-                      onPressed: _submit,
-                      height: 40,
-                      child: const Row(
-                        children: [
-                          Icon(Icons.swap_horiz_rounded, size: 18),
-                          SizedBox(width: 6),
-                          Text('Confirm Transfer'),
-                        ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GlassSecondaryButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        height: 40,
+                        child: const Text('Cancel'),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 12),
+                      GlassPrimaryButton(
+                        onPressed: _submit,
+                        height: 40,
+                        child: const Row(
+                          children: [
+                            Icon(Icons.swap_horiz_rounded, size: 18),
+                            SizedBox(width: 6),
+                            Text('Confirm Transfer'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

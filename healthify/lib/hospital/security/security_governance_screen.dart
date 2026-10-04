@@ -148,7 +148,12 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
             SizedBox(width: 8),
-            Text('Request Break-Glass Access'),
+            Expanded(
+              child: Text(
+                'Request Break-Glass Access',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -245,6 +250,69 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
   }
 
   Widget _buildHeader(bool isDark) {
+    final isDesktop = Responsive.isDesktop(context);
+    if (!isDesktop) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.all(16),
+        decoration: _glassDecoration(isDark),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.security_rounded, color: Colors.indigo, size: 28),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      Text(
+                        'SECURITY, GOVERNANCE & AUDIT LOGGING',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.indigo, borderRadius: BorderRadius.circular(10)),
+                        child: const Text('PHASE 12', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Role-Based Access Control, Permission Matrix, Audit Trail & Break-Glass Governance',
+              style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.warning_amber_rounded, size: 16),
+                label: const Text('Break-Glass Access'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+                onPressed: _showBreakGlassDialog,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.all(16),
@@ -264,13 +332,15 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
                     Text(
                       'SECURITY, GOVERNANCE & AUDIT LOGGING',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
                     ),
-                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: Colors.indigo, borderRadius: BorderRadius.circular(10)),
@@ -285,6 +355,7 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
               ],
             ),
           ),
+          const SizedBox(width: 12),
           ElevatedButton.icon(
             icon: const Icon(Icons.warning_amber_rounded, size: 16),
             label: const Text('Break-Glass Access'),
@@ -306,6 +377,8 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
       decoration: _glassDecoration(isDark),
       child: TabBar(
         controller: _tabController,
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
         indicatorColor: Colors.indigo,
         labelColor: Colors.indigo,
         unselectedLabelColor: HealthifyGlassTheme.getTextSecondary(isDark),
@@ -329,17 +402,38 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(child: _buildKpiCard(isDark, title: 'Audit Events Today', value: '${_auditSummary['todayLogs'] ?? 0}', icon: Icons.history_edu_rounded, color: Colors.blue)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildKpiCard(isDark, title: 'Permission Denials', value: '${_auditSummary['permissionDenials'] ?? 0}', icon: Icons.block_rounded, color: Colors.orange)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildKpiCard(isDark, title: 'Active Security Events', value: '${_securityEvents.where((e) => e.status == "Active").length}', icon: Icons.gpp_maybe_rounded, color: Colors.redAccent)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildKpiCard(isDark, title: 'Break-Glass Overrides', value: '${_breakGlassRequests.length}', icon: Icons.lock_open_rounded, color: Colors.purple)),
-            ],
-          ),
+          if (isDesktop)
+            Row(
+              children: [
+                Expanded(child: _buildKpiCard(isDark, title: 'Audit Events Today', value: '${_auditSummary['todayLogs'] ?? 0}', icon: Icons.history_edu_rounded, color: Colors.blue)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildKpiCard(isDark, title: 'Permission Denials', value: '${_auditSummary['permissionDenials'] ?? 0}', icon: Icons.block_rounded, color: Colors.orange)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildKpiCard(isDark, title: 'Active Security Events', value: '${_securityEvents.where((e) => e.status == "Active").length}', icon: Icons.gpp_maybe_rounded, color: Colors.redAccent)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildKpiCard(isDark, title: 'Break-Glass Overrides', value: '${_breakGlassRequests.length}', icon: Icons.lock_open_rounded, color: Colors.purple)),
+              ],
+            )
+          else
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: _buildKpiCard(isDark, title: 'Audit Events Today', value: '${_auditSummary['todayLogs'] ?? 0}', icon: Icons.history_edu_rounded, color: Colors.blue)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildKpiCard(isDark, title: 'Permission Denials', value: '${_auditSummary['permissionDenials'] ?? 0}', icon: Icons.block_rounded, color: Colors.orange)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _buildKpiCard(isDark, title: 'Active Security Events', value: '${_securityEvents.where((e) => e.status == "Active").length}', icon: Icons.gpp_maybe_rounded, color: Colors.redAccent)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildKpiCard(isDark, title: 'Break-Glass Overrides', value: '${_breakGlassRequests.length}', icon: Icons.lock_open_rounded, color: Colors.purple)),
+                  ],
+                ),
+              ],
+            ),
           const SizedBox(height: 16),
           Text('Recent Security Events', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
           const SizedBox(height: 8),
@@ -378,7 +472,15 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark))),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
               Icon(icon, color: color, size: 20),
             ],
           ),

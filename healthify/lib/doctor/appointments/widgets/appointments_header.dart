@@ -39,8 +39,8 @@ class AppointmentsHeader extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 16 : 24,
-        vertical: isMobile ? 12 : 16,
+        horizontal: isMobile ? 12 : 24,
+        vertical: isMobile ? 8 : 16,
       ),
       decoration: BoxDecoration(
         color: HealthifyGlassTheme.getGlassSurface(isDark, isStrong: true),
@@ -53,6 +53,7 @@ class AppointmentsHeader extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -64,42 +65,45 @@ class AppointmentsHeader extends StatelessWidget {
                   children: [
                     Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 10,
+                      spacing: isMobile ? 6 : 10,
                       runSpacing: 4,
                       children: [
                         Text(
                           'Appointments',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: isMobile ? 20 : 24,
+                            fontSize: isMobile ? 18 : 24,
                             fontWeight: FontWeight.bold,
                             color: HealthifyGlassTheme.getTextPrimary(isDark),
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: HealthifyGlassTheme.primaryTeal.withValues(
-                              alpha: isDark ? 0.22 : 0.12,
+                        if (!isMobile)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
                             ),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
+                            decoration: BoxDecoration(
                               color: HealthifyGlassTheme.primaryTeal.withValues(
-                                alpha: 0.3,
+                                alpha: isDark ? 0.22 : 0.12,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: HealthifyGlassTheme.primaryTeal.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              'Clinical Schedule',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: HealthifyGlassTheme.primaryTeal,
                               ),
                             ),
                           ),
-                          child: const Text(
-                            'Clinical Schedule',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: HealthifyGlassTheme.primaryTeal,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     if (!isMobile) ...[
@@ -118,9 +122,9 @@ class AppointmentsHeader extends StatelessWidget {
 
               // Availability Dropdown Selector
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 8 : 10,
+                  vertical: isMobile ? 3 : 4,
                 ),
                 decoration: BoxDecoration(
                   color: _getStatusBgColor(availabilityStatus, isDark),
@@ -138,26 +142,26 @@ class AppointmentsHeader extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: isMobile ? 6 : 8,
+                        height: isMobile ? 6 : 8,
                         decoration: BoxDecoration(
                           color: _getStatusColor(availabilityStatus),
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: isMobile ? 4 : 6),
                       Text(
                         _getStatusLabel(availabilityStatus),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: isMobile ? 11 : 12,
                           fontWeight: FontWeight.bold,
                           color: _getStatusColor(availabilityStatus),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: isMobile ? 2 : 4),
                       Icon(
                         Icons.arrow_drop_down_rounded,
-                        size: 18,
+                        size: isMobile ? 16 : 18,
                         color: _getStatusColor(availabilityStatus),
                       ),
                     ],
@@ -208,10 +212,13 @@ class AppointmentsHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: isMobile ? 4 : 8),
 
               // Search Button
               IconButton(
+                padding: isMobile ? const EdgeInsets.all(4) : const EdgeInsets.all(8),
+                constraints: isMobile ? const BoxConstraints() : null,
+                iconSize: isMobile ? 20 : 24,
                 icon: Icon(
                   Icons.search_rounded,
                   color: HealthifyGlassTheme.getTextPrimary(isDark),
@@ -224,6 +231,9 @@ class AppointmentsHeader extends StatelessWidget {
               Stack(
                 children: [
                   IconButton(
+                    padding: isMobile ? const EdgeInsets.all(4) : const EdgeInsets.all(8),
+                    constraints: isMobile ? const BoxConstraints() : null,
+                    iconSize: isMobile ? 20 : 24,
                     icon: Icon(
                       Icons.notifications_outlined,
                       color: HealthifyGlassTheme.getTextPrimary(isDark),
@@ -233,23 +243,23 @@ class AppointmentsHeader extends StatelessWidget {
                   ),
                   if (unreadNotificationsCount > 0)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: isMobile ? 2 : 8,
+                      top: isMobile ? 2 : 8,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(3),
                         decoration: const BoxDecoration(
                           color: Colors.redAccent,
                           shape: BoxShape.circle,
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
+                          minWidth: 14,
+                          minHeight: 14,
                         ),
                         child: Text(
                           '$unreadNotificationsCount',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -261,6 +271,9 @@ class AppointmentsHeader extends StatelessWidget {
 
               // Theme Toggle
               IconButton(
+                padding: isMobile ? const EdgeInsets.all(4) : const EdgeInsets.all(8),
+                constraints: isMobile ? const BoxConstraints() : null,
+                iconSize: isMobile ? 20 : 24,
                 icon: Icon(
                   isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                   color: HealthifyGlassTheme.getTextPrimary(isDark),
@@ -268,21 +281,21 @@ class AppointmentsHeader extends StatelessWidget {
                 onPressed: onThemeToggle,
                 tooltip: 'Toggle Theme',
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: isMobile ? 2 : 4),
 
               // Profile Avatar
               InkWell(
                 onTap: onProfileTap,
                 borderRadius: BorderRadius.circular(20),
                 child: CircleAvatar(
-                  radius: 18,
+                  radius: isMobile ? 14 : 18,
                   backgroundColor: HealthifyGlassTheme.primaryTeal,
                   child: Text(
                     doctorName.isNotEmpty ? doctorName[0] : 'D',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: isMobile ? 12 : 14,
                     ),
                   ),
                 ),

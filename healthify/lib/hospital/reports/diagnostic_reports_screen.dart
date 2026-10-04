@@ -283,17 +283,19 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
               child: Column(
                 children: [
                   _buildHeader(isDark, isDesktop),
-                TabBar(
-                  controller: _tabController,
-                  indicatorColor: HealthifyGlassTheme.primaryTeal,
-                  labelColor: HealthifyGlassTheme.primaryTeal,
-                  unselectedLabelColor: HealthifyGlassTheme.getTextSecondary(isDark),
-                  tabs: const [
-                    Tab(icon: Icon(Icons.folder_shared_rounded), text: 'Diagnostic Reports'),
-                    Tab(icon: Icon(Icons.medication_rounded), text: 'Prescription Index'),
-                    Tab(icon: Icon(Icons.history_rounded), text: 'Document Activity Trail'),
-                  ],
-                ),
+                  TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    indicatorColor: HealthifyGlassTheme.primaryTeal,
+                    labelColor: HealthifyGlassTheme.primaryTeal,
+                    unselectedLabelColor: HealthifyGlassTheme.getTextSecondary(isDark),
+                    tabs: const [
+                      Tab(icon: Icon(Icons.folder_shared_rounded), text: 'Diagnostic Reports'),
+                      Tab(icon: Icon(Icons.medication_rounded), text: 'Prescription Index'),
+                      Tab(icon: Icon(Icons.history_rounded), text: 'Document Activity Trail'),
+                    ],
+                  ),
                 Expanded(
                   child: _isLoading
                       ? const MedrixLoadingState(message: 'Loading clinical document repository...')
@@ -327,66 +329,132 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.all(16),
       decoration: _glassDecoration(isDark),
-      child: Row(
-        children: [
-          const GlassIconContainer(
-            icon: Icons.description_rounded,
-            size: 44,
-            iconSize: 24,
-            color: HealthifyGlassTheme.primaryTeal,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: isDesktop
+          ? Row(
               children: [
-                Text(
-                  'CLINICAL DOCUMENT MANAGEMENT',
-                  style: TextStyle(
-                    fontSize: isDesktop ? 18 : 15,
-                    fontWeight: FontWeight.bold,
-                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                const GlassIconContainer(
+                  icon: Icons.description_rounded,
+                  size: 44,
+                  iconSize: 24,
+                  color: HealthifyGlassTheme.primaryTeal,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CLINICAL DOCUMENT MANAGEMENT',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
+                      Text(
+                        'Diagnostic Report Repository & Immutable Prescription Index',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: HealthifyGlassTheme.getTextSecondary(isDark),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'Diagnostic Report Repository & Immutable Prescription Index',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: HealthifyGlassTheme.getTextSecondary(isDark),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<UserRole>(
+                      value: _currentRole,
+                      dropdownColor: isDark ? Colors.grey[900] : Colors.white,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                      onChanged: (role) {
+                        if (role != null) {
+                          setState(() => _currentRole = role);
+                        }
+                      },
+                      items: const [
+                        DropdownMenuItem(value: UserRole.hospitalAdmin, child: Text('Role: Hospital Admin (Metadata Only)')),
+                        DropdownMenuItem(value: UserRole.doctor, child: Text('Role: Doctor (Clinical Access)')),
+                        DropdownMenuItem(value: UserRole.nurse, child: Text('Role: Nurse')),
+                        DropdownMenuItem(value: UserRole.labTechnician, child: Text('Role: Lab Technician')),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const GlassIconContainer(
+                      icon: Icons.description_rounded,
+                      size: 40,
+                      iconSize: 20,
+                      color: HealthifyGlassTheme.primaryTeal,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'CLINICAL DOCUMENT MANAGEMENT',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            ),
+                          ),
+                          Text(
+                            'Diagnostic Report Repository',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: HealthifyGlassTheme.getTextSecondary(isDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<UserRole>(
+                      isExpanded: true,
+                      value: _currentRole,
+                      dropdownColor: isDark ? Colors.grey[900] : Colors.white,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                      onChanged: (role) {
+                        if (role != null) {
+                          setState(() => _currentRole = role);
+                        }
+                      },
+                      items: const [
+                        DropdownMenuItem(value: UserRole.hospitalAdmin, child: Text('Role: Hospital Admin', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: UserRole.doctor, child: Text('Role: Doctor', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: UserRole.nurse, child: Text('Role: Nurse', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: UserRole.labTechnician, child: Text('Role: Lab Tech', overflow: TextOverflow.ellipsis)),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          // Role Switcher Simulator for UI Testing
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<UserRole>(
-                value: _currentRole,
-                dropdownColor: isDark ? Colors.grey[900] : Colors.white,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
-                onChanged: (role) {
-                  if (role != null) {
-                    setState(() => _currentRole = role);
-                  }
-                },
-                items: const [
-                  DropdownMenuItem(value: UserRole.hospitalAdmin, child: Text('Role: Hospital Admin (Metadata Only)')),
-                  DropdownMenuItem(value: UserRole.doctor, child: Text('Role: Doctor (Clinical Access)')),
-                  DropdownMenuItem(value: UserRole.nurse, child: Text('Role: Nurse')),
-                  DropdownMenuItem(value: UserRole.labTechnician, child: Text('Role: Lab Technician')),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -418,17 +486,18 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
     final criticalCount = _reports.where((r) => r.isCritical).length;
     final releasedCount = _reports.where((r) => r.releasedToPatient).length;
 
-    return Padding(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Expanded(child: _buildMetricCard('Total Reports', '${_reports.length}', Icons.description_outlined, Colors.blue, isDark)),
+          SizedBox(width: 160, child: _buildMetricCard('Total Reports', '${_reports.length}', Icons.description_outlined, Colors.blue, isDark)),
           const SizedBox(width: 10),
-          Expanded(child: _buildMetricCard('Pending Review', '$pendingCount', Icons.hourglass_top_rounded, Colors.orange, isDark)),
+          SizedBox(width: 160, child: _buildMetricCard('Pending Review', '$pendingCount', Icons.hourglass_top_rounded, Colors.orange, isDark)),
           const SizedBox(width: 10),
-          Expanded(child: _buildMetricCard('Critical Alerts', '$criticalCount', Icons.warning_amber_rounded, Colors.redAccent, isDark)),
+          SizedBox(width: 160, child: _buildMetricCard('Critical Alerts', '$criticalCount', Icons.warning_amber_rounded, Colors.redAccent, isDark)),
           const SizedBox(width: 10),
-          Expanded(child: _buildMetricCard('Released to Patient', '$releasedCount', Icons.check_circle_outline_rounded, Colors.teal, isDark)),
+          SizedBox(width: 160, child: _buildMetricCard('Released to Patient', '$releasedCount', Icons.check_circle_outline_rounded, Colors.teal, isDark)),
         ],
       ),
     );
@@ -442,13 +511,21 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
         children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(count, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
-              Text(title, style: TextStyle(fontSize: 11, color: HealthifyGlassTheme.getTextSecondary(isDark))),
-            ],
-          )
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(count, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 11, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -678,6 +755,7 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
                         title: Text('Ref: ${p.prescriptionReference} (${p.id})', style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text('Patient: ${p.patientId} • Doctor: ${p.doctorId} • Signed: ${p.signedAt.toString().split(' ')[0]}'),
                         trailing: Column(
+                          mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [

@@ -356,100 +356,176 @@ class _CreateEmergencyCaseModalState extends State<CreateEmergencyCaseModal> {
   }
 
   Widget _buildStep1PatientInfo(bool isDark) {
+    final isMobile = MediaQuery.of(context).size.width < 540;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Patient Intake Profile', Icons.person_outline_rounded, isDark),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                controller: _patientNameController,
-                label: 'Patient Full Name',
-                hint: 'e.g. Rahul Sharma or Unidentified Male',
-                isDark: isDark,
+        if (isMobile) ...[
+          _buildTextField(
+            controller: _patientNameController,
+            label: 'Patient Full Name',
+            hint: 'e.g. Rahul Sharma or Unidentified Male',
+            isDark: isDark,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _patientIdController,
+            label: 'Patient ID',
+            hint: 'MED-PAT-XXXXX',
+            isDark: isDark,
+          ),
+        ] else ...[
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _patientNameController,
+                  label: 'Patient Full Name',
+                  hint: 'e.g. Rahul Sharma or Unidentified Male',
+                  isDark: isDark,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildTextField(
-                controller: _patientIdController,
-                label: 'Patient ID',
-                hint: 'MED-PAT-XXXXX',
-                isDark: isDark,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildTextField(
+                  controller: _patientIdController,
+                  label: 'Patient ID',
+                  hint: 'MED-PAT-XXXXX',
+                  isDark: isDark,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                controller: _patientAgeController,
-                label: 'Age (Years)',
-                hint: 'e.g. 42',
-                keyboardType: TextInputType.number,
-                isDark: isDark,
+        if (isMobile) ...[
+          _buildTextField(
+            controller: _patientAgeController,
+            label: 'Age (Years)',
+            hint: 'e.g. 42',
+            keyboardType: TextInputType.number,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Gender',
+                  value: _patientGender,
+                  items: const ['Male', 'Female', 'Other'],
+                  onChanged: (val) => setState(() => _patientGender = val!),
+                  isDark: isDark,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildDropdown(
-                label: 'Gender',
-                value: _patientGender,
-                items: const ['Male', 'Female', 'Other'],
-                onChanged: (val) => setState(() => _patientGender = val!),
-                isDark: isDark,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Blood Group',
+                  value: _bloodGroup,
+                  items: const ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', 'Unknown'],
+                  onChanged: (val) => setState(() => _bloodGroup = val!),
+                  isDark: isDark,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildDropdown(
-                label: 'Blood Group',
-                value: _bloodGroup,
-                items: const ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', 'Unknown'],
-                onChanged: (val) => setState(() => _bloodGroup = val!),
-                isDark: isDark,
+            ],
+          ),
+        ] else ...[
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _patientAgeController,
+                  label: 'Age (Years)',
+                  hint: 'e.g. 42',
+                  keyboardType: TextInputType.number,
+                  isDark: isDark,
+                ),
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Gender',
+                  value: _patientGender,
+                  items: const ['Male', 'Female', 'Other'],
+                  onChanged: (val) => setState(() => _patientGender = val!),
+                  isDark: isDark,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Blood Group',
+                  value: _bloodGroup,
+                  items: const ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', 'Unknown'],
+                  onChanged: (val) => setState(() => _bloodGroup = val!),
+                  isDark: isDark,
+                ),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 16),
         _buildSectionHeader('Emergency Contact & Allergies', Icons.contact_phone_outlined, isDark),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                controller: _emergencyContactNameController,
-                label: 'Contact Name',
-                hint: 'e.g. Sunita Sharma',
-                isDark: isDark,
+        if (isMobile) ...[
+          _buildTextField(
+            controller: _emergencyContactNameController,
+            label: 'Contact Name',
+            hint: 'e.g. Sunita Sharma',
+            isDark: isDark,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _emergencyContactRelationController,
+            label: 'Relation',
+            hint: 'e.g. Spouse / Parent',
+            isDark: isDark,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _emergencyContactPhoneController,
+            label: 'Contact Phone',
+            hint: '+91 98765 43210',
+            keyboardType: TextInputType.phone,
+            isDark: isDark,
+          ),
+        ] else ...[
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _emergencyContactNameController,
+                  label: 'Contact Name',
+                  hint: 'e.g. Sunita Sharma',
+                  isDark: isDark,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildTextField(
-                controller: _emergencyContactRelationController,
-                label: 'Relation',
-                hint: 'e.g. Spouse / Parent',
-                isDark: isDark,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildTextField(
+                  controller: _emergencyContactRelationController,
+                  label: 'Relation',
+                  hint: 'e.g. Spouse / Parent',
+                  isDark: isDark,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildTextField(
-                controller: _emergencyContactPhoneController,
-                label: 'Contact Phone',
-                hint: '+91 98765 43210',
-                keyboardType: TextInputType.phone,
-                isDark: isDark,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildTextField(
+                  controller: _emergencyContactPhoneController,
+                  label: 'Contact Phone',
+                  hint: '+91 98765 43210',
+                  keyboardType: TextInputType.phone,
+                  isDark: isDark,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
         _buildTextField(
           controller: _allergiesController,
@@ -658,34 +734,54 @@ class _CreateEmergencyCaseModalState extends State<CreateEmergencyCaseModal> {
   }
 
   Widget _buildStep5Assignment(bool isDark) {
+    final isMobile = MediaQuery.of(context).size.width < 540;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Department & Doctor Assignment', Icons.apartment_rounded, isDark),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildDropdown(
-                label: 'Department',
-                value: _department,
-                items: _departments,
-                onChanged: (val) => setState(() => _department = val!),
-                isDark: isDark,
+        if (isMobile) ...[
+          _buildDropdown(
+            label: 'Department',
+            value: _department,
+            items: _departments,
+            onChanged: (val) => setState(() => _department = val!),
+            isDark: isDark,
+          ),
+          const SizedBox(height: 12),
+          _buildDropdown(
+            label: 'Assigned Lead Doctor',
+            value: _assignedDoctor,
+            items: _doctors,
+            onChanged: (val) => setState(() => _assignedDoctor = val!),
+            isDark: isDark,
+          ),
+        ] else ...[
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Department',
+                  value: _department,
+                  items: _departments,
+                  onChanged: (val) => setState(() => _department = val!),
+                  isDark: isDark,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildDropdown(
-                label: 'Assigned Lead Doctor',
-                value: _assignedDoctor,
-                items: _doctors,
-                onChanged: (val) => setState(() => _assignedDoctor = val!),
-                isDark: isDark,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDropdown(
+                  label: 'Assigned Lead Doctor',
+                  value: _assignedDoctor,
+                  items: _doctors,
+                  onChanged: (val) => setState(() => _assignedDoctor = val!),
+                  isDark: isDark,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
         const SizedBox(height: 16),
         _buildTextField(
           controller: _locationController,
@@ -884,6 +980,7 @@ class _CreateEmergencyCaseModalState extends State<CreateEmergencyCaseModal> {
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           initialValue: value,
+          isExpanded: true,
           dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           style: TextStyle(
             fontSize: 13,
@@ -906,7 +1003,7 @@ class _CreateEmergencyCaseModalState extends State<CreateEmergencyCaseModal> {
               borderSide: const BorderSide(color: Color(0xFF0D9488), width: 1.5),
             ),
           ),
-          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
           onChanged: onChanged,
         ),
       ],

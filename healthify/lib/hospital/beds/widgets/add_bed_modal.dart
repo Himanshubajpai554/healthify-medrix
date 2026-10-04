@@ -105,24 +105,29 @@ class _AddBedModalState extends State<AddBedModal> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const GlassIconContainer(
-                            icon: Icons.add_location_alt_outlined,
-                            color: AppTheme.primaryColor,
-                            size: 38,
-                            iconSize: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Add New Bed Unit',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : AppTheme.textPrimary,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const GlassIconContainer(
+                              icon: Icons.add_location_alt_outlined,
+                              color: AppTheme.primaryColor,
+                              size: 38,
+                              iconSize: 20,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Add New Bed Unit',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : AppTheme.textPrimary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         icon: Icon(Icons.close_rounded, color: isDark ? Colors.white70 : AppTheme.textSecondary),

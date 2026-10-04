@@ -167,8 +167,11 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,6 +195,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                 height: 42,
                 onPressed: () => _showAddStaffModal(),
                 child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.person_add_rounded, size: 18),
                     SizedBox(width: 6),
@@ -354,7 +358,17 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(staff.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+                  Expanded(
+                    child: Text(
+                      staff.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: HealthifyGlassTheme.getTextPrimary(isDark),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 18),
                     onPressed: () => _showAddStaffModal(staff),

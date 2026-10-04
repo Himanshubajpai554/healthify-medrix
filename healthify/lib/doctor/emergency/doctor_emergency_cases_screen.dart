@@ -3,7 +3,6 @@ import '../../shared/widgets/glass_components.dart';
 import '../models/doctor_dashboard_models.dart';
 import '../models/emergency_models.dart';
 import '../services/doctor_emergency_service.dart';
-import '../widgets/doctor_header.dart';
 import '../widgets/doctor_sidebar.dart';
 import 'widgets/create_emergency_case_modal.dart';
 import 'widgets/emergency_case_detail_drawer.dart';
@@ -17,16 +16,15 @@ import 'widgets/update_emergency_status_modal.dart';
 
 class DoctorEmergencyCasesScreen extends StatefulWidget {
   final bool embedInDashboard;
-  const DoctorEmergencyCasesScreen({
-    super.key,
-    this.embedInDashboard = false,
-  });
+  const DoctorEmergencyCasesScreen({super.key, this.embedInDashboard = false});
 
   @override
-  State<DoctorEmergencyCasesScreen> createState() => _DoctorEmergencyCasesScreenState();
+  State<DoctorEmergencyCasesScreen> createState() =>
+      _DoctorEmergencyCasesScreenState();
 }
 
-class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen> {
+class _DoctorEmergencyCasesScreenState
+    extends State<DoctorEmergencyCasesScreen> {
   final DoctorEmergencyService _emergencyService = DoctorEmergencyService();
 
   List<DoctorEmergencyCaseFullModel> _allCases = [];
@@ -35,7 +33,8 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
 
   // Filter & Search state
   String _searchQuery = '';
-  String _activeSummaryFilter = 'all'; // 'all', 'active', 'critical', 'waiting', 'inTreatment', 'resolvedToday'
+  String _activeSummaryFilter =
+      'all'; // 'all', 'active', 'critical', 'waiting', 'inTreatment', 'resolvedToday'
   EmergencyCaseStatus? _selectedStatus;
   EmergencyOperationalPriority? _selectedPriority;
   String? _selectedDepartment;
@@ -74,19 +73,37 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     // Summary Card Filter
     switch (_activeSummaryFilter) {
       case 'active':
-        result = result.where((c) => c.status != EmergencyCaseStatus.resolved && c.status != EmergencyCaseStatus.cancelled).toList();
+        result = result
+            .where(
+              (c) =>
+                  c.status != EmergencyCaseStatus.resolved &&
+                  c.status != EmergencyCaseStatus.cancelled,
+            )
+            .toList();
         break;
       case 'critical':
-        result = result.where((c) => c.priority == EmergencyOperationalPriority.immediate && c.status != EmergencyCaseStatus.resolved).toList();
+        result = result
+            .where(
+              (c) =>
+                  c.priority == EmergencyOperationalPriority.immediate &&
+                  c.status != EmergencyCaseStatus.resolved,
+            )
+            .toList();
         break;
       case 'waiting':
-        result = result.where((c) => c.status == EmergencyCaseStatus.waiting).toList();
+        result = result
+            .where((c) => c.status == EmergencyCaseStatus.waiting)
+            .toList();
         break;
       case 'inTreatment':
-        result = result.where((c) => c.status == EmergencyCaseStatus.inTreatment).toList();
+        result = result
+            .where((c) => c.status == EmergencyCaseStatus.inTreatment)
+            .toList();
         break;
       case 'resolvedToday':
-        result = result.where((c) => c.status == EmergencyCaseStatus.resolved).toList();
+        result = result
+            .where((c) => c.status == EmergencyCaseStatus.resolved)
+            .toList();
         break;
       case 'all':
       default:
@@ -105,12 +122,16 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
 
     // Department Filter
     if (_selectedDepartment != null) {
-      result = result.where((c) => c.department == _selectedDepartment).toList();
+      result = result
+          .where((c) => c.department == _selectedDepartment)
+          .toList();
     }
 
     // Doctor Filter
     if (_selectedDoctor != null) {
-      result = result.where((c) => c.assignedDoctor == _selectedDoctor).toList();
+      result = result
+          .where((c) => c.assignedDoctor == _selectedDoctor)
+          .toList();
     }
 
     // Search Query Filter
@@ -154,7 +175,9 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     }
 
     return Scaffold(
-      backgroundColor: isDark ? HealthifyGlassTheme.darkBackground : const Color(0xFFF8FAFC),
+      backgroundColor: isDark
+          ? HealthifyGlassTheme.darkBackground
+          : const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Row(
           children: [
@@ -168,42 +191,28 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
                   setState(() => _isSidebarExpanded = !_isSidebarExpanded);
                 },
                 availabilityStatus: DoctorAvailability.available,
-                onLogout: () => Navigator.pushReplacementNamed(context, '/portal-select'),
-                onRoleSwitcherTap: () => Navigator.pushReplacementNamed(context, '/portal-select'),
+                onLogout: () =>
+                    Navigator.pushReplacementNamed(context, '/portal-select'),
+                onRoleSwitcherTap: () =>
+                    Navigator.pushReplacementNamed(context, '/portal-select'),
               ),
 
             // Main Content Area
             Expanded(
-              child: Column(
-                children: [
-                  // Doctor Header
-                  DoctorHeader(
-                    doctorName: 'Dr. Sarah Jenkins',
-                    title: 'Emergency Workspace',
-                    subtitle: 'Real-Time Acute Triage & Critical Alerts',
-                    availabilityStatus: DoctorAvailability.available,
-                    onAvailabilityChanged: (_) {},
-                    onNotificationTap: () {},
-                    onSearchTap: () {},
-                    onProfileTap: () {},
-                    onThemeToggle: () {},
-                    unreadNotificationsCount: 3,
-                  ),
-
-                  // Workspace Body
-                  Expanded(
-                    child: _isLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: HealthifyGlassTheme.primaryTeal,
-                            ),
-                          )
-                        : isDesktop
-                            ? _buildDesktopLayout(context, isDark, metrics)
-                            : _buildMobileTabletLayout(context, isDark, metrics, isMobile),
-                  ),
-                ],
-              ),
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: HealthifyGlassTheme.primaryTeal,
+                      ),
+                    )
+                  : isDesktop
+                  ? _buildDesktopLayout(context, isDark, metrics)
+                  : _buildMobileTabletLayout(
+                      context,
+                      isDark,
+                      metrics,
+                      isMobile,
+                    ),
             ),
           ],
         ),
@@ -248,7 +257,8 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
                   inTreatmentCount: metrics['inTreatment'] ?? 0,
                   resolvedTodayCount: metrics['resolvedToday'] ?? 0,
                   selectedStatusFilter: _selectedStatus,
-                  onStatusFilterSelected: (st) => setState(() => _selectedStatus = st),
+                  onStatusFilterSelected: (st) =>
+                      setState(() => _selectedStatus = st),
                 ),
                 const SizedBox(height: 20),
 
@@ -257,12 +267,15 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
                   selectedStatus: _selectedStatus,
                   onStatusChanged: (st) => setState(() => _selectedStatus = st),
                   selectedPriority: _selectedPriority,
-                  onPriorityChanged: (p) => setState(() => _selectedPriority = p),
+                  onPriorityChanged: (p) =>
+                      setState(() => _selectedPriority = p),
                   selectedDepartment: _selectedDepartment,
-                  onDepartmentChanged: (dept) => setState(() => _selectedDepartment = dept),
+                  onDepartmentChanged: (dept) =>
+                      setState(() => _selectedDepartment = dept),
                   availableDepartments: _availableDepartments,
                   selectedDoctor: _selectedDoctor,
-                  onDoctorChanged: (doc) => setState(() => _selectedDoctor = doc),
+                  onDoctorChanged: (doc) =>
+                      setState(() => _selectedDoctor = doc),
                   availableDoctors: _availableDoctors,
                   onResetFilters: _resetFilters,
                 ),
@@ -275,9 +288,12 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
                   onSelectCase: (caseModel) {
                     setState(() => _selectedCase = caseModel);
                   },
-                  onUpdateStatus: (caseModel) => _openUpdateStatusModal(context, caseModel),
-                  onTransferCase: (caseModel) => _openTransferModal(context, caseModel),
-                  onResolveCase: (caseModel) => _openResolveModal(context, caseModel),
+                  onUpdateStatus: (caseModel) =>
+                      _openUpdateStatusModal(context, caseModel),
+                  onTransferCase: (caseModel) =>
+                      _openTransferModal(context, caseModel),
+                  onResolveCase: (caseModel) =>
+                      _openResolveModal(context, caseModel),
                 ),
               ],
             ),
@@ -300,14 +316,21 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
               child: EmergencyCaseDetailDrawer(
                 emergencyCase: _selectedCase!,
                 onClose: () => setState(() => _selectedCase = null),
-                onStartConsultation: () => _handleStartConsultation(_selectedCase!),
+                onStartConsultation: () =>
+                    _handleStartConsultation(_selectedCase!),
                 onAddNotePressed: () {},
-                onUpdateStatusPressed: () => _openUpdateStatusModal(context, _selectedCase!),
-                onTransferPressed: () => _openTransferModal(context, _selectedCase!),
-                onResolvePressed: () => _openResolveModal(context, _selectedCase!),
-                onSaveObservations: (obs) => _handleAddObservation(_selectedCase!.id, obs),
-                onSaveNote: (type, content, isPrivate) => _handleAddNote(_selectedCase!.id, type, content, isPrivate),
-                onCreatePrescription: () => Navigator.pushNamed(context, '/doctor-prescriptions'),
+                onUpdateStatusPressed: () =>
+                    _openUpdateStatusModal(context, _selectedCase!),
+                onTransferPressed: () =>
+                    _openTransferModal(context, _selectedCase!),
+                onResolvePressed: () =>
+                    _openResolveModal(context, _selectedCase!),
+                onSaveObservations: (obs) =>
+                    _handleAddObservation(_selectedCase!.id, obs),
+                onSaveNote: (type, content, isPrivate) =>
+                    _handleAddNote(_selectedCase!.id, type, content, isPrivate),
+                onCreatePrescription: () =>
+                    Navigator.pushNamed(context, '/doctor-prescriptions'),
               ),
             ),
           ),
@@ -344,7 +367,8 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
             inTreatmentCount: metrics['inTreatment'] ?? 0,
             resolvedTodayCount: metrics['resolvedToday'] ?? 0,
             selectedStatusFilter: _selectedStatus,
-            onStatusFilterSelected: (st) => setState(() => _selectedStatus = st),
+            onStatusFilterSelected: (st) =>
+                setState(() => _selectedStatus = st),
           ),
           const SizedBox(height: 16),
 
@@ -354,7 +378,8 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
             selectedPriority: _selectedPriority,
             onPriorityChanged: (p) => setState(() => _selectedPriority = p),
             selectedDepartment: _selectedDepartment,
-            onDepartmentChanged: (dept) => setState(() => _selectedDepartment = dept),
+            onDepartmentChanged: (dept) =>
+                setState(() => _selectedDepartment = dept),
             availableDepartments: _availableDepartments,
             selectedDoctor: _selectedDoctor,
             onDoctorChanged: (doc) => setState(() => _selectedDoctor = doc),
@@ -366,9 +391,12 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
           EmergencyTableView(
             cases: filtered,
             selectedCaseId: _selectedCase?.id,
-            onSelectCase: (caseModel) => _openMobileDetailBottomSheet(context, caseModel),
-            onUpdateStatus: (caseModel) => _openUpdateStatusModal(context, caseModel),
-            onTransferCase: (caseModel) => _openTransferModal(context, caseModel),
+            onSelectCase: (caseModel) =>
+                _openMobileDetailBottomSheet(context, caseModel),
+            onUpdateStatus: (caseModel) =>
+                _openUpdateStatusModal(context, caseModel),
+            onTransferCase: (caseModel) =>
+                _openTransferModal(context, caseModel),
             onResolveCase: (caseModel) => _openResolveModal(context, caseModel),
           ),
         ],
@@ -376,7 +404,10 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     );
   }
 
-  void _openMobileDetailBottomSheet(BuildContext context, DoctorEmergencyCaseFullModel caseModel) {
+  void _openMobileDetailBottomSheet(
+    BuildContext context,
+    DoctorEmergencyCaseFullModel caseModel,
+  ) {
     setState(() => _selectedCase = caseModel);
     showModalBottomSheet(
       context: context,
@@ -390,7 +421,9 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
               color: HealthifyGlassTheme.isDarkMode(context)
                   ? const Color(0xFF0F172A)
                   : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: EmergencyCaseDetailDrawer(
               emergencyCase: caseModel,
@@ -412,8 +445,10 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
                 Navigator.of(bContext).pop();
                 _openResolveModal(context, caseModel);
               },
-              onSaveObservations: (obs) => _handleAddObservation(caseModel.id, obs),
-              onSaveNote: (type, content, isPrivate) => _handleAddNote(caseModel.id, type, content, isPrivate),
+              onSaveObservations: (obs) =>
+                  _handleAddObservation(caseModel.id, obs),
+              onSaveNote: (type, content, isPrivate) =>
+                  _handleAddNote(caseModel.id, type, content, isPrivate),
               onCreatePrescription: () {
                 Navigator.of(bContext).pop();
                 Navigator.pushNamed(context, '/doctor-prescriptions');
@@ -437,7 +472,11 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
             if (!mounted) return;
             setState(() => _selectedCase = newCase);
             messenger.showSnackBar(
-              SnackBar(content: Text('Emergency Case ${newCase.id} registered successfully.')),
+              SnackBar(
+                content: Text(
+                  'Emergency Case ${newCase.id} registered successfully.',
+                ),
+              ),
             );
           },
         );
@@ -445,7 +484,10 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     );
   }
 
-  void _openUpdateStatusModal(BuildContext context, DoctorEmergencyCaseFullModel caseModel) {
+  void _openUpdateStatusModal(
+    BuildContext context,
+    DoctorEmergencyCaseFullModel caseModel,
+  ) {
     final messenger = ScaffoldMessenger.of(context);
     showDialog(
       context: context,
@@ -462,7 +504,11 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
             await _loadCases();
             if (!mounted) return;
             messenger.showSnackBar(
-              SnackBar(content: Text('Case ${caseModel.id} status updated to ${newStatus.label}.')),
+              SnackBar(
+                content: Text(
+                  'Case ${caseModel.id} status updated to ${newStatus.label}.',
+                ),
+              ),
             );
           },
         );
@@ -470,7 +516,10 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     );
   }
 
-  void _openTransferModal(BuildContext context, DoctorEmergencyCaseFullModel caseModel) {
+  void _openTransferModal(
+    BuildContext context,
+    DoctorEmergencyCaseFullModel caseModel,
+  ) {
     final messenger = ScaffoldMessenger.of(context);
     showDialog(
       context: context,
@@ -485,7 +534,11 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
             await _loadCases();
             if (!mounted) return;
             messenger.showSnackBar(
-              SnackBar(content: Text('Case ${caseModel.id} transferred to ${transferInfo.transferredToDepartment}.')),
+              SnackBar(
+                content: Text(
+                  'Case ${caseModel.id} transferred to ${transferInfo.transferredToDepartment}.',
+                ),
+              ),
             );
           },
         );
@@ -493,7 +546,10 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     );
   }
 
-  void _openResolveModal(BuildContext context, DoctorEmergencyCaseFullModel caseModel) {
+  void _openResolveModal(
+    BuildContext context,
+    DoctorEmergencyCaseFullModel caseModel,
+  ) {
     final messenger = ScaffoldMessenger.of(context);
     showDialog(
       context: context,
@@ -508,7 +564,11 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
             await _loadCases();
             if (!mounted) return;
             messenger.showSnackBar(
-              SnackBar(content: Text('Case ${caseModel.id} resolved (${resolutionInfo.disposition.label}).')),
+              SnackBar(
+                content: Text(
+                  'Case ${caseModel.id} resolved (${resolutionInfo.disposition.label}).',
+                ),
+              ),
             );
           },
         );
@@ -516,7 +576,9 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     );
   }
 
-  Future<void> _handleStartConsultation(DoctorEmergencyCaseFullModel caseModel) async {
+  Future<void> _handleStartConsultation(
+    DoctorEmergencyCaseFullModel caseModel,
+  ) async {
     final consultationId = 'CON-EMR-${1000 + DateTime.now().millisecond}';
     await _emergencyService.startEmergencyConsultation(
       caseId: caseModel.id,
@@ -525,10 +587,15 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     );
     await _loadCases();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Emergency consultation $consultationId started.')),
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    await Navigator.pushNamed(context, '/doctor-consultation');
+    if (!mounted) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('Emergency consultation $consultationId started.'),
+      ),
     );
-    Navigator.pushNamed(context, '/doctor-consultation');
   }
 
   Future<void> _handleAddNote(
@@ -549,7 +616,10 @@ class _DoctorEmergencyCasesScreenState extends State<DoctorEmergencyCasesScreen>
     await _loadCases();
   }
 
-  Future<void> _handleAddObservation(String caseId, EmergencyObservationsModel obs) async {
+  Future<void> _handleAddObservation(
+    String caseId,
+    EmergencyObservationsModel obs,
+  ) async {
     await _emergencyService.addEmergencyObservation(caseId: caseId, obs: obs);
     await _loadCases();
   }

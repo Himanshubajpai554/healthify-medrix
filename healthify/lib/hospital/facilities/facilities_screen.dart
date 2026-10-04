@@ -319,13 +319,16 @@ class _FacilitiesScreenState extends State<FacilitiesScreen> {
     return GlassCard(
       padding: const EdgeInsets.all(6),
       borderRadius: 14,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildTabButton(context, 0, 'Facilities & Services', Icons.business_rounded),
-          const SizedBox(width: 8),
-          _buildTabButton(context, 1, 'Equipment & Maintenance', Icons.medical_services_outlined),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTabButton(context, 0, 'Facilities & Services', Icons.business_rounded),
+            const SizedBox(width: 8),
+            _buildTabButton(context, 1, 'Equipment & Maintenance', Icons.medical_services_outlined),
+          ],
+        ),
       ),
     );
   }

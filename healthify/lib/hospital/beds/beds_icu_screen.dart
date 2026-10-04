@@ -25,7 +25,7 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
   String _tableStatusFilter = 'All';
   String _tableTypeFilter = 'All';
   String _chartTrendFilter = '24H';
-  
+
   // What-If Simulator State
   int _simulatedEmergencyPatients = 0;
   bool _simulateDischarges = false;
@@ -64,11 +64,15 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
         _beds = fetchedBeds;
         _wardsList = fetchedWards;
         _activities = fetchedActivities;
-        _uiState = fetchedBeds.isEmpty ? UiState.empty() : UiState.success(fetchedBeds);
+        _uiState = fetchedBeds.isEmpty
+            ? UiState.empty()
+            : UiState.success(fetchedBeds);
       });
     } catch (e) {
       setState(() {
-        _uiState = UiState.error('Failed to load bed management data: ${e.toString()}');
+        _uiState = UiState.error(
+          'Failed to load bed management data: ${e.toString()}',
+        );
       });
     }
   }
@@ -106,13 +110,24 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
   // Filtered Bed List for Inventory Table
   List<BedItem> get _filteredTableBeds {
     return _beds.where((bed) {
-      final matchesSearch = bed.id.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+      final matchesSearch =
+          bed.id.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           bed.type.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (bed.patientId != null && bed.patientId!.toLowerCase().contains(_searchQuery.toLowerCase()));
-      
-      final matchesWard = _selectedWardFilter == 'All' || bed.type == _selectedWardFilter || bed.ward == _selectedWardFilter;
-      final matchesStatus = _tableStatusFilter == 'All' || bed.status.name.toLowerCase() == _tableStatusFilter.toLowerCase();
-      final matchesType = _tableTypeFilter == 'All' || bed.type.toLowerCase() == _tableTypeFilter.toLowerCase();
+          (bed.patientId != null &&
+              bed.patientId!.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ));
+
+      final matchesWard =
+          _selectedWardFilter == 'All' ||
+          bed.type == _selectedWardFilter ||
+          bed.ward == _selectedWardFilter;
+      final matchesStatus =
+          _tableStatusFilter == 'All' ||
+          bed.status.name.toLowerCase() == _tableStatusFilter.toLowerCase();
+      final matchesType =
+          _tableTypeFilter == 'All' ||
+          bed.type.toLowerCase() == _tableTypeFilter.toLowerCase();
 
       return matchesSearch && matchesWard && matchesStatus && matchesType;
     }).toList();
@@ -122,7 +137,10 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
   double get _simulatedOccupancyPercentage {
     int baseOccupied = 198;
     int baseTotal = 250;
-    int netOccupied = baseOccupied + _simulatedEmergencyPatients - (_simulateDischarges ? 5 : 0);
+    int netOccupied =
+        baseOccupied +
+        _simulatedEmergencyPatients -
+        (_simulateDischarges ? 5 : 0);
     if (netOccupied < 0) netOccupied = 0;
     return (netOccupied / baseTotal) * 100;
   }
@@ -151,100 +169,168 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   const SizedBox(height: 24),
 
                   if (_uiState.isLoading)
-                    const MedrixLoadingState(message: 'Loading bed & ICU management data...')
+                    const MedrixLoadingState(
+                      message: 'Loading bed & ICU management data...',
+                    )
                   else if (_uiState.isError)
                     MedrixErrorState(
-                      errorMessage: _uiState.errorMessage ?? 'Error loading beds',
+                      errorMessage:
+                          _uiState.errorMessage ?? 'Error loading beds',
                       onRetry: _loadBedData,
                     )
                   else ...[
                     // 2. CAPACITY SUMMARY CARDS
-                    _buildCapacitySummaryCards(isMobile, isTablet, textColor, secondaryTextColor),
-                    const SizedBox(height: 24),
-
-                  // 3. OVERALL HOSPITAL CAPACITY CARD
-                  _buildOverallCapacityCard(isMobile, textColor, secondaryTextColor),
-                  const SizedBox(height: 24),
-
-                  // 4. WARD CAPACITY & LIVE ACTIVITY
-                  if (isMobile) ...[
-                    _buildWardCapacityCard(textColor, secondaryTextColor),
-                    const SizedBox(height: 24),
-                    _buildLiveActivityCard(textColor, secondaryTextColor),
-                  ] else ...[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 3, child: _buildWardCapacityCard(textColor, secondaryTextColor)),
-                        const SizedBox(width: 24),
-                        Expanded(flex: 2, child: _buildLiveActivityCard(textColor, secondaryTextColor)),
-                      ],
+                    _buildCapacitySummaryCards(
+                      isMobile,
+                      isTablet,
+                      textColor,
+                      secondaryTextColor,
                     ),
-                  ],
-                  const SizedBox(height: 24),
-
-                  // 5. INTERACTIVE BED MAP
-                  _buildInteractiveBedMap(isMobile, textColor, secondaryTextColor),
-                  const SizedBox(height: 24),
-
-                  // 6. BED INVENTORY TABLE
-                  _buildBedInventoryTable(isMobile, textColor, secondaryTextColor),
-                  const SizedBox(height: 24),
-
-                  // 7. CRITICAL EQUIPMENT & TURNAROUND ANALYTICS
-                  if (isMobile) ...[
-                    _buildCriticalEquipmentCard(textColor, secondaryTextColor),
                     const SizedBox(height: 24),
-                    _buildBedTurnaroundCard(textColor, secondaryTextColor),
-                  ] else ...[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _buildCriticalEquipmentCard(textColor, secondaryTextColor)),
-                        const SizedBox(width: 24),
-                        Expanded(child: _buildBedTurnaroundCard(textColor, secondaryTextColor)),
-                      ],
+
+                    // 3. OVERALL HOSPITAL CAPACITY CARD
+                    _buildOverallCapacityCard(
+                      isMobile,
+                      textColor,
+                      secondaryTextColor,
                     ),
-                  ],
-                  const SizedBox(height: 24),
-
-                  // 8. OCCUPANCY TREND CHART
-                  _buildOccupancyTrendCard(textColor, secondaryTextColor),
-                  const SizedBox(height: 24),
-
-                  // 9. AI CAPACITY FORECAST & WHAT-IF SIMULATOR
-                  if (isMobile) ...[
-                    _buildAiForecastCard(textColor, secondaryTextColor),
                     const SizedBox(height: 24),
-                    _buildWhatIfSimulatorCard(textColor, secondaryTextColor),
-                  ] else ...[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _buildAiForecastCard(textColor, secondaryTextColor)),
-                        const SizedBox(width: 24),
-                        Expanded(child: _buildWhatIfSimulatorCard(textColor, secondaryTextColor)),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: 24),
 
-                  // 10. CAPACITY ALERTS & PATIENT APP GOVERNANCE
-                  if (isMobile) ...[
-                    _buildCapacityAlertsCard(textColor, secondaryTextColor),
+                    // 4. WARD CAPACITY & LIVE ACTIVITY
+                    if (isMobile) ...[
+                      _buildWardCapacityCard(textColor, secondaryTextColor),
+                      const SizedBox(height: 24),
+                      _buildLiveActivityCard(textColor, secondaryTextColor),
+                    ] else ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: _buildWardCapacityCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            flex: 2,
+                            child: _buildLiveActivityCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 24),
-                    _buildPatientAppGovernanceCard(textColor, secondaryTextColor),
-                  ] else ...[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _buildCapacityAlertsCard(textColor, secondaryTextColor)),
-                        const SizedBox(width: 24),
-                        Expanded(child: _buildPatientAppGovernanceCard(textColor, secondaryTextColor)),
-                      ],
+
+                    // 5. INTERACTIVE BED MAP
+                    _buildInteractiveBedMap(
+                      isMobile,
+                      textColor,
+                      secondaryTextColor,
                     ),
+                    const SizedBox(height: 24),
+
+                    // 6. BED INVENTORY TABLE
+                    _buildBedInventoryTable(
+                      isMobile,
+                      textColor,
+                      secondaryTextColor,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 7. CRITICAL EQUIPMENT & TURNAROUND ANALYTICS
+                    if (isMobile) ...[
+                      _buildCriticalEquipmentCard(
+                        textColor,
+                        secondaryTextColor,
+                      ),
+                      const SizedBox(height: 24),
+                      _buildBedTurnaroundCard(textColor, secondaryTextColor),
+                    ] else ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildCriticalEquipmentCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: _buildBedTurnaroundCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+
+                    // 8. OCCUPANCY TREND CHART
+                    _buildOccupancyTrendCard(textColor, secondaryTextColor),
+                    const SizedBox(height: 24),
+
+                    // 9. AI CAPACITY FORECAST & WHAT-IF SIMULATOR
+                    if (isMobile) ...[
+                      _buildAiForecastCard(textColor, secondaryTextColor),
+                      const SizedBox(height: 24),
+                      _buildWhatIfSimulatorCard(textColor, secondaryTextColor),
+                    ] else ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildAiForecastCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: _buildWhatIfSimulatorCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+
+                    // 10. CAPACITY ALERTS & PATIENT APP GOVERNANCE
+                    if (isMobile) ...[
+                      _buildCapacityAlertsCard(textColor, secondaryTextColor),
+                      const SizedBox(height: 24),
+                      _buildPatientAppGovernanceCard(
+                        textColor,
+                        secondaryTextColor,
+                      ),
+                    ] else ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildCapacityAlertsCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: _buildPatientAppGovernanceCard(
+                              textColor,
+                              secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
-                ],
                   const SizedBox(height: 40),
                 ],
               ),
@@ -289,14 +375,22 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
   // SECTION BUILDERS
   // ==========================================
 
-  Widget _buildPageHeader(bool isMobile, Color textColor, Color secondaryTextColor) {
+  Widget _buildPageHeader(
+    bool isMobile,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
     return isMobile
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Beds & ICU Management',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -319,7 +413,13 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                       children: [
                         Icon(Icons.add, size: 18, color: Colors.white),
                         SizedBox(width: 6),
-                        Text('+ Add Bed', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        Text(
+                          '+ Add Bed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -336,7 +436,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   children: [
                     Text(
                       'Beds & ICU Management',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: textColor),
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -358,7 +462,13 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                       children: [
                         Icon(Icons.add, size: 18, color: Colors.white),
                         SizedBox(width: 6),
-                        Text('Add Bed', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Add Bed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -374,7 +484,9 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+        ),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
@@ -383,29 +495,92 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
           SizedBox(width: 8),
           Text(
             'Live • Last updated 2 min ago',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF10B981)),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF10B981),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCapacitySummaryCards(bool isMobile, bool isTablet, Color textColor, Color secondaryTextColor) {
+  Widget _buildCapacitySummaryCards(
+    bool isMobile,
+    bool isTablet,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
     int crossAxisCount = isMobile ? 2 : (isTablet ? 3 : 5);
-    
+
     final cardsData = [
-      {'title': 'Total Beds', 'count': '250', 'icon': Icons.king_bed_outlined, 'color': AppTheme.primaryColor, 'sub': '100% capacity'},
-      {'title': 'Available', 'count': '42', 'icon': Icons.check_circle_outline, 'color': const Color(0xFF10B981), 'sub': '16.8% open'},
-      {'title': 'Occupied', 'count': '198', 'icon': Icons.hotel_rounded, 'color': const Color(0xFFEF4444), 'sub': '79.2% filled'},
-      {'title': 'Reserved', 'count': '10', 'icon': Icons.bookmark_border_rounded, 'color': const Color(0xFFF59E0B), 'sub': 'Pending admissions'},
-      {'title': 'Maintenance', 'count': '4', 'icon': Icons.build_circle_outlined, 'color': const Color(0xFF6B7280), 'sub': 'Under repair'},
+      {
+        'title': 'Total Beds',
+        'count': '250',
+        'icon': Icons.king_bed_outlined,
+        'color': AppTheme.primaryColor,
+        'sub': '100% capacity',
+      },
+      {
+        'title': 'Available',
+        'count': '42',
+        'icon': Icons.check_circle_outline,
+        'color': const Color(0xFF10B981),
+        'sub': '16.8% open',
+      },
+      {
+        'title': 'Occupied',
+        'count': '198',
+        'icon': Icons.hotel_rounded,
+        'color': const Color(0xFFEF4444),
+        'sub': '79.2% filled',
+      },
+      {
+        'title': 'Reserved',
+        'count': '10',
+        'icon': Icons.bookmark_border_rounded,
+        'color': const Color(0xFFF59E0B),
+        'sub': 'Pending admissions',
+      },
+      {
+        'title': 'Maintenance',
+        'count': '4',
+        'icon': Icons.build_circle_outlined,
+        'color': const Color(0xFF6B7280),
+        'sub': 'Under repair',
+      },
     ];
 
     final icuCardsData = [
-      {'title': 'ICU Total', 'count': '30', 'icon': Icons.local_hospital_outlined, 'color': AppTheme.primaryColor, 'sub': 'Specialized care'},
-      {'title': 'ICU Available', 'count': '4', 'icon': Icons.check_circle, 'color': const Color(0xFF10B981), 'sub': '13.3% open'},
-      {'title': 'ICU Occupied', 'count': '26', 'icon': Icons.hotel, 'color': const Color(0xFFEF4444), 'sub': '86.7% occupied'},
-      {'title': 'ICU Utilization', 'count': '87%', 'icon': Icons.speed_rounded, 'color': const Color(0xFFF59E0B), 'sub': 'High Utilization'},
+      {
+        'title': 'ICU Total',
+        'count': '30',
+        'icon': Icons.local_hospital_outlined,
+        'color': AppTheme.primaryColor,
+        'sub': 'Specialized care',
+      },
+      {
+        'title': 'ICU Available',
+        'count': '4',
+        'icon': Icons.check_circle,
+        'color': const Color(0xFF10B981),
+        'sub': '13.3% open',
+      },
+      {
+        'title': 'ICU Occupied',
+        'count': '26',
+        'icon': Icons.hotel,
+        'color': const Color(0xFFEF4444),
+        'sub': '86.7% occupied',
+      },
+      {
+        'title': 'ICU Utilization',
+        'count': '87%',
+        'icon': Icons.speed_rounded,
+        'color': const Color(0xFFF59E0B),
+        'sub': 'High Utilization',
+      },
     ];
 
     return Column(
@@ -413,7 +588,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
       children: [
         Text(
           'Overall Hospital Metrics',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
         ),
         const SizedBox(height: 12),
         GridView.builder(
@@ -423,7 +602,7 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: isMobile ? 1.0 : 1.5,
+            childAspectRatio: isMobile ? 0.95 : 1.4,
           ),
           itemCount: cardsData.length,
           itemBuilder: (context, index) {
@@ -443,7 +622,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
 
         Text(
           'ICU Critical Metrics',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
         ),
         const SizedBox(height: 12),
         GridView.builder(
@@ -453,7 +636,7 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             crossAxisCount: isMobile ? 2 : 4,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: isMobile ? 1.0 : 1.5,
+            childAspectRatio: isMobile ? 0.95 : 1.4,
           ),
           itemCount: icuCardsData.length,
           itemBuilder: (context, index) {
@@ -496,7 +679,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: secondaryTextColor),
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: secondaryTextColor,
+                  ),
                 ),
               ),
               const SizedBox(width: 4),
@@ -509,7 +696,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 count,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
               ),
             ),
           ),
@@ -517,14 +708,22 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildOverallCapacityCard(bool isMobile, Color textColor, Color secondaryTextColor) {
+  Widget _buildOverallCapacityCard(
+    bool isMobile,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
     return GlassCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -539,7 +738,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   children: [
                     Text(
                       'Overall Hospital Capacity',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -550,19 +753,32 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                  ),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B), size: 16),
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 16,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       'High Capacity',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFF59E0B),
+                      ),
                     ),
                   ],
                 ),
@@ -576,14 +792,25 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             children: [
               Text(
                 '79%',
-                style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: textColor),
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
               ),
               const SizedBox(width: 12),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(
-                  '198 / 250 beds occupied',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: secondaryTextColor),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    '198 / 250 beds occupied',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: secondaryTextColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ],
@@ -597,7 +824,9 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
               value: 0.792,
               minHeight: 12,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFFF59E0B),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -607,31 +836,48 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             spacing: 12,
             runSpacing: 8,
             children: [
-              _buildLegendItem(color: const Color(0xFF10B981), label: 'Normal (<75%)', textColor: secondaryTextColor),
-              _buildLegendItem(color: const Color(0xFFF59E0B), label: 'High (75-89%)', textColor: secondaryTextColor),
-              _buildLegendItem(color: const Color(0xFFEF4444), label: 'Critical (≥90%)', textColor: secondaryTextColor),
+              _buildLegendItem(
+                color: const Color(0xFF10B981),
+                label: 'Normal (<75%)',
+                textColor: secondaryTextColor,
+              ),
+              _buildLegendItem(
+                color: const Color(0xFFF59E0B),
+                label: 'High (75-89%)',
+                textColor: secondaryTextColor,
+              ),
+              _buildLegendItem(
+                color: const Color(0xFFEF4444),
+                label: 'Critical (≥90%)',
+                textColor: secondaryTextColor,
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             'Hospital capacity is currently high. Monitor emergency arrivals closely.',
-            style: TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic, color: secondaryTextColor.withValues(alpha: 0.8)),
+            style: TextStyle(
+              fontSize: 12.5,
+              fontStyle: FontStyle.italic,
+              color: secondaryTextColor.withValues(alpha: 0.8),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem({required Color color, required String label, required Color textColor}) {
+  Widget _buildLegendItem({
+    required Color color,
+    required String label,
+    required Color textColor,
+  }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(Icons.circle, color: color, size: 10),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: textColor),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: textColor)),
       ],
     );
   }
@@ -644,7 +890,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
         children: [
           Text(
             'Ward Capacity Breakdown',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -658,22 +908,33 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
               final isSelected = _selectedWardFilter == ward.name;
               final color = ward.percentage >= 85
                   ? const Color(0xFFEF4444)
-                  : (ward.percentage >= 70 ? const Color(0xFFF59E0B) : const Color(0xFF10B981));
+                  : (ward.percentage >= 70
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFF10B981));
 
-              return InkWell(
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
                   setState(() {
                     _selectedWardFilter = isSelected ? 'All' : ward.name;
                   });
                 },
-                borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.15) : Colors.transparent,
+                    color: isSelected
+                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: isSelected ? AppTheme.primaryColor : Colors.transparent),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : Colors.transparent,
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -688,7 +949,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                                 Expanded(
                                   child: Text(
                                     ward.name,
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: textColor,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -698,7 +963,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                           const SizedBox(width: 8),
                           Text(
                             '${ward.occupied} / ${ward.total}  (${ward.percentage.toInt()}%)',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
                           ),
                         ],
                       ),
@@ -735,7 +1004,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
               Expanded(
                 child: Text(
                   'Live Capacity Activity',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -743,12 +1016,18 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
               InkWell(
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Showing all operational activity logs')),
+                    const SnackBar(
+                      content: Text('Showing all operational activity logs'),
+                    ),
                   );
                 },
                 child: const Text(
                   'View all',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
               ),
             ],
@@ -762,7 +1041,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GlassIconContainer(icon: act.icon, color: act.iconColor, size: 16),
+                    GlassIconContainer(
+                      icon: act.icon,
+                      color: act.iconColor,
+                      size: 16,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -770,12 +1053,19 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                         children: [
                           Text(
                             act.description,
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: textColor),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: textColor,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             act.timeAgo,
-                            style: TextStyle(fontSize: 11, color: secondaryTextColor),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: secondaryTextColor,
+                            ),
                           ),
                         ],
                       ),
@@ -790,10 +1080,17 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
     );
   }
 
-  Widget _buildInteractiveBedMap(bool isMobile, Color textColor, Color secondaryTextColor) {
+  Widget _buildInteractiveBedMap(
+    bool isMobile,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
     final mapBeds = _beds.where((bed) {
       final matchesFloor = bed.floor == _selectedFloorFilter;
-      final matchesWard = _selectedWardFilter == 'All' || bed.type == _selectedWardFilter || bed.ward == _selectedWardFilter;
+      final matchesWard =
+          _selectedWardFilter == 'All' ||
+          bed.type == _selectedWardFilter ||
+          bed.ward == _selectedWardFilter;
       return matchesFloor && matchesWard;
     }).toList();
 
@@ -811,7 +1108,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   children: [
                     Text(
                       'Interactive Bed Map',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -831,7 +1132,14 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             runSpacing: 12,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Text('Ward:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor)),
+              Text(
+                'Ward:',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
               ...['All', 'ICU', 'General', 'Emergency', 'Private'].map((ward) {
                 final isSelected = _selectedWardFilter == ward;
                 return GlassSelectionChip(
@@ -848,27 +1156,38 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [1, 2, 3].map((floor) {
                     final isSelected = _selectedFloorFilter == floor;
-                    return InkWell(
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () => setState(() => _selectedFloorFilter = floor),
-                      borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                          color: isSelected
+                              ? AppTheme.primaryColor
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           'Floor $floor',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? Colors.white : secondaryTextColor,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : secondaryTextColor,
                           ),
                         ),
                       ),
@@ -885,10 +1204,26 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             spacing: 16,
             runSpacing: 8,
             children: [
-              _buildLegendItem(color: const Color(0xFF10B981), label: '🟢 Available', textColor: secondaryTextColor),
-              _buildLegendItem(color: const Color(0xFFEF4444), label: '🔴 Occupied', textColor: secondaryTextColor),
-              _buildLegendItem(color: const Color(0xFFF59E0B), label: '🟡 Cleaning/Reserved', textColor: secondaryTextColor),
-              _buildLegendItem(color: const Color(0xFF6B7280), label: '⚫ Maintenance', textColor: secondaryTextColor),
+              _buildLegendItem(
+                color: const Color(0xFF10B981),
+                label: '🟢 Available',
+                textColor: secondaryTextColor,
+              ),
+              _buildLegendItem(
+                color: const Color(0xFFEF4444),
+                label: '🔴 Occupied',
+                textColor: secondaryTextColor,
+              ),
+              _buildLegendItem(
+                color: const Color(0xFFF59E0B),
+                label: '🟡 Cleaning/Reserved',
+                textColor: secondaryTextColor,
+              ),
+              _buildLegendItem(
+                color: const Color(0xFF6B7280),
+                label: '⚫ Maintenance',
+                textColor: secondaryTextColor,
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -903,13 +1238,18 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Text('No beds found for the selected Ward and Floor criteria.', style: TextStyle(color: secondaryTextColor)),
+                  child: Text(
+                    'No beds found for the selected Ward and Floor criteria.',
+                    style: TextStyle(color: secondaryTextColor),
+                  ),
                 )
               : GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isMobile ? 2 : (MediaQuery.of(context).size.width < 1100 ? 4 : 6),
+                    crossAxisCount: isMobile
+                        ? 2
+                        : (MediaQuery.of(context).size.width < 1100 ? 4 : 6),
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                     childAspectRatio: 2.2,
@@ -919,15 +1259,20 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                     final bed = mapBeds[index];
                     final color = _getStatusColor(bed.status);
 
-                    return InkWell(
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () => setState(() => _selectedBed = bed),
-                      borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: color.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: color.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -940,11 +1285,18 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                                 children: [
                                   Text(
                                     bed.id,
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textColor),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
                                   ),
                                   Text(
                                     bed.type,
-                                    style: TextStyle(fontSize: 10.5, color: secondaryTextColor),
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: secondaryTextColor,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -960,32 +1312,73 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
     );
   }
 
-  Widget _buildBedInventoryTable(bool isMobile, Color textColor, Color secondaryTextColor) {
-    return GlassCard(
+  Widget _buildBedInventoryTable(
+    bool isMobile,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
+    final isDark = HealthifyGlassTheme.isDark(context);
+
+    final glassColor = isDark
+        ? Colors.white.withValues(alpha: 0.045)
+        : Colors.white.withValues(alpha: 0.72);
+
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.085)
+        : Colors.white.withValues(alpha: 0.88);
+
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: glassColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.12 : 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ============================================================
+          // HEADER
+          // ============================================================
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
                   'Bed Inventory & Status',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 'Total ${_filteredTableCount()} units',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: secondaryTextColor),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: secondaryTextColor,
+                ),
               ),
             ],
           ),
+
           const SizedBox(height: 16),
 
-          // Search & Filter Controls
+          // ============================================================
+          // SEARCH + FILTERS
+          // ============================================================
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -993,141 +1386,548 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             children: [
               SizedBox(
                 width: isMobile ? double.infinity : 240,
-                child: TextField(
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  style: TextStyle(color: textColor),
-                  decoration: GlassTextFieldTheme.getDecoration(
-                    context: context,
-                    hintText: 'Search bed ID or patient...',
-                    prefixIcon: Icon(Icons.search, size: 20, color: secondaryTextColor),
+                child: Container(
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.045)
+                        : Colors.white.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                    style: TextStyle(color: textColor, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'Search bed ID or patient...',
+                      hintStyle: TextStyle(
+                        color: secondaryTextColor.withValues(alpha: 0.7),
+                        fontSize: 13,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        size: 19,
+                        color: AppTheme.primaryColor,
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                    ),
                   ),
                 ),
               ),
 
-              DropdownButton<String>(
+              // STATUS FILTER
+              _buildInventoryFilter(
+                label: 'Status: $_tableStatusFilter',
+                textColor: textColor,
+                secondaryTextColor: secondaryTextColor,
+                isDark: isDark,
+                items: const [
+                  'All',
+                  'Available',
+                  'Occupied',
+                  'Cleaning',
+                  'Reserved',
+                  'Maintenance',
+                ],
                 value: _tableStatusFilter,
-                dropdownColor: HealthifyGlassTheme.isDark(context) ? const Color(0xFF0F766E) : Colors.white,
-                style: TextStyle(color: textColor, fontSize: 13),
-                underline: const SizedBox(),
-                items: ['All', 'Available', 'Occupied', 'Cleaning', 'Reserved', 'Maintenance'].map((st) {
-                  return DropdownMenuItem(value: st, child: Text('Status: $st', style: TextStyle(color: textColor, fontSize: 13)));
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _tableStatusFilter = val);
+                onChanged: (value) {
+                  setState(() {
+                    _tableStatusFilter = value;
+                  });
                 },
               ),
 
-              DropdownButton<String>(
+              // TYPE FILTER
+              _buildInventoryFilter(
+                label: 'Type: $_tableTypeFilter',
+                textColor: textColor,
+                secondaryTextColor: secondaryTextColor,
+                isDark: isDark,
+                items: const [
+                  'All',
+                  'General',
+                  'ICU',
+                  'Emergency',
+                  'Private',
+                  'Pediatric',
+                  'NICU',
+                ],
                 value: _tableTypeFilter,
-                dropdownColor: HealthifyGlassTheme.isDark(context) ? const Color(0xFF0F766E) : Colors.white,
-                style: TextStyle(color: textColor, fontSize: 13),
-                underline: const SizedBox(),
-                items: ['All', 'General', 'ICU', 'Emergency', 'Private', 'Pediatric', 'NICU'].map((tp) {
-                  return DropdownMenuItem(value: tp, child: Text('Type: $tp', style: TextStyle(color: textColor, fontSize: 13)));
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _tableTypeFilter = val);
+                onChanged: (value) {
+                  setState(() {
+                    _tableTypeFilter = value;
+                  });
                 },
               ),
             ],
           ),
+
           const SizedBox(height: 16),
 
-          _filteredTableBeds.isEmpty
-              ? Container(
+          // ============================================================
+          // EMPTY STATE
+          // ============================================================
+          if (_filteredTableBeds.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(32),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.035),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: borderColor),
+              ),
+              child: Text(
+                'No bed inventory records match the current filters.',
+                style: TextStyle(color: secondaryTextColor, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            )
+          // ============================================================
+          // MOBILE
+          // ============================================================
+          else if (isMobile)
+            Column(
+              children: _filteredTableBeds.map((bed) {
+                final color = _getStatusColor(bed.status);
+
+                return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(32),
-                  alignment: Alignment.center,
-                  child: Text('No bed inventory records match the current filters.', style: TextStyle(color: secondaryTextColor)),
-                )
-              : (isMobile
-                  ? Column(
-                      children: _filteredTableBeds.map((bed) {
-                        final color = _getStatusColor(bed.status);
-                        return GlassCard(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          child: ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: Icon(Icons.circle, color: color, size: 12),
-                            title: Text('${bed.id} (${bed.type})', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-                            subtitle: Text('Floor ${bed.floor} • ${bed.status.name} • ${bed.lastUpdated}', style: TextStyle(color: secondaryTextColor)),
-                            trailing: GlassSecondaryButton(
-                              onPressed: () => setState(() => _selectedBed = bed),
-                              height: 36,
-                              child: const Text('Inspect', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.035),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // TOP ROW
+                      Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
                             ),
                           ),
-                        );
-                      }).toList(),
-                    )
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.05)),
-                        columns: [
-                          DataColumn(label: Text('Bed ID', style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
-                          DataColumn(label: Text('Type / Ward', style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
-                          DataColumn(label: Text('Floor', style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
-                          DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
-                          DataColumn(label: Text('Equipment', style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
-                          DataColumn(label: Text('Last Updated', style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
-                          DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
+
+                          const SizedBox(width: 10),
+
+                          Expanded(
+                            child: Text(
+                              '${bed.id} (${bed.type})',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          // STATUS
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: color.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Text(
+                              bed.status.name[0].toUpperCase() +
+                                  bed.status.name.substring(1),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: color,
+                              ),
+                            ),
+                          ),
                         ],
-                        rows: _filteredTableBeds.map((bed) {
-                          final color = _getStatusColor(bed.status);
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(bed.id, style: TextStyle(fontWeight: FontWeight.bold, color: textColor))),
-                              DataCell(Text(bed.type, style: TextStyle(color: secondaryTextColor))),
-                              DataCell(Text('Floor ${bed.floor}', style: TextStyle(color: secondaryTextColor))),
-                              DataCell(
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: color.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.circle, color: color, size: 8),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        bed.status.name[0].toUpperCase() + bed.status.name.substring(1),
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color),
-                                      ),
-                                    ],
-                                  ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // DETAILS
+                      Text(
+                        'Floor ${bed.floor}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: secondaryTextColor,
+                        ),
+                      ),
+
+                      const SizedBox(height: 3),
+
+                      Text(
+                        'Updated: ${bed.lastUpdated}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: secondaryTextColor.withValues(alpha: 0.8),
+                        ),
+                      ),
+
+                      if (bed.equipment.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          'Equipment: ${bed.equipment.join(', ')}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: secondaryTextColor.withValues(alpha: 0.8),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+
+                      const SizedBox(height: 12),
+
+                      // INSPECT BUTTON
+                      SizedBox(
+                        width: double.infinity,
+                        height: 38,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            setState(() {
+                              _selectedBed = bed;
+                            });
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.10,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: AppTheme.primaryColor.withValues(
+                                  alpha: 0.30,
                                 ),
                               ),
-                              DataCell(Text(bed.equipment.isEmpty ? '—' : bed.equipment.join(', '), style: TextStyle(color: secondaryTextColor))),
-                              DataCell(Text(bed.lastUpdated, style: TextStyle(color: secondaryTextColor))),
-                              DataCell(
-                                GlassSecondaryButton(
-                                  onPressed: () => setState(() => _selectedBed = bed),
-                                  height: 32,
-                                  child: const Text('Inspect', style: TextStyle(fontSize: 12)),
+                            ),
+                            child: const Text(
+                              'Inspect Bed',
+                              style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            )
+          // ============================================================
+          // DESKTOP TABLE
+          // ============================================================
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                headingRowColor: WidgetStateProperty.all(
+                  Colors.white.withValues(alpha: 0.05),
+                ),
+                columnSpacing: 24,
+                horizontalMargin: 16,
+                columns: [
+                  DataColumn(
+                    label: Text(
+                      'Bed ID',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Type / Ward',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Floor',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Status',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Equipment',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Last Updated',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Actions',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                ],
+                rows: _filteredTableBeds.map((bed) {
+                  final color = _getStatusColor(bed.status);
+
+                  return DataRow(
+                    cells: [
+                      DataCell(
+                        Text(
+                          bed.id,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+
+                      DataCell(
+                        Text(
+                          bed.type,
+                          style: TextStyle(color: secondaryTextColor),
+                        ),
+                      ),
+
+                      DataCell(
+                        Text(
+                          'Floor ${bed.floor}',
+                          style: TextStyle(color: secondaryTextColor),
+                        ),
+                      ),
+
+                      DataCell(
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.circle, color: color, size: 8),
+                              const SizedBox(width: 6),
+                              Text(
+                                bed.status.name[0].toUpperCase() +
+                                    bed.status.name.substring(1),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: color,
                                 ),
                               ),
                             ],
-                          );
-                        }).toList(),
+                          ),
+                        ),
                       ),
-                    )),
+
+                      DataCell(
+                        Text(
+                          bed.equipment.isEmpty
+                              ? '—'
+                              : bed.equipment.join(', '),
+                          style: TextStyle(color: secondaryTextColor),
+                        ),
+                      ),
+
+                      DataCell(
+                        Text(
+                          bed.lastUpdated,
+                          style: TextStyle(color: secondaryTextColor),
+                        ),
+                      ),
+
+                      DataCell(
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            setState(() {
+                              _selectedBed = bed;
+                            });
+                          },
+                          child: Container(
+                            height: 32,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.10,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: AppTheme.primaryColor.withValues(
+                                  alpha: 0.30,
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              'Inspect',
+                              style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInventoryFilter({
+    required String label,
+    required String value,
+    required List<String> items,
+    required Color textColor,
+    required Color secondaryTextColor,
+    required bool isDark,
+    required ValueChanged<String> onChanged,
+  }) {
+    return PopupMenuButton<String>(
+      onSelected: onChanged,
+      color: isDark ? const Color(0xFF0F2928) : Colors.white,
+      elevation: 8,
+      itemBuilder: (context) {
+        return items.map((item) {
+          return PopupMenuItem<String>(
+            value: item,
+            child: Text(
+              label.split(':').first + ': $item',
+              style: TextStyle(color: textColor, fontSize: 13),
+            ),
+          );
+        }).toList();
+      },
+      child: Container(
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.045)
+              : Colors.white.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.085)
+                : Colors.white.withValues(alpha: 0.88),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 18,
+              color: secondaryTextColor,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   String _filteredTableCount() => _filteredTableBeds.length.toString();
 
-  Widget _buildCriticalEquipmentCard(Color textColor, Color secondaryTextColor) {
+  Widget _buildCriticalEquipmentCard(
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
     final equipmentList = [
-      {'name': 'Ventilators', 'avail': 18, 'total': 20, 'icon': Icons.air_rounded},
-      {'name': 'Oxygen Units', 'avail': 45, 'total': 50, 'icon': Icons.masks_outlined},
-      {'name': 'Cardiac Monitors', 'avail': 28, 'total': 30, 'icon': Icons.monitor_heart_outlined},
-      {'name': 'Infusion Pumps', 'avail': 38, 'total': 40, 'icon': Icons.medication_outlined},
+      {
+        'name': 'Ventilators',
+        'avail': 18,
+        'total': 20,
+        'icon': Icons.air_rounded,
+      },
+      {
+        'name': 'Oxygen Units',
+        'avail': 45,
+        'total': 50,
+        'icon': Icons.masks_outlined,
+      },
+      {
+        'name': 'Cardiac Monitors',
+        'avail': 28,
+        'total': 30,
+        'icon': Icons.monitor_heart_outlined,
+      },
+      {
+        'name': 'Infusion Pumps',
+        'avail': 38,
+        'total': 40,
+        'icon': Icons.medication_outlined,
+      },
     ];
 
     return GlassCard(
@@ -1137,7 +1937,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
         children: [
           Text(
             'Critical Equipment Availability',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1156,7 +1960,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Row(
                   children: [
-                    GlassIconContainer(icon: eq['icon'] as IconData, color: AppTheme.primaryColor, size: 20),
+                    GlassIconContainer(
+                      icon: eq['icon'] as IconData,
+                      color: AppTheme.primaryColor,
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -1165,9 +1973,25 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(child: Text(eq['name'] as String, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: textColor))),
+                              Expanded(
+                                child: Text(
+                                  eq['name'] as String,
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                  ),
+                                ),
+                              ),
                               const SizedBox(width: 8),
-                              Text('$avail / $total Ready', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
+                              Text(
+                                '$avail / $total Ready',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF10B981),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -1176,8 +2000,12 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                             child: LinearProgressIndicator(
                               value: ratio,
                               minHeight: 6,
-                              backgroundColor: Colors.white.withValues(alpha: 0.1),
-                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.1,
+                              ),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFF10B981),
+                              ),
                             ),
                           ),
                         ],
@@ -1201,7 +2029,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
         children: [
           Text(
             'Bed Turnaround & Sanitation',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1222,10 +2054,30 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Avg Turnaround', style: TextStyle(fontSize: 11.5, color: secondaryTextColor)),
+                      Text(
+                        'Avg Turnaround',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: secondaryTextColor,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('18 min', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
-                      const Text('Target: <25 min', style: TextStyle(fontSize: 10.5, color: Color(0xFF10B981), fontWeight: FontWeight.w600)),
+                      Text(
+                        '18 min',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      const Text(
+                        'Target: <25 min',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: Color(0xFF10B981),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1241,10 +2093,30 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Cleaning Queue', style: TextStyle(fontSize: 11.5, color: secondaryTextColor)),
+                      Text(
+                        'Cleaning Queue',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: secondaryTextColor,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      const Text('6 beds', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B))),
-                      Text('4 staff assigned', style: TextStyle(fontSize: 10.5, color: secondaryTextColor, fontWeight: FontWeight.w600)),
+                      const Text(
+                        '6 beds',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFF59E0B),
+                        ),
+                      ),
+                      Text(
+                        '4 staff assigned',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: secondaryTextColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1256,16 +2128,30 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
           GlassPrimaryButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dispatched high-priority cleaning alert to housekeeping squad')),
+                const SnackBar(
+                  content: Text(
+                    'Dispatched high-priority cleaning alert to housekeeping squad',
+                  ),
+                ),
               );
             },
             height: 44,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.cleaning_services_rounded, size: 16, color: Colors.white),
+                Icon(
+                  Icons.cleaning_services_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
                 SizedBox(width: 8),
-                Text('Dispatch Housekeeping Team', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Text(
+                  'Dispatch Housekeeping Team',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1280,35 +2166,39 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 10,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Occupancy Trend Analytics',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Occupancy Trend Analytics',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Historical occupancy rates over custom timeline filters',
-                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Historical occupancy rates over custom timeline filters',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                  ),
+                ],
               ),
-              Row(
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
                 children: ['24H', '7D', '30D'].map((range) {
                   final isSelected = _chartTrendFilter == range;
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 6),
-                    child: GlassSelectionChip(
-                      label: range,
-                      isSelected: isSelected,
-                      onTap: () => setState(() => _chartTrendFilter = range),
-                    ),
+                  return GlassSelectionChip(
+                    label: range,
+                    isSelected: isSelected,
+                    onTap: () => setState(() => _chartTrendFilter = range),
                   );
                 }).toList(),
               ),
@@ -1335,24 +2225,39 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
               Expanded(
                 child: Text(
                   'AI Capacity Forecast',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.auto_awesome, color: AppTheme.primaryColor, size: 14),
+                    Icon(
+                      Icons.auto_awesome,
+                      color: AppTheme.primaryColor,
+                      size: 14,
+                    ),
                     SizedBox(width: 4),
                     Text(
                       'AI Predictive',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
                     ),
                   ],
                 ),
@@ -1366,18 +2271,28 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             decoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppTheme.primaryColor.withValues(alpha: 0.3),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.trending_up_rounded, color: AppTheme.primaryColor, size: 18),
+                    Icon(
+                      Icons.trending_up_rounded,
+                      color: AppTheme.primaryColor,
+                      size: 18,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Peak ICU Demand Forecast',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
                     ),
                   ],
                 ),
@@ -1393,7 +2308,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
 
           Text(
             'Recommended Action:',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1405,14 +2324,24 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Confidence Rating:', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+              Text(
+                'Confidence Rating:',
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('87% High Precision', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
+                child: const Text(
+                  '87% High Precision',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
               ),
             ],
           ),
@@ -1432,7 +2361,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
         children: [
           Text(
             'What-If Capacity Simulator',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1446,21 +2379,41 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text('Emergency Admissions:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor)),
+                child: Text(
+                  'Emergency Admissions:',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
               ),
               Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.remove_circle_outline, color: secondaryTextColor),
+                    icon: Icon(
+                      Icons.remove_circle_outline,
+                      color: secondaryTextColor,
+                    ),
                     onPressed: () {
                       if (_simulatedEmergencyPatients > 0) {
                         setState(() => _simulatedEmergencyPatients--);
                       }
                     },
                   ),
-                  Text('+$_simulatedEmergencyPatients', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
+                  Text(
+                    '+$_simulatedEmergencyPatients',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
                   IconButton(
-                    icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryColor),
+                    icon: const Icon(
+                      Icons.add_circle_outline,
+                      color: AppTheme.primaryColor,
+                    ),
                     onPressed: () {
                       setState(() => _simulatedEmergencyPatients++);
                     },
@@ -1472,7 +2425,14 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
 
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text('Simulate 5 ICU Discharges', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor)),
+            title: Text(
+              'Simulate 5 ICU Discharges',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
+            ),
             value: _simulateDischarges,
             activeTrackColor: AppTheme.primaryColor,
             onChanged: (val) => setState(() => _simulateDischarges = val),
@@ -1488,19 +2448,30 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isOverThreshold ? const Color(0xFFEF4444).withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.1),
+                color: isOverThreshold
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.4)
+                    : Colors.white.withValues(alpha: 0.1),
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Simulated Occupancy:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor)),
+                Text(
+                  'Simulated Occupancy:',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
                 Text(
                   '${simPercentage.toStringAsFixed(1)}%',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isOverThreshold ? const Color(0xFFEF4444) : AppTheme.primaryColor,
+                    color: isOverThreshold
+                        ? const Color(0xFFEF4444)
+                        : AppTheme.primaryColor,
                   ),
                 ),
               ],
@@ -1519,7 +2490,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
         children: [
           Text(
             'Active Capacity Alerts',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1528,30 +2503,74 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
           ),
           const SizedBox(height: 16),
 
-          GlassCard(
-            padding: EdgeInsets.zero,
-            isStrong: true,
-            child: ListTile(
-              leading: const Icon(Icons.warning_rounded, color: Color(0xFFEF4444)),
-              title: const Text('ICU Capacity Reached 87%', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Color(0xFFEF4444))),
-              subtitle: Text('Only 4 beds remain open. Consider holding elective admissions.', style: TextStyle(fontSize: 11.5, color: secondaryTextColor)),
-              onTap: () {
-                setState(() => _selectedWardFilter = 'ICU');
-              },
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _selectedWardFilter = 'ICU'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+                ),
+              ),
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.warning_rounded,
+                  color: Color(0xFFEF4444),
+                ),
+                title: const Text(
+                  'ICU Capacity Reached 87%',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFEF4444),
+                  ),
+                ),
+                subtitle: Text(
+                  'Only 4 beds remain open. Consider holding elective admissions.',
+                  style: TextStyle(fontSize: 11.5, color: secondaryTextColor),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 10),
 
-          GlassCard(
-            padding: EdgeInsets.zero,
-            isStrong: true,
-            child: ListTile(
-              leading: const Icon(Icons.cleaning_services_outlined, color: Color(0xFFF59E0B)),
-              title: const Text('General Ward Cleaning Delay (>25 min)', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B))),
-              subtitle: Text('Bed G-102 cleaning duration exceeded benchmark time.', style: TextStyle(fontSize: 11.5, color: secondaryTextColor)),
-              onTap: () {
-                setState(() => _selectedWardFilter = 'General Ward');
-              },
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _selectedWardFilter = 'General Ward'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                ),
+              ),
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.cleaning_services_outlined,
+                  color: Color(0xFFF59E0B),
+                ),
+                title: const Text(
+                  'General Ward Cleaning Delay (>25 min)',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFF59E0B),
+                  ),
+                ),
+                subtitle: Text(
+                  'Bed G-102 cleaning duration exceeded benchmark time.',
+                  style: TextStyle(fontSize: 11.5, color: secondaryTextColor),
+                ),
+              ),
             ),
           ),
         ],
@@ -1559,7 +2578,10 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
     );
   }
 
-  Widget _buildPatientAppGovernanceCard(Color textColor, Color secondaryTextColor) {
+  Widget _buildPatientAppGovernanceCard(
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
     return GlassCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -1567,7 +2589,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
         children: [
           Text(
             'Patient App Visibility & Governance',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1584,7 +2610,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.privacy_tip_outlined, color: AppTheme.primaryColor, size: 20),
+                const Icon(
+                  Icons.privacy_tip_outlined,
+                  color: AppTheme.primaryColor,
+                  size: 20,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -1600,7 +2630,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
           GlassPrimaryButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Patient app visibility settings saved successfully')),
+                const SnackBar(
+                  content: Text(
+                    'Patient app visibility settings saved successfully',
+                  ),
+                ),
               );
             },
             height: 44,
@@ -1609,7 +2643,13 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
               children: [
                 Icon(Icons.security_rounded, size: 16, color: Colors.white),
                 SizedBox(width: 8),
-                Text('Save Governance Rules', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Text(
+                  'Save Governance Rules',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),

@@ -90,24 +90,29 @@ class _AddBloodUnitsModalState extends State<AddBloodUnitsModal> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const GlassIconContainer(
-                            icon: Icons.bloodtype_outlined,
-                            color: Color(0xFFE11D48),
-                            size: 38,
-                            iconSize: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Add Blood Inventory Units',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : AppTheme.textPrimary,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const GlassIconContainer(
+                              icon: Icons.bloodtype_outlined,
+                              color: Color(0xFFE11D48),
+                              size: 38,
+                              iconSize: 20,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Add Blood Inventory Units',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : AppTheme.textPrimary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         icon: Icon(Icons.close_rounded, color: isDark ? Colors.white70 : AppTheme.textSecondary),

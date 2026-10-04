@@ -154,36 +154,42 @@ class _BedDetailsDrawerState extends State<BedDetailsDrawer> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const GlassIconContainer(
-                          icon: Icons.king_bed_outlined,
-                          color: AppTheme.primaryColor,
-                          size: 38,
-                          iconSize: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.bed.id,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : AppTheme.textPrimary,
-                              ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const GlassIconContainer(
+                            icon: Icons.king_bed_outlined,
+                            color: AppTheme.primaryColor,
+                            size: 38,
+                            iconSize: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.bed.id,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : AppTheme.textPrimary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${widget.bed.type} Ward • Floor ${widget.bed.floor}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white70 : AppTheme.textSecondary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                            Text(
-                              '${widget.bed.type} Ward • Floor ${widget.bed.floor}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isDark ? Colors.white70 : AppTheme.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: Icon(Icons.close_rounded, color: isDark ? Colors.white70 : AppTheme.textSecondary),
@@ -441,22 +447,25 @@ class _BedDetailsDrawerState extends State<BedDetailsDrawer> {
       children: [
         Icon(icon, size: 18, color: isDark ? Colors.white70 : AppTheme.textSecondary),
         const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(fontSize: 11.5, color: isDark ? Colors.white54 : AppTheme.textMuted),
-            ),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : AppTheme.textPrimary,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(fontSize: 11.5, color: isDark ? Colors.white54 : AppTheme.textMuted),
               ),
-            ),
-          ],
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : AppTheme.textPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ],
     );

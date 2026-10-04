@@ -170,10 +170,11 @@ class _DoctorNotificationsScreenState extends State<DoctorNotificationsScreen> {
 
   void _handlePerformAction(DoctorNotificationFullModel notification) {
     _notificationService.markNotificationRead(notification.id);
+    final messenger = ScaffoldMessenger.of(context);
 
     if (notification.targetRoute != null &&
         notification.targetRoute!.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
             'Navigating to '
@@ -189,9 +190,11 @@ class _DoctorNotificationsScreenState extends State<DoctorNotificationsScreen> {
         ),
       );
 
-      Navigator.of(context).pushNamed(notification.targetRoute!);
+      if (mounted) {
+        Navigator.of(context).pushNamed(notification.targetRoute!);
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(notification.fullDescription),
           backgroundColor: _primary,
@@ -212,7 +215,7 @@ class _DoctorNotificationsScreenState extends State<DoctorNotificationsScreen> {
   void _openPreferencesModal() {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return NotificationPreferencesModal(
           preferences: _notificationService.getPreferences(),
           onSavePreferences: (updatedPrefs) {
@@ -220,12 +223,14 @@ class _DoctorNotificationsScreenState extends State<DoctorNotificationsScreen> {
               _notificationService.updatePreference(pref);
             }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Notification preferences saved successfully.'),
-                backgroundColor: _primary,
-              ),
-            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Notification preferences saved successfully.'),
+                  backgroundColor: _primary,
+                ),
+              );
+            }
           },
         );
       },

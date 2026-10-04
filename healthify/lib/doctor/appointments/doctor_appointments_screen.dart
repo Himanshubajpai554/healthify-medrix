@@ -454,90 +454,10 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
     // Mobile & Tablet Responsive Layout
     return Scaffold(
       backgroundColor: HealthifyGlassTheme.getBackgroundColor(isDark),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(110),
-        child: AppointmentsHeader(
-          doctorName: widget.doctorName,
-          availabilityStatus: _availabilityStatus,
-          onAvailabilityChanged: (status) =>
-              setState(() => _availabilityStatus = status),
-          onNotificationTap: () => DoctorModals.showNotificationsPane(
-            context: context,
-            notifications: _notifications,
-            onMarkAllRead: () {
-              setState(() {
-                _notifications = _notifications
-                    .map((n) => n.copyWith(isRead: true))
-                    .toList();
-              });
-              Navigator.pop(context);
-            },
-          ),
-          onSearchTap: _showSearchModal,
-          onProfileTap: _showRoleSwitcherModal,
-          onThemeToggle: _toggleTheme,
-          onAddAvailability: () => AvailabilityPanelModal.show(
-            context: context,
-            currentConfig: _availabilityConfig,
-            onSave: (cfg) => setState(() => _availabilityConfig = cfg),
-          ),
-          onViewSchedule: () =>
-              setState(() => _isCalendarView = !_isCalendarView),
-          isCalendarView: _isCalendarView,
-          onToggleCalendarView: () =>
-              setState(() => _isCalendarView = !_isCalendarView),
-          unreadNotificationsCount: unreadCount,
-        ),
-      ),
       body: AnimatedPulseBackground(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: _buildAppointmentsWorkspaceContent(),
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: HealthifyGlassTheme.getGlassSurface(isDark, isStrong: true),
-          border: Border(
-            top: BorderSide(color: HealthifyGlassTheme.getGlassBorder(isDark)),
-          ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _mobileBottomNavIndex,
-          onTap: (index) {
-            if (index == 0) {
-              Navigator.pushReplacementNamed(context, '/doctor');
-            } else {
-              setState(() => _mobileBottomNavIndex = index);
-            }
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: HealthifyGlassTheme.primaryTeal,
-          unselectedItemColor: HealthifyGlassTheme.getTextSecondary(isDark),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_rounded),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_rounded),
-              label: 'Appointments',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people_alt_rounded),
-              label: 'Patients',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.emergency_rounded),
-              label: 'Emergency',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.insights_rounded),
-              label: 'Analytics',
-            ),
-          ],
         ),
       ),
     );

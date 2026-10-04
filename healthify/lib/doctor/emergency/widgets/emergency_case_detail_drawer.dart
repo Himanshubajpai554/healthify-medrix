@@ -11,7 +11,8 @@ class EmergencyCaseDetailDrawer extends StatefulWidget {
   final VoidCallback onTransferPressed;
   final VoidCallback onResolvePressed;
   final Function(EmergencyObservationsModel obs) onSaveObservations;
-  final Function(EmergencyNoteType type, String content, bool isInternal) onSaveNote;
+  final Function(EmergencyNoteType type, String content, bool isInternal)
+  onSaveNote;
   final VoidCallback onCreatePrescription;
 
   const EmergencyCaseDetailDrawer({
@@ -36,14 +37,29 @@ class EmergencyCaseDetailDrawer extends StatefulWidget {
   }
 
   static String formatDate(DateTime dt) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
   }
 
-  static String formatDateTime(DateTime dt) => '${formatDate(dt)} • ${formatTime(dt)}';
+  static String formatDateTime(DateTime dt) =>
+      '${formatDate(dt)} • ${formatTime(dt)}';
 
   @override
-  State<EmergencyCaseDetailDrawer> createState() => _EmergencyCaseDetailDrawerState();
+  State<EmergencyCaseDetailDrawer> createState() =>
+      _EmergencyCaseDetailDrawerState();
 }
 
 class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
@@ -72,9 +88,13 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
     _hrController = TextEditingController(text: obs?.heartRate ?? '76');
     _tempController = TextEditingController(text: obs?.temperature ?? '37.0');
     _rrController = TextEditingController(text: obs?.respiratoryRate ?? '16');
-    _spo2Controller = TextEditingController(text: obs?.oxygenSaturation ?? '98');
+    _spo2Controller = TextEditingController(
+      text: obs?.oxygenSaturation ?? '98',
+    );
     _weightController = TextEditingController(text: obs?.weight ?? '75');
-    _obsNotesController = TextEditingController(text: obs?.additionalObservations ?? '');
+    _obsNotesController = TextEditingController(
+      text: obs?.additionalObservations ?? '',
+    );
     _noteContentController = TextEditingController();
   }
 
@@ -258,8 +278,13 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
               const Icon(Icons.play_arrow_rounded, size: 20),
               const SizedBox(width: 6),
               Text(
-                item.consultationId != null ? 'Open Emergency Consultation' : 'Start Emergency Consultation',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                item.consultationId != null
+                    ? 'Open Emergency Consultation'
+                    : 'Start Emergency Consultation',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -273,7 +298,10 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             children: [
               Icon(Icons.published_with_changes_rounded, size: 18),
               SizedBox(width: 6),
-              Text('Update Status', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              Text(
+                'Update Status',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
             ],
           ),
         ),
@@ -286,7 +314,10 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             children: [
               Icon(Icons.swap_horiz_rounded, size: 18),
               SizedBox(width: 6),
-              Text('Transfer Case', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              Text(
+                'Transfer Case',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
             ],
           ),
         ),
@@ -301,7 +332,10 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
               children: [
                 Icon(Icons.check_circle_rounded, size: 18),
                 SizedBox(width: 6),
-                Text('Resolve / Close Case', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(
+                  'Resolve / Close Case',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),
@@ -320,7 +354,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
         children: [
           Row(
             children: [
-              const Icon(Icons.person_pin_rounded, size: 22, color: HealthifyGlassTheme.primaryTeal),
+              const Icon(
+                Icons.person_pin_rounded,
+                size: 22,
+                color: HealthifyGlassTheme.primaryTeal,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Patient Emergency Snapshot',
@@ -342,7 +380,9 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             decoration: BoxDecoration(
               color: hasAllergies
                   ? Colors.redAccent.withValues(alpha: isDark ? 0.2 : 0.08)
-                  : const Color(0xFF10B981).withValues(alpha: isDark ? 0.15 : 0.08),
+                  : const Color(
+                      0xFF10B981,
+                    ).withValues(alpha: isDark ? 0.15 : 0.08),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: hasAllergies
@@ -354,8 +394,12 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             child: Row(
               children: [
                 Icon(
-                  hasAllergies ? Icons.warning_rounded : Icons.verified_user_rounded,
-                  color: hasAllergies ? Colors.redAccent : const Color(0xFF10B981),
+                  hasAllergies
+                      ? Icons.warning_rounded
+                      : Icons.verified_user_rounded,
+                  color: hasAllergies
+                      ? Colors.redAccent
+                      : const Color(0xFF10B981),
                   size: 22,
                 ),
                 const SizedBox(width: 10),
@@ -364,11 +408,15 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        hasAllergies ? 'RECORDED PATIENT ALLERGIES' : 'NO RECORDED ALLERGIES',
+                        hasAllergies
+                            ? 'RECORDED PATIENT ALLERGIES'
+                            : 'NO RECORDED ALLERGIES',
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w900,
-                          color: hasAllergies ? Colors.redAccent : const Color(0xFF10B981),
+                          color: hasAllergies
+                              ? Colors.redAccent
+                              : const Color(0xFF10B981),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -397,10 +445,24 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             children: [
               _buildMetaItem('Patient Name', item.patientName, isDark),
               _buildMetaItem('Patient ID', item.patientId, isDark),
-              _buildMetaItem('Age / Gender', '${item.patientAge}y / ${item.patientGender}', isDark),
+              _buildMetaItem(
+                'Age / Gender',
+                '${item.patientAge}y / ${item.patientGender}',
+                isDark,
+              ),
               _buildMetaItem('Blood Group', item.bloodGroup, isDark),
-              _buildMetaItem('Known Conditions', item.knownConditions.isEmpty ? 'None Logged' : item.knownConditions.join(', '), isDark),
-              _buildMetaItem('Current Medications', '${item.currentMedications.length} Active Regimens', isDark),
+              _buildMetaItem(
+                'Known Conditions',
+                item.knownConditions.isEmpty
+                    ? 'None Logged'
+                    : item.knownConditions.join(', '),
+                isDark,
+              ),
+              _buildMetaItem(
+                'Current Medications',
+                '${item.currentMedications.length} Active Regimens',
+                isDark,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -417,7 +479,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.contact_phone_rounded, size: 18, color: HealthifyGlassTheme.primaryTeal),
+                  const Icon(
+                    Icons.contact_phone_rounded,
+                    size: 18,
+                    color: HealthifyGlassTheme.primaryTeal,
+                  ),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
@@ -436,15 +502,23 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
               ElevatedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Dialing ${item.emergencyContactPhone}...')),
+                    SnackBar(
+                      content: Text('Dialing ${item.emergencyContactPhone}...'),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.phone_rounded, size: 16),
-                label: const Text('Call Contact', style: TextStyle(fontSize: 12)),
+                label: const Text(
+                  'Call Contact',
+                  style: TextStyle(fontSize: 12),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: HealthifyGlassTheme.primaryTeal,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                 ),
               ),
             ],
@@ -493,7 +567,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
         children: [
           Row(
             children: [
-              const Icon(Icons.medical_information_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
+              const Icon(
+                Icons.medical_information_rounded,
+                size: 20,
+                color: HealthifyGlassTheme.primaryTeal,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Recorded Reason for Arrival',
@@ -520,23 +598,37 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
 
           Text(
             'Patient-Reported Symptom Log:',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: HealthifyGlassTheme.getTextSecondary(isDark),
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             item.patientReportedInfo,
-            style: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+            style: TextStyle(
+              fontSize: 12.5,
+              color: HealthifyGlassTheme.getTextPrimary(isDark),
+            ),
           ),
           const SizedBox(height: 10),
 
           Text(
             'Triage Arrival Notes & Referral:',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: HealthifyGlassTheme.getTextSecondary(isDark),
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Arrival Method: ${item.arrivalMethod} • Referral: ${item.referralSource}\nNotes: ${item.arrivalNotes}',
-            style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+            style: TextStyle(
+              fontSize: 12,
+              color: HealthifyGlassTheme.getTextSecondary(isDark),
+            ),
           ),
         ],
       ),
@@ -556,7 +648,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.monitor_heart_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
+                  const Icon(
+                    Icons.monitor_heart_rounded,
+                    size: 20,
+                    color: HealthifyGlassTheme.primaryTeal,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Emergency Vitals & Observations',
@@ -569,7 +665,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                 ],
               ),
               IconButton(
-                icon: Icon(_isEditingObs ? Icons.close_rounded : Icons.edit_rounded, size: 18, color: HealthifyGlassTheme.primaryTeal),
+                icon: Icon(
+                  _isEditingObs ? Icons.close_rounded : Icons.edit_rounded,
+                  size: 18,
+                  color: HealthifyGlassTheme.primaryTeal,
+                ),
                 onPressed: () => setState(() => _isEditingObs = !_isEditingObs),
                 tooltip: 'Edit Vitals Form',
               ),
@@ -586,21 +686,27 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                 Expanded(
                   child: TextField(
                     controller: _bpSysController,
-                    decoration: const InputDecoration(labelText: 'BP Systolic (mmHg)'),
+                    decoration: const InputDecoration(
+                      labelText: 'BP Systolic (mmHg)',
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _bpDiaController,
-                    decoration: const InputDecoration(labelText: 'BP Diastolic (mmHg)'),
+                    decoration: const InputDecoration(
+                      labelText: 'BP Diastolic (mmHg)',
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _hrController,
-                    decoration: const InputDecoration(labelText: 'Heart Rate (bpm)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Heart Rate (bpm)',
+                    ),
                   ),
                 ),
               ],
@@ -618,7 +724,9 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                 Expanded(
                   child: TextField(
                     controller: _rrController,
-                    decoration: const InputDecoration(labelText: 'Resp Rate (/min)'),
+                    decoration: const InputDecoration(
+                      labelText: 'Resp Rate (/min)',
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -633,7 +741,9 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             const SizedBox(height: 10),
             TextField(
               controller: _obsNotesController,
-              decoration: const InputDecoration(labelText: 'Additional Clinical Observations'),
+              decoration: const InputDecoration(
+                labelText: 'Additional Clinical Observations',
+              ),
             ),
             const SizedBox(height: 12),
             Align(
@@ -656,7 +766,10 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                   setState(() => _isEditingObs = false);
                 },
                 height: 38,
-                child: const Text('Save Vitals', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                child: const Text(
+                  'Save Vitals',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                ),
               ),
             ),
           ] else if (obs != null) ...[
@@ -665,38 +778,83 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
               spacing: 16,
               runSpacing: 12,
               children: [
-                _buildVitalMetric('Blood Pressure', obs.bpText, Icons.speed_rounded, isDark),
-                _buildVitalMetric('Heart Rate', '${obs.heartRate} bpm', Icons.favorite_rounded, isDark),
-                _buildVitalMetric('Temperature', '${obs.temperature} °C', Icons.thermostat_rounded, isDark),
-                _buildVitalMetric('SpO2', '${obs.oxygenSaturation} %', Icons.air_rounded, isDark),
-                _buildVitalMetric('Resp Rate', '${obs.respiratoryRate} /min', Icons.reorder_rounded, isDark),
+                _buildVitalMetric(
+                  'Blood Pressure',
+                  obs.bpText,
+                  Icons.speed_rounded,
+                  isDark,
+                ),
+                _buildVitalMetric(
+                  'Heart Rate',
+                  '${obs.heartRate} bpm',
+                  Icons.favorite_rounded,
+                  isDark,
+                ),
+                _buildVitalMetric(
+                  'Temperature',
+                  '${obs.temperature} °C',
+                  Icons.thermostat_rounded,
+                  isDark,
+                ),
+                _buildVitalMetric(
+                  'SpO2',
+                  '${obs.oxygenSaturation} %',
+                  Icons.air_rounded,
+                  isDark,
+                ),
+                _buildVitalMetric(
+                  'Resp Rate',
+                  '${obs.respiratoryRate} /min',
+                  Icons.reorder_rounded,
+                  isDark,
+                ),
               ],
             ),
             if (obs.additionalObservations.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 'Notes: ${obs.additionalObservations}',
-                style: TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontStyle: FontStyle.italic,
+                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+                ),
               ),
             ],
             const SizedBox(height: 6),
             Text(
               'Recorded by ${obs.recordedBy} at ${EmergencyCaseDetailDrawer.formatTime(obs.recordedAt)}',
-              style: TextStyle(fontSize: 11, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+              style: TextStyle(
+                fontSize: 11,
+                color: HealthifyGlassTheme.getTextSecondary(isDark),
+              ),
             ),
           ] else ...[
-            Text('No vitals or observations recorded yet.', style: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextSecondary(isDark))),
+            Text(
+              'No vitals or observations recorded yet.',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: HealthifyGlassTheme.getTextSecondary(isDark),
+              ),
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildVitalMetric(String label, String value, IconData icon, bool isDark) {
+  Widget _buildVitalMetric(
+    String label,
+    String value,
+    IconData icon,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.black.withValues(alpha: 0.25) : Colors.grey.withValues(alpha: 0.08),
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.25)
+            : Colors.grey.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: HealthifyGlassTheme.getGlassBorder(isDark)),
       ),
@@ -708,8 +866,21 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(fontSize: 10.5, color: HealthifyGlassTheme.getTextSecondary(isDark))),
-              Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  color: HealthifyGlassTheme.getTextSecondary(isDark),
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+                ),
+              ),
             ],
           ),
         ],
@@ -727,7 +898,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
         children: [
           Row(
             children: [
-              const Icon(Icons.timeline_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
+              const Icon(
+                Icons.timeline_rounded,
+                size: 20,
+                color: HealthifyGlassTheme.primaryTeal,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Real-Time Case Timeline',
@@ -764,7 +939,9 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                         Container(
                           width: 2,
                           height: 34,
-                          color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3),
+                          color: HealthifyGlassTheme.primaryTeal.withValues(
+                            alpha: 0.3,
+                          ),
                         ),
                     ],
                   ),
@@ -776,19 +953,50 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              item.action,
-                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                            Expanded(
+                              child: Text(
+                                item.action,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: HealthifyGlassTheme.getTextPrimary(
+                                    isDark,
+                                  ),
+                                ),
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Text(
-                              EmergencyCaseDetailDrawer.formatTime(item.timestamp),
-                              style: TextStyle(fontSize: 11, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                              EmergencyCaseDetailDrawer.formatTime(
+                                item.timestamp,
+                              ),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: HealthifyGlassTheme.getTextSecondary(
+                                  isDark,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        Text('Actor: ${item.actor}', style: TextStyle(fontSize: 11.5, color: HealthifyGlassTheme.getTextSecondary(isDark))),
+                        Text(
+                          'Actor: ${item.actor}',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: HealthifyGlassTheme.getTextSecondary(isDark),
+                          ),
+                        ),
                         if (item.optionalNote != null)
-                          Text('Note: ${item.optionalNote}', style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+                          Text(
+                            'Note: ${item.optionalNote}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            ),
+                          ),
                         const SizedBox(height: 10),
                       ],
                     ),
@@ -812,7 +1020,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
         children: [
           Row(
             children: [
-              const Icon(Icons.edit_note_rounded, size: 22, color: HealthifyGlassTheme.primaryTeal),
+              const Icon(
+                Icons.edit_note_rounded,
+                size: 22,
+                color: HealthifyGlassTheme.primaryTeal,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Emergency Case Notes',
@@ -830,9 +1042,13 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isDark ? Colors.black.withValues(alpha: 0.25) : Colors.grey.withValues(alpha: 0.08),
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.25)
+                  : Colors.grey.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: HealthifyGlassTheme.getGlassBorder(isDark)),
+              border: Border.all(
+                color: HealthifyGlassTheme.getGlassBorder(isDark),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -843,9 +1059,23 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<EmergencyNoteType>(
                           value: _selectedNoteType,
-                          items: EmergencyNoteType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.label, style: const TextStyle(fontSize: 13)))).toList(),
+                          isExpanded: true,
+                          items: EmergencyNoteType.values
+                              .map(
+                                (t) => DropdownMenuItem(
+                                  value: t,
+                                  child: Text(
+                                    t.label,
+                                    style: const TextStyle(fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
                           onChanged: (val) {
-                            if (val != null) setState(() => _selectedNoteType = val);
+                            if (val != null) {
+                              setState(() => _selectedNoteType = val);
+                            }
                           },
                         ),
                       ),
@@ -854,9 +1084,17 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                       children: [
                         Checkbox(
                           value: _isInternalPrivateNote,
-                          onChanged: (val) => setState(() => _isInternalPrivateNote = val ?? true),
+                          onChanged: (val) => setState(
+                            () => _isInternalPrivateNote = val ?? true,
+                          ),
                         ),
-                        const Text('Internal Private Note', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Internal Private Note',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -866,7 +1104,8 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                   controller: _noteContentController,
                   maxLines: 3,
                   decoration: const InputDecoration(
-                    hintText: 'Enter clinical observations, handover details, or emergency notes...',
+                    hintText:
+                        'Enter clinical observations, handover details, or emergency notes...',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -876,11 +1115,21 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                   child: GlassPrimaryButton(
                     onPressed: () {
                       if (_noteContentController.text.trim().isEmpty) return;
-                      widget.onSaveNote(_selectedNoteType, _noteContentController.text.trim(), _isInternalPrivateNote);
+                      widget.onSaveNote(
+                        _selectedNoteType,
+                        _noteContentController.text.trim(),
+                        _isInternalPrivateNote,
+                      );
                       _noteContentController.clear();
                     },
                     height: 36,
-                    child: const Text('Add Note', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Add Note',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -890,7 +1139,13 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
 
           // Notes List
           if (notes.isEmpty)
-            Text('No emergency notes recorded yet.', style: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextSecondary(isDark)))
+            Text(
+              'No emergency notes recorded yet.',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: HealthifyGlassTheme.getTextSecondary(isDark),
+              ),
+            )
           else
             ListView.separated(
               shrinkWrap: true,
@@ -902,9 +1157,13 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                 return Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: n.isInternalPrivate ? Colors.amber.withValues(alpha: isDark ? 0.12 : 0.06) : Colors.transparent,
+                    color: n.isInternalPrivate
+                        ? Colors.amber.withValues(alpha: isDark ? 0.12 : 0.06)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: HealthifyGlassTheme.getGlassBorder(isDark)),
+                    border: Border.all(
+                      color: HealthifyGlassTheme.getGlassBorder(isDark),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -914,25 +1173,54 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                         children: [
                           Text(
                             '${n.noteType.label} • ${n.author}',
-                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: n.isInternalPrivate ? Colors.amber.withValues(alpha: 0.2) : Colors.blue.withValues(alpha: 0.2),
+                              color: n.isInternalPrivate
+                                  ? Colors.amber.withValues(alpha: 0.2)
+                                  : Colors.blue.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              n.isInternalPrivate ? 'Internal Private' : 'Patient Visible',
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: n.isInternalPrivate ? Colors.amber.shade900 : Colors.blue.shade900),
+                              n.isInternalPrivate
+                                  ? 'Internal Private'
+                                  : 'Patient Visible',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: n.isInternalPrivate
+                                    ? Colors.amber.shade900
+                                    : Colors.blue.shade900,
+                              ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(n.content, style: TextStyle(fontSize: 12.5, color: HealthifyGlassTheme.getTextPrimary(isDark))),
+                      Text(
+                        n.content,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(EmergencyCaseDetailDrawer.formatDateTime(n.createdAt), style: TextStyle(fontSize: 10.5, color: HealthifyGlassTheme.getTextSecondary(isDark))),
+                      Text(
+                        EmergencyCaseDetailDrawer.formatDateTime(n.createdAt),
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: HealthifyGlassTheme.getTextSecondary(isDark),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -953,7 +1241,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
         children: [
           Row(
             children: [
-              const Icon(Icons.folder_shared_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
+              const Icon(
+                Icons.folder_shared_rounded,
+                size: 20,
+                color: HealthifyGlassTheme.primaryTeal,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Reports & Active Prescriptions',
@@ -968,26 +1260,39 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
           const SizedBox(height: 12),
           Text(
             'Linked Reports (${item.attachedReportIds.length}): ${item.attachedReportIds.join(", ")}',
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: HealthifyGlassTheme.getTextPrimary(isDark),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Linked Prescriptions (${item.attachedPrescriptionIds.length}): ${item.attachedPrescriptionIds.join(", ")}',
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: HealthifyGlassTheme.getTextPrimary(isDark)),
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: HealthifyGlassTheme.getTextPrimary(isDark),
+            ),
           ),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
             children: [
               OutlinedButton.icon(
-                onPressed: () => Navigator.pushNamed(context, '/doctor-reports'),
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/doctor-reports'),
                 icon: const Icon(Icons.description_rounded, size: 16),
                 label: const Text('View Patient Reports'),
               ),
-              const SizedBox(width: 10),
               GlassPrimaryButton(
                 onPressed: widget.onCreatePrescription,
                 height: 38,
-                child: const Text('Create Prescription', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Create Prescription',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -1002,9 +1307,13 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: HealthifyGlassTheme.primaryTeal.withValues(alpha: isDark ? 0.15 : 0.08),
+        color: HealthifyGlassTheme.primaryTeal.withValues(
+          alpha: isDark ? 0.15 : 0.08,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: HealthifyGlassTheme.primaryTeal.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1017,7 +1326,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                   color: HealthifyGlassTheme.primaryTeal,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.auto_awesome, size: 16, color: Colors.white),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  size: 16,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(width: 10),
               Text(
@@ -1050,7 +1363,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, size: 16, color: Colors.amber),
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 16,
+                  color: Colors.amber,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1058,7 +1375,9 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.amber.shade200 : Colors.amber.shade900,
+                      color: isDark
+                          ? Colors.amber.shade200
+                          : Colors.amber.shade900,
                     ),
                   ),
                 ),
@@ -1079,7 +1398,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
         children: [
           Row(
             children: [
-              const Icon(Icons.history_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
+              const Icon(
+                Icons.history_rounded,
+                size: 20,
+                color: HealthifyGlassTheme.primaryTeal,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Case Audit History',
@@ -1097,7 +1420,10 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
                 '${EmergencyCaseDetailDrawer.formatTime(item.timestamp)} • ${item.action} (${item.actor})',
-                style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: HealthifyGlassTheme.getTextSecondary(isDark),
+                ),
               ),
             ),
           ),
@@ -1106,7 +1432,10 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
     );
   }
 
-  Widget _buildPriorityBadge(EmergencyOperationalPriority priority, bool isDark) {
+  Widget _buildPriorityBadge(
+    EmergencyOperationalPriority priority,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -1115,7 +1444,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
       ),
       child: Text(
         priority.label,
-        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: priority.color),
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w900,
+          color: priority.color,
+        ),
       ),
     );
   }
@@ -1129,7 +1462,11 @@ class _EmergencyCaseDetailDrawerState extends State<EmergencyCaseDetailDrawer> {
       ),
       child: Text(
         status.label,
-        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: status.color),
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.bold,
+          color: status.color,
+        ),
       ),
     );
   }

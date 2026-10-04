@@ -87,24 +87,29 @@ class _RecordDonationModalState extends State<RecordDonationModal> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const GlassIconContainer(
-                            icon: Icons.volunteer_activism_outlined,
-                            color: Color(0xFF10B981),
-                            size: 38,
-                            iconSize: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Record Blood Donation',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : AppTheme.textPrimary,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const GlassIconContainer(
+                              icon: Icons.volunteer_activism_outlined,
+                              color: Color(0xFF10B981),
+                              size: 38,
+                              iconSize: 20,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Record Blood Donation',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : AppTheme.textPrimary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         icon: Icon(Icons.close_rounded, color: isDark ? Colors.white70 : AppTheme.textSecondary),

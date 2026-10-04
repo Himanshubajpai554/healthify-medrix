@@ -184,8 +184,11 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,22 +211,22 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
                   ),
                 ],
               ),
-              Row(
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
                 children: [
                   OutlinedButton.icon(
                     onPressed: () => _showEditProfileDialog(profile),
                     icon: const Icon(Icons.edit_outlined, size: 18),
                     label: const Text('Edit Profile'),
                   ),
-                  if (profile.verificationStatus != VerificationStatus.verified) ...[
-                    const SizedBox(width: 10),
+                  if (profile.verificationStatus != VerificationStatus.verified)
                     ElevatedButton.icon(
                       onPressed: () => _submitVerificationRequest(profile),
                       icon: const Icon(Icons.verified_user_outlined, size: 18),
                       label: const Text('Submit Verification'),
                       style: ElevatedButton.styleFrom(backgroundColor: statusColor),
                     ),
-                  ],
                 ],
               ),
             ],
@@ -250,7 +253,10 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 10,
+                        runSpacing: 4,
                         children: [
                           Text(
                             _getVerificationText(profile.verificationStatus),
@@ -260,7 +266,6 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
                               color: statusColor,
                             ),
                           ),
-                          const SizedBox(width: 10),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                             decoration: BoxDecoration(

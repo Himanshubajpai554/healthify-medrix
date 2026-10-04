@@ -199,8 +199,11 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,6 +230,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                 height: 42,
                 onPressed: () => _showAddOrEditDepartmentModal(),
                 child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.add_rounded, size: 18),
                     SizedBox(width: 6),
@@ -507,38 +511,44 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: HealthifyGlassTheme.primaryTeal.withValues(
-                            alpha: 0.15,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
                           ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          dep.code,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                            color: HealthifyGlassTheme.primaryTeal,
+                          decoration: BoxDecoration(
+                            color: HealthifyGlassTheme.primaryTeal.withValues(
+                              alpha: 0.15,
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            dep.code,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              color: HealthifyGlassTheme.primaryTeal,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        dep.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            dep.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: HealthifyGlassTheme.getTextPrimary(isDark),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   Switch(
                     value: dep.isActive,
@@ -558,11 +568,14 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${dep.doctorCount} Doctors • ${dep.totalStaff} Staff',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: HealthifyGlassTheme.getTextSecondary(isDark),
+                  Expanded(
+                    child: Text(
+                      '${dep.doctorCount} Doctors • ${dep.totalStaff} Staff',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: HealthifyGlassTheme.getTextSecondary(isDark),
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   TextButton.icon(

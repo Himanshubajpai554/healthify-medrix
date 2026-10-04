@@ -140,6 +140,8 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
                   _buildHeader(isDark, isDesktop),
                   TabBar(
                     controller: _tabController,
+                    isScrollable: !isDesktop,
+                    tabAlignment: !isDesktop ? TabAlignment.start : TabAlignment.fill,
                     indicatorColor: HealthifyGlassTheme.primaryTeal,
                     labelColor: HealthifyGlassTheme.primaryTeal,
                     unselectedLabelColor: HealthifyGlassTheme.getTextSecondary(isDark),
@@ -293,10 +295,11 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
                             const SizedBox(height: 4),
                             Text(ins.summary),
                             const SizedBox(height: 6),
-                            Row(
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 4,
                               children: [
                                 Text('${(ins.confidence * 100).toStringAsFixed(0)}% model confidence', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.primaryTeal)),
-                                const SizedBox(width: 12),
                                 Text(ins.isExpired ? 'Forecast expired' : 'Expires in ${ins.expiresAt.difference(DateTime.now()).inHours}h', style: TextStyle(fontSize: 11, color: ins.isExpired ? Colors.red : Colors.grey)),
                               ],
                             ),

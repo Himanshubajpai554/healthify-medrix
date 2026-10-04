@@ -124,15 +124,19 @@ class PrescriptionDetailDrawer extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'Prescription ${prescription.id}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: HealthifyGlassTheme.getTextPrimary(isDark),
+                    Expanded(
+                      child: Text(
+                        'Prescription ${prescription.id}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     _buildStatusBadge(prescription.status, isDark),
                   ],
                 ),
@@ -666,20 +670,27 @@ class PrescriptionDetailDrawer extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.history_edu_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Patient Medication History',
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: HealthifyGlassTheme.getTextPrimary(isDark),
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.history_edu_rounded, size: 20, color: HealthifyGlassTheme.primaryTeal),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Patient Medication History',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               TextButton(
                 onPressed: () => _showFullHistoryModal(context),
                 child: const Text('View Full History', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),

@@ -123,6 +123,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
                 children: [
                   _buildHeader(isDark, isDesktop),
                   TabBar(
+                    isScrollable: true,
                     controller: _tabController,
                     indicatorColor: HealthifyGlassTheme.primaryTeal,
                     labelColor: HealthifyGlassTheme.primaryTeal,
@@ -160,6 +161,64 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
   }
 
   Widget _buildHeader(bool isDark, bool isDesktop) {
+    if (!isDesktop) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.all(16),
+        decoration: _glassDecoration(isDark),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const GlassIconContainer(
+                  icon: Icons.account_tree_rounded,
+                  size: 44,
+                  iconSize: 24,
+                  color: HealthifyGlassTheme.primaryTeal,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'HOSPITAL RESOURCE ALLOCATION',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: HealthifyGlassTheme.getTextPrimary(isDark),
+                        ),
+                      ),
+                      Text(
+                        'Resource Matrix, Capacity & Allocation Insights',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: HealthifyGlassTheme.getTextSecondary(isDark),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: HealthifyGlassTheme.primaryTeal,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: _showCreateRequestModal,
+                icon: const Icon(Icons.add_rounded, color: Colors.white, size: 18),
+                label: const Text('Request Resource', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.all(16),
@@ -180,7 +239,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
                 Text(
                   'HOSPITAL RESOURCE ALLOCATION',
                   style: TextStyle(
-                    fontSize: isDesktop ? 18 : 15,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: HealthifyGlassTheme.getTextPrimary(isDark),
                   ),
@@ -508,10 +567,17 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Insight for ${rec.resourceType.name.toUpperCase()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                Expanded(
+                                  child: Text(
+                                    'Insight for ${rec.resourceType.name.toUpperCase()}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(color: HealthifyGlassTheme.primaryTeal, borderRadius: BorderRadius.circular(8)),
@@ -526,15 +592,16 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
                             const SizedBox(height: 4),
                             Text('Estimated Impact: ${rec.impact}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                            Wrap(
+                              alignment: WrapAlignment.end,
+                              spacing: 8,
+                              runSpacing: 8,
                               children: [
                                 if (rec.status == RecommendationStatus.newAction) ...[
                                   OutlinedButton(
                                     onPressed: () => _handleRecommendationAction(rec, RecommendationStatus.rejected),
                                     child: const Text('Reject Insight'),
                                   ),
-                                  const SizedBox(width: 8),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(backgroundColor: HealthifyGlassTheme.primaryTeal),
                                     onPressed: () => _handleRecommendationAction(rec, RecommendationStatus.accepted),

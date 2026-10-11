@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../repositories/hospital_repository.dart';
 import '../../enums/domain_enums.dart';
 import '../../models/hospital_model.dart';
@@ -103,5 +105,31 @@ class MockHospitalRepository implements HospitalRepository {
   Future<List<VerificationDocument>> getVerificationDocuments() async {
     await Future.delayed(const Duration(milliseconds: 100));
     return _profile.verificationDocuments;
+  }
+
+  @override
+  Future<Uint8List> getVerificationDocumentBytes(String documentId) async =>
+      Uint8List(0);
+
+  @override
+  Future<VerificationDocument> uploadVerificationDocument({
+    required String title,
+    required String documentType,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  }) async {
+    final document = VerificationDocument(
+      id: 'DOC-${DateTime.now().microsecondsSinceEpoch}',
+      title: title,
+      documentType: documentType,
+      fileUrl: '',
+      uploadDate: DateTime.now(),
+      status: 'Uploaded',
+    );
+    _profile = _profile.copyWith(
+      verificationDocuments: [..._profile.verificationDocuments, document],
+    );
+    return document;
   }
 }

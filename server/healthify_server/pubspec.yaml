@@ -1,0 +1,11 @@
+name: _
+publish_to: none
+
+environment:
+  sdk: '^3.8.0'
+
+workspace:
+  - healthify_server_client
+  - healthify_server_server
+  - healthify_server_flutter
+

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:healthify_server_client/healthify_server_client.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import '../../utils/page_transitions.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../widgets/form_progress_indicator.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -42,6 +45,8 @@ class _HospitalSignupScreenState extends State<HospitalSignupScreen>
   bool _isConfirmPasswordVisible = false;
   bool _isAuthorizedChecked = false;
   bool _isSubmitted = false;
+  bool _showAuthFlow = false;
+  bool _isRegisteringHospital = false;
 
   // Validation States for Micro-Feedback Icons & Progress Tracking
   bool _isNameValid = false;
@@ -282,12 +287,10 @@ class _HospitalSignupScreenState extends State<HospitalSignupScreen>
                 GlassPrimaryButton(
                   height: 44,
                   onPressed: () {
-                    Navigator.pop(context); // Close Modal
-                    setState(() {
-                      _isSubmitted = true; // Switch to Success State
-                    });
+                    Navigator.pop(context);
+                    setState(() => _showAuthFlow = true);
                   },
-                  child: const Text('Submit for Verification'),
+                  child: const Text('Create secure account'),
                 ),
               ],
             ),
@@ -337,24 +340,14 @@ class _HospitalSignupScreenState extends State<HospitalSignupScreen>
                                   flex: 7,
                                   child: Padding(
                                     padding: const EdgeInsets.all(40.0),
-                                    child: _isSubmitted
-                                        ? _buildSuccessState(isDark: isDark)
-                                        : _buildPremiumProcessCard(
-                                            isDark: isDark,
-                                            isDesktop: true,
-                                          ),
+                                    child: _registrationContent(isDark),
                                   ),
                                 ),
                               ],
                             )
                           : Padding(
                               padding: const EdgeInsets.all(22.0),
-                              child: _isSubmitted
-                                  ? _buildSuccessState(isDark: isDark)
-                                  : _buildPremiumProcessCard(
-                                      isDark: isDark,
-                                      isDesktop: false,
-                                    ),
+                              child: _registrationContent(isDark),
                             ),
                     ),
                   ),
@@ -364,6 +357,112 @@ class _HospitalSignupScreenState extends State<HospitalSignupScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _registrationContent(bool isDark) {
+    if (_isSubmitted) return _buildSuccessState(isDark: isDark);
+    if (_showAuthFlow) return _buildServerpodRegistration();
+    return _buildPremiumProcessCard(isDark: isDark, isDesktop: false);
+  }
+
+  Widget _buildServerpodRegistration() {
+    final client = RepositoryContainer.instance.serverpodClient;
+    if (client == null) return const Text('Hospital server is not configured.');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Secure hospital account',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Create and verify your email account. In local development, the verification code appears in the Serverpod terminal.',
+        ),
+        const SizedBox(height: 16),
+        if (_isRegisteringHospital)
+          const Center(child: CircularProgressIndicator())
+        else
+          EmailSignInWidget(
+            client: client,
+            startScreen: EmailFlowScreen.startRegistration,
+            onAuthenticated: () async {
+              if (!mounted || _isRegisteringHospital) return;
+              setState(() => _isRegisteringHospital = true);
+              try {
+                const hospitalKey = '';
+                final name = _hospitalNameController.text.trim();
+                final email = _emailController.text.trim();
+                final phone = _phoneController.text.trim();
+                final license = _licenseIdController.text.trim();
+                final city = _cityController.text.trim();
+                final membership = await client.hospital.registerHospital(
+                  HospitalInfoRecord(
+                    hospitalKey: hospitalKey,
+                    name: name,
+                    code: license,
+                    tagline: 'Healthcare services in $city',
+                    address: city,
+                    phone: phone,
+                    email: email,
+                    emergencyHotline: phone,
+                    totalBedCapacity: 0,
+                    icuCapacity: 0,
+                    activeDoctorCount: 0,
+                    totalStaffCount: 1,
+                  ),
+                  HospitalProfileRecord(
+                    hospitalKey: hospitalKey,
+                    name: name,
+                    legalName: name,
+                    displayName: name,
+                    hospitalType: 'Hospital',
+                    establishmentDate: '',
+                    registrationLicenseId: license,
+                    taxId: '',
+                    accreditationInfo: '',
+                    email: email,
+                    emergencyHelpline: phone,
+                    receptionPhone: phone,
+                    website: '',
+                    address: city,
+                    city: city,
+                    state: '',
+                    country: 'India',
+                    latitude: 0,
+                    longitude: 0,
+                    totalBeds: 0,
+                    icuBeds: 0,
+                    operatingTheatres: 0,
+                    emergencyCapacity: 0,
+                    has247Emergency: false,
+                    traumaLevel: 'Not specified',
+                    hasAmbulance: false,
+                    opdTimings: 'Not specified',
+                    operatingStatus: 'Pending verification',
+                    verificationStatus: 'pending',
+                    submittedDate: DateTime.now().toUtc(),
+                    verificationNotes: 'Registration submitted for review.',
+                  ),
+                );
+                RepositoryContainer.instance.setHospitalKey(membership.hospitalKey);
+                if (!mounted) return;
+                setState(() => _isSubmitted = true);
+              } catch (error) {
+                if (mounted) _showValidationToast(error.toString());
+              } finally {
+                if (mounted) setState(() => _isRegisteringHospital = false);
+              }
+            },
+            onError: (error) => _showValidationToast(error.toString()),
+          ),
+        TextButton(
+          onPressed: () => setState(() => _showAuthFlow = false),
+          child: const Text('Back to registration details'),
+        ),
+      ],
     );
   }
 

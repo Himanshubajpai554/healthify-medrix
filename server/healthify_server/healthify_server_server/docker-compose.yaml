@@ -1,0 +1,44 @@
+services:
+  # Development services
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: healthify_server
+      POSTGRES_PASSWORD: "6OXt3Zhc1-xQkbY_p9iHiBRjNCmL6gCL"
+    volumes:
+      - healthify_server_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.6
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "XrX2WfuIaloy_EFoGzGG4CFbobuyYVVn"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  # Test services
+  postgres_test:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: healthify_server_test
+      POSTGRES_PASSWORD: "Z2plTLw1UH1dcrOBiO5Do_CLRIEN9_UJ"
+    volumes:
+      - healthify_server_test_data:/var/lib/postgresql/data
+
+  redis_test:
+    image: redis:6.2.6
+    ports:
+      - "9091:6379"
+    command: redis-server --requirepass "kB69ccSNl2PagAPNAIyfR5U157VKAvNg"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+volumes:
+  healthify_server_data:
+  healthify_server_test_data:

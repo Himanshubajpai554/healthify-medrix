@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 
@@ -143,12 +144,69 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
   }
 
   void _submitVerificationRequest(HospitalProfile profile) async {
-    await RepositoryScope.of(context).hospitalRepository.submitVerification({'submittedAt': DateTime.now()});
-    _loadProfile();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verification documents submitted for review.')),
-      );
+    try {
+      await RepositoryScope.of(context)
+          .hospitalRepository
+          .submitVerification({'submittedAt': DateTime.now()});
+      await _loadProfile();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verification documents submitted for review.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not submit verification: $error')),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickVerificationDocument() async {
+    final picked = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf', 'png', 'jpg', 'jpeg'],
+      withData: true,
+    );
+    if (picked == null || picked.files.isEmpty) return;
+    final file = picked.files.single;
+    final bytes = file.bytes;
+    if (bytes == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not read the selected file.')),
+        );
+      }
+      return;
+    }
+    final extension = file.extension?.toLowerCase();
+    final mimeType = switch (extension) {
+      'pdf' => 'application/pdf',
+      'png' => 'image/png',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      _ => 'application/octet-stream',
+    };
+    try {
+      await RepositoryScope.of(context).hospitalRepository.uploadVerificationDocument(
+            title: file.name,
+            documentType: 'Hospital verification',
+            fileName: file.name,
+            mimeType: mimeType,
+            bytes: bytes,
+          );
+      await _loadProfile();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Document uploaded to private storage.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Document upload failed: $error')),
+        );
+      }
     }
   }
 
@@ -215,6 +273,11 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
                 spacing: 10,
                 runSpacing: 10,
                 children: [
+                  OutlinedButton.icon(
+                    onPressed: _pickVerificationDocument,
+                    icon: const Icon(Icons.upload_file_outlined, size: 18),
+                    label: const Text('Add Document'),
+                  ),
                   OutlinedButton.icon(
                     onPressed: () => _showEditProfileDialog(profile),
                     icon: const Icon(Icons.edit_outlined, size: 18),
@@ -290,6 +353,48 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
                     ],
                   ),
                 ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          GlassCard(
+            borderRadius: 20,
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Verification Documents',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: HealthifyGlassTheme.getTextPrimary(isDark),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (profile.verificationDocuments.isEmpty)
+                  Text(
+                    'No documents uploaded yet. Add a PDF, PNG, or JPEG (max 10 MB).',
+                    style: TextStyle(
+                      color: HealthifyGlassTheme.getTextSecondary(isDark),
+                    ),
+                  )
+                else
+                  ...profile.verificationDocuments.map(
+                    (document) => ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.description_outlined),
+                      title: Text(document.title),
+                      subtitle: Text('${document.documentType} • ${document.status}'),
+                      trailing: IconButton(
+                        tooltip: 'Open secure download link',
+                        onPressed: () => _viewDocument(document),
+                        icon: const Icon(Icons.open_in_new),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -372,6 +477,40 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _viewDocument(VerificationDocument document) async {
+    try {
+      final bytes = await RepositoryScope.of(context)
+          .hospitalRepository
+          .getVerificationDocumentBytes(document.id);
+      if (!mounted) return;
+      showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(document.title),
+          content: document.documentType.toLowerCase().contains('image') ||
+                  document.title.toLowerCase().endsWith('.png') ||
+                  document.title.toLowerCase().endsWith('.jpg') ||
+                  document.title.toLowerCase().endsWith('.jpeg')
+              ? Image.memory(bytes, errorBuilder: (_, __, ___) =>
+                  const Text('Image preview is unavailable.'))
+              : Text('Secure file retrieved (${bytes.length} bytes).'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open document: $error')),
+        );
+      }
+    }
   }
 
   Widget _buildInfoCard({

@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "healthify_server_flutter",
+            "cwd": "${workspaceFolder}/healthify_server_flutter",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "healthify_server_server",
+            "cwd": "${workspaceFolder}/healthify_server_server",
+            "request": "launch",
+            "type": "dart",
+            "preLaunchTask": "docker_compose_up",
+            "program": "bin/main.dart",
+            "env": {
+                "SERVERPOD_PASSWORD_database": "6OXt3Zhc1-xQkbY_p9iHiBRjNCmL6gCL"
+            },
+            "args": [
+                "--apply-migrations"
+            ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "healthify_server (full stack)",
+            "configurations": [
+                "healthify_server_server",
+                "healthify_server_flutter"
+            ],
+            "presentation": {
+                "order": 1
+            }
+        }
+    ]
+}

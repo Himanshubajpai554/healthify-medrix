@@ -1,0 +1,26 @@
+class: HospitalSettingsRecord
+table: hospital_settings
+fields:
+  hospitalKey: String
+  timezone: String
+  defaultCurrency: String
+  opdOpeningTime: String
+  opdClosingTime: String
+  appointmentSlotDurationMinutes: int
+  autoReleaseExpiredBeds: bool
+  isEmergencyActive: bool
+  emergencyHotline: String
+  traumaLevel: String
+  ambulanceCount: int
+  isHospitalDiscoverable: bool
+  showFacilitiesToPatients: bool
+  showDoctorSchedulesToPatients: bool
+  showBedAvailabilityToPatients: bool
+  showRatingsAndReviews: bool
+  sessionTimeoutMinutes: int
+  enforceMfaForAdmin: bool
+  enableAuditLogging: bool
+indexes:
+  hospital_settings_key_unique_idx:
+    fields: hospitalKey
+    unique: true

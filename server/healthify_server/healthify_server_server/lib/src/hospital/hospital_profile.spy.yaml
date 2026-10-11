@@ -1,0 +1,39 @@
+class: HospitalProfileRecord
+table: hospital_profile
+fields:
+  hospitalKey: String
+  name: String
+  legalName: String
+  displayName: String
+  hospitalType: String
+  establishmentDate: String
+  registrationLicenseId: String
+  taxId: String
+  accreditationInfo: String
+  email: String
+  emergencyHelpline: String
+  receptionPhone: String
+  website: String
+  address: String
+  city: String
+  state: String
+  country: String
+  latitude: double
+  longitude: double
+  totalBeds: int
+  icuBeds: int
+  operatingTheatres: int
+  emergencyCapacity: int
+  has247Emergency: bool
+  traumaLevel: String
+  hasAmbulance: bool
+  opdTimings: String
+  operatingStatus: String
+  verificationStatus: String
+  submittedDate: DateTime?
+  verifiedDate: DateTime?
+  verificationNotes: String
+indexes:
+  hospital_profile_key_unique_idx:
+    fields: hospitalKey
+    unique: true

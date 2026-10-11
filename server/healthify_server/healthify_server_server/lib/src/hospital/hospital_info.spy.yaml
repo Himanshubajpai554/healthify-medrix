@@ -1,0 +1,19 @@
+class: HospitalInfoRecord
+table: hospital_info
+fields:
+  hospitalKey: String
+  name: String
+  code: String
+  tagline: String
+  address: String
+  phone: String
+  email: String
+  emergencyHotline: String
+  totalBedCapacity: int
+  icuCapacity: int
+  activeDoctorCount: int
+  totalStaffCount: int
+indexes:
+  hospital_info_key_unique_idx:
+    fields: hospitalKey
+    unique: true

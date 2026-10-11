@@ -1,0 +1,14 @@
+class: HospitalMembershipRecord
+table: hospital_membership
+fields:
+  hospitalKey: String
+  userIdentifier: String
+  role: String
+  isActive: bool
+indexes:
+  hospital_membership_unique_idx:
+    fields: hospitalKey, userIdentifier
+    unique: true
+  hospital_membership_user_idx:
+    fields: userIdentifier
+    unique: true

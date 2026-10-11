@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../doctor/dashboard/doctor_dashboard_screen.dart';
 import '../../hospital/dashboard/main_dashboard_screen.dart';
 import '../../patient/dashboard/patient_dashboard_screen.dart';
@@ -73,11 +75,60 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
+
+      if (_selectedRole == MedrixRole.hospital) {
+        final client = RepositoryContainer.instance.serverpodClient;
+        if (client == null) {
+          setState(() => _isLoading = false);
+          _showLoginError('Hospital server is not configured.');
+          return;
+        }
+        final auth = EmailAuthController(
+          client: client,
+          startScreen: EmailFlowScreen.login,
+          onAuthenticated: () {},
+          onError: (error) => _showLoginError(error.toString()),
+        );
+        auth.emailController.text = _emailController.text.trim();
+        auth.passwordController.text = _passwordController.text;
+        try {
+          await auth.login();
+          final membership = await client.hospital.getMyHospital();
+          if (!mounted) return;
+          if (membership == null || !membership.isActive) {
+            await client.auth.signOutDevice();
+            _showLoginError(
+              'This account is not linked to an active hospital. Register your hospital first.',
+            );
+            return;
+          }
+          RepositoryContainer.instance.setHospitalKey(membership.hospitalKey);
+          final hospitalInfo = await client.hospital.getInfo(membership.hospitalKey);
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          Navigator.pushAndRemoveUntil(
+            context,
+            FadePageRoute(
+              page: MainDashboardScreen(
+                hospitalName: hospitalInfo?.name ?? 'Hospital',
+              ),
+            ),
+            (route) => false,
+          );
+        } catch (error) {
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          _showLoginError(error.toString());
+        } finally {
+          auth.dispose();
+        }
+        return;
+      }
 
       Future.delayed(const Duration(milliseconds: 800), () {
         if (!mounted) return;
@@ -108,6 +159,15 @@ class _LoginScreenState extends State<LoginScreen>
         );
       });
     }
+  }
+
+  void _showLoginError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      );
   }
 
   void _showForgotPasswordDialog() {

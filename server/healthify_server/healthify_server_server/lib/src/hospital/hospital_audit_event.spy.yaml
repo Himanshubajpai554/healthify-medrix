@@ -1,0 +1,13 @@
+class: HospitalAuditEvent
+table: hospital_audit_event
+fields:
+  hospitalKey: String
+  actorUserIdentifier: String
+  action: String
+  collection: String
+  recordKey: String
+  occurredAt: DateTime
+  details: String
+indexes:
+  hospital_audit_event_hospital_idx:
+    fields: hospitalKey, occurredAt

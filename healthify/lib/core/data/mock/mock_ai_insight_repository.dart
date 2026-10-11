@@ -4,6 +4,10 @@ import '../../models/ai_insight_model.dart';
 import '../../queries/domain_queries.dart';
 
 class MockAIInsightRepository implements AIInsightRepository {
+  static MockAIInsightRepository Function()? serverpodFactory;
+  factory MockAIInsightRepository() => serverpodFactory?.call() ?? MockAIInsightRepository.fallback();
+  MockAIInsightRepository.fallback();
+
   final List<AIInsight> _insights = [
     AIInsight(
       id: 'INS-2026-001',

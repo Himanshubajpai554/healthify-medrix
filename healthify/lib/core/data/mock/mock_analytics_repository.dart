@@ -3,6 +3,10 @@ import '../../models/analytics_model.dart';
 import '../../queries/domain_queries.dart';
 
 class MockAnalyticsRepository implements AnalyticsRepository {
+  static MockAnalyticsRepository Function()? serverpodFactory;
+  factory MockAnalyticsRepository() => serverpodFactory?.call() ?? MockAnalyticsRepository.fallback();
+  MockAnalyticsRepository.fallback();
+
   @override
   Future<HospitalOverviewMetrics> getOverviewMetrics() async {
     await Future.delayed(const Duration(milliseconds: 100));

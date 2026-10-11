@@ -1,0 +1,36 @@
+emailIdp:
+  - login:
+  - startRegistration:
+  - verifyRegistrationCode:
+  - finishRegistration:
+  - startPasswordReset:
+  - verifyPasswordResetCode:
+  - finishPasswordReset:
+  - hasAccount:
+jwtRefresh:
+  - refreshAccessToken:
+greeting:
+  - hello:
+hospital:
+  - listOperationalRecords:
+  - getOperationalRecord:
+  - saveOperationalRecord:
+  - deleteOperationalRecord:
+  - getOperationalAuditEvents:
+  - getMyHospital:
+  - registerHospital:
+  - getInfo:
+  - saveInfo:
+  - getProfile:
+  - saveProfile:
+  - getVerificationStatus:
+  - uploadVerificationDocument:
+  - getVerificationDocumentBytes:
+  - submitVerification:
+  - getVerificationDocuments:
+  - getSettings:
+  - saveSettings:
+  - getUserAccessList:
+  - saveUserAccess:
+  - updateUserRole:
+  - setUserAccess:

@@ -22,7 +22,7 @@ class OverviewDashboardScreen extends StatefulWidget {
 }
 
 class _OverviewDashboardScreenState extends State<OverviewDashboardScreen> {
-  final HospitalRepository _hospitalRepository = MockHospitalRepository();
+  late final HospitalRepository _hospitalRepository;
   final AnalyticsRepository _analyticsRepository = MockAnalyticsRepository();
   final NotificationRepository _notificationRepository = MockNotificationRepository();
 
@@ -36,6 +36,7 @@ class _OverviewDashboardScreenState extends State<OverviewDashboardScreen> {
   }
 
   Future<void> _loadDashboardData() async {
+    _hospitalRepository = RepositoryScope.of(context).hospitalRepository;
     setState(() {
       _metricsState = UiState.loading();
     });

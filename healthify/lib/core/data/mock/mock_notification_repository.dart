@@ -5,6 +5,10 @@ import '../../queries/domain_queries.dart';
 import 'mock_data_store.dart';
 
 class MockNotificationRepository implements NotificationRepository {
+  static MockNotificationRepository Function()? serverpodFactory;
+  factory MockNotificationRepository() => serverpodFactory?.call() ?? MockNotificationRepository.fallback();
+  MockNotificationRepository.fallback();
+
   final MockDataStore _store = MockDataStore();
 
   @override

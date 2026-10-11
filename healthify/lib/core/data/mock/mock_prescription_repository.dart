@@ -5,6 +5,10 @@ import '../../models/report_model.dart';
 import '../../queries/domain_queries.dart';
 
 class MockPrescriptionRepository implements PrescriptionRepository {
+  static MockPrescriptionRepository Function()? serverpodFactory;
+  factory MockPrescriptionRepository() => serverpodFactory?.call() ?? MockPrescriptionRepository.fallback();
+  MockPrescriptionRepository.fallback();
+
   final List<PrescriptionIndex> _prescriptions = [
     PrescriptionIndex(
       id: 'PRE-2026-001',

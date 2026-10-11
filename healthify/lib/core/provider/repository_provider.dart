@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:healthify_server_client/healthify_server_client.dart';
 import '../data/mock/mock_repositories.dart';
+import '../data/mock/mock_resource_repository.dart';
+import '../data/serverpod/serverpod_hospital_repositories.dart';
+import '../data/serverpod/hospital_operational_repository.dart';
+import '../data/serverpod/serverpod_hospital_operations.dart';
+import '../data/serverpod/serverpod_analytics_repository.dart';
+import '../data/serverpod/serverpod_notification_repository.dart';
+import '../data/serverpod/serverpod_resource_repository.dart';
+import '../data/serverpod/serverpod_clinical_document_repositories.dart';
+import '../data/serverpod/serverpod_audit_repository.dart';
+import '../data/serverpod/serverpod_ai_insight_repository.dart';
+import '../data/serverpod/serverpod_security_repository.dart';
 import '../data/repositories/repositories.dart';
 
 /// Central Dependency Injection container / InheritedWidget for Medrix repositories.
 class RepositoryContainer {
+  final Client? serverpodClient;
+  final HospitalOperationalRepository? hospitalOperationalRepository;
   final HospitalRepository hospitalRepository;
   final HospitalSettingsRepository hospitalSettingsRepository;
   final DepartmentRepository departmentRepository;
@@ -27,6 +41,7 @@ class RepositoryContainer {
   final NotificationRepository notificationRepository;
   final AIInsightRepository aiInsightRepository;
   final AuditRepository auditRepository;
+  final SecurityRepository securityRepository;
   final SettingsRepository settingsRepository;
   final AuthRepository authRepository;
   final FileStorageRepository fileStorageRepository;
@@ -37,6 +52,8 @@ class RepositoryContainer {
   final PatientDiscoveryRepository patientDiscoveryRepository;
 
   RepositoryContainer({
+    this.serverpodClient,
+    this.hospitalOperationalRepository,
     HospitalRepository? hospitalRepository,
     HospitalSettingsRepository? hospitalSettingsRepository,
     DepartmentRepository? departmentRepository,
@@ -59,6 +76,7 @@ class RepositoryContainer {
     NotificationRepository? notificationRepository,
     AIInsightRepository? aiInsightRepository,
     AuditRepository? auditRepository,
+    SecurityRepository? securityRepository,
     SettingsRepository? settingsRepository,
     AuthRepository? authRepository,
     FileStorageRepository? fileStorageRepository,
@@ -89,6 +107,7 @@ class RepositoryContainer {
         notificationRepository = notificationRepository ?? MockNotificationRepository(),
         aiInsightRepository = aiInsightRepository ?? MockAIInsightRepository(),
         auditRepository = auditRepository ?? MockAuditRepository(),
+        securityRepository = securityRepository ?? MockSecurityRepository(),
         settingsRepository = settingsRepository ?? MockSettingsRepository(),
         authRepository = authRepository ?? MockAuthRepository(),
         fileStorageRepository = fileStorageRepository ?? MockFileStorageRepository(),
@@ -99,7 +118,66 @@ class RepositoryContainer {
         patientDiscoveryRepository = patientDiscoveryRepository ?? MockPatientDiscoveryRepository();
 
 
-  static final RepositoryContainer instance = RepositoryContainer();
+  static RepositoryContainer instance = RepositoryContainer();
+
+  factory RepositoryContainer.withServerpod(Client client) {
+    final operationalRecords = HospitalOperationalRepository(client);
+    final analytics = ServerpodAnalyticsRepository(operationalRecords);
+    final notifications = ServerpodNotificationRepository(operationalRecords);
+    final resources = ServerpodResourceRepository(operationalRecords);
+    final reports = ServerpodReportRepository(operationalRecords);
+    final prescriptions = ServerpodPrescriptionRepository(operationalRecords);
+    final audit = ServerpodAuditRepository(operationalRecords);
+    final aiInsights = ServerpodAIInsightRepository(operationalRecords);
+    final security = ServerpodSecurityRepository(operationalRecords);
+    MockAnalyticsRepository.serverpodFactory = () => analytics;
+    MockNotificationRepository.serverpodFactory = () => notifications;
+    MockResourceRepository.serverpodFactory = () => resources;
+    MockReportRepository.serverpodFactory = () => reports;
+    MockPrescriptionRepository.serverpodFactory = () => prescriptions;
+    MockAuditRepository.serverpodFactory = () => audit;
+    MockAIInsightRepository.serverpodFactory = () => aiInsights;
+    MockSecurityRepository.serverpodFactory = () => security;
+    return RepositoryContainer(
+      serverpodClient: client,
+      hospitalOperationalRepository: operationalRecords,
+      departmentRepository:
+          ServerpodDepartmentRepository(operationalRecords),
+      staffRepository: ServerpodStaffRepository(operationalRecords),
+      shiftRosterRepository: ServerpodShiftRosterRepository(operationalRecords),
+      bedRepository: ServerpodBedRepository(operationalRecords),
+      appointmentRepository:
+          ServerpodAppointmentRepository(operationalRecords),
+      admissionRepository: ServerpodAdmissionRepository(operationalRecords),
+      bloodBankRepository: ServerpodBloodRepository(operationalRecords),
+      facilityRepository: ServerpodFacilityRepository(operationalRecords),
+      equipmentRepository: ServerpodEquipmentRepository(operationalRecords),
+      analyticsRepository: analytics,
+      notificationRepository: notifications,
+      reportRepository: reports,
+      prescriptionRepository: prescriptions,
+      auditRepository: audit,
+      aiInsightRepository: aiInsights,
+      securityRepository: security,
+      // Resource screen uses a direct MockResourceRepository constructor; the
+      // factory override routes that call to this tenant-scoped backend adapter.
+      hospitalRepository: ServerpodHospitalRepository(client),
+      hospitalSettingsRepository:
+          ServerpodHospitalSettingsRepository(client),
+    );
+  }
+
+  void setHospitalKey(String hospitalKey) {
+    final hospital = hospitalRepository;
+    final settings = hospitalSettingsRepository;
+    hospitalOperationalRepository?.hospitalKey = hospitalKey;
+    if (hospital is ServerpodHospitalRepository) {
+      hospital.hospitalKey = hospitalKey;
+    }
+    if (settings is ServerpodHospitalSettingsRepository) {
+      settings.hospitalKey = hospitalKey;
+    }
+  }
 
 
 }

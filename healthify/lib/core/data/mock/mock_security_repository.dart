@@ -6,6 +6,10 @@ import '../../queries/domain_queries.dart';
 import 'mock_data_store.dart';
 
 class MockSecurityRepository implements SecurityRepository {
+  static MockSecurityRepository Function()? serverpodFactory;
+  factory MockSecurityRepository() => serverpodFactory?.call() ?? MockSecurityRepository.fallback();
+  MockSecurityRepository.fallback();
+
   final MockDataStore _store = MockDataStore();
 
   @override

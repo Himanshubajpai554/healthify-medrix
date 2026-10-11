@@ -1,0 +1,15 @@
+class: HospitalUserAccessRecord
+table: hospital_user_access
+fields:
+  hospitalKey: String
+  userKey: String
+  userName: String
+  email: String
+  role: String
+  department: String
+  isActive: bool
+  lastActive: DateTime
+indexes:
+  hospital_user_key_unique_idx:
+    fields: hospitalKey, userKey
+    unique: true

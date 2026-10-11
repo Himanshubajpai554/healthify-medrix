@@ -5,6 +5,10 @@ import '../repositories/audit_repository.dart';
 import 'mock_data_store.dart';
 
 class MockAuditRepository implements AuditRepository {
+  static MockAuditRepository Function()? serverpodFactory;
+  factory MockAuditRepository() => serverpodFactory?.call() ?? MockAuditRepository.fallback();
+  MockAuditRepository.fallback();
+
   final MockDataStore _store = MockDataStore();
 
   @override

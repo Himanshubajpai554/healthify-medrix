@@ -1,0 +1,9 @@
+class: VerificationDocumentRecord
+table: verification_document
+fields:
+  hospitalKey: String
+  title: String
+  documentType: String
+  fileUrl: String
+  uploadDate: DateTime
+  status: String

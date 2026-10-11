@@ -4,6 +4,10 @@ import '../../models/resource_model.dart';
 import '../../queries/domain_queries.dart';
 
 class MockResourceRepository implements ResourceRepository {
+  static MockResourceRepository Function()? serverpodFactory;
+  factory MockResourceRepository() => serverpodFactory?.call() ?? MockResourceRepository.fallback();
+  MockResourceRepository.fallback();
+
   final List<ResourceMatrixItem> _matrixItems = const [
     ResourceMatrixItem(
       resourceType: HospitalResourceType.bed,

@@ -1,6 +1,6 @@
 enum BloodGroupType { aPos, aNeg, bPos, bNeg, abPos, abNeg, oPos, oNeg }
 enum BloodComponentType { wholeBlood, rbc, plasma, platelets, cryoprecipitate }
-enum InventoryUnitStatus { available, reserved, quarantine, expiringSoon, expired, discarded }
+enum InventoryUnitStatus { available, reserved, issued, quarantine, expiringSoon, expired, discarded }
 enum RequestPriority { critical, urgent, normal }
 enum RequestStatus { pending, partiallyAllocated, allocated, completed }
 

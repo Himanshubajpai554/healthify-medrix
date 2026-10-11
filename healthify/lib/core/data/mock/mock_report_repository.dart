@@ -4,6 +4,10 @@ import '../../models/report_model.dart';
 import '../../queries/domain_queries.dart';
 
 class MockReportRepository implements ReportRepository {
+  static MockReportRepository Function()? serverpodFactory;
+  factory MockReportRepository() => serverpodFactory?.call() ?? MockReportRepository.fallback();
+  MockReportRepository.fallback();
+
   final List<DiagnosticReport> _reports = [
     DiagnosticReport(
       id: 'REP-2026-001',

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:healthify_server_client/healthify_server_client.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import 'package:serverpod_flutter/serverpod_flutter.dart';
 import './core/core.dart';
 import './auth/doctor/doctor_signup_screen.dart';
 import './auth/login/login_screen.dart';
@@ -31,7 +34,17 @@ final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(
   ThemeMode.light,
 );
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  const serverpodUrl = String.fromEnvironment(
+    'SERVERPOD_URL',
+    defaultValue: 'http://localhost:8080/',
+  );
+  final client = Client(serverpodUrl)
+    ..connectivityMonitor = FlutterConnectivityMonitor()
+    ..authSessionManager = FlutterAuthSessionManager();
+  await client.auth.initialize();
+  RepositoryContainer.instance = RepositoryContainer.withServerpod(client);
   runApp(const HealthifyHospitalApp());
 }
 

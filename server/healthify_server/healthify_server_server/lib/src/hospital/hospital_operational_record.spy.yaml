@@ -1,0 +1,15 @@
+class: HospitalOperationalRecord
+table: hospital_operational_record
+fields:
+  hospitalKey: String
+  collection: String
+  recordKey: String
+  payload: String
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  hospital_operational_record_unique_idx:
+    fields: hospitalKey, collection, recordKey
+    unique: true
+  hospital_operational_record_collection_idx:
+    fields: hospitalKey, collection, updatedAt

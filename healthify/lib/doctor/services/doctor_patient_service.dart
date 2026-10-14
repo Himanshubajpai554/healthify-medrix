@@ -1,470 +1,408 @@
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../models/doctor_dashboard_models.dart';
 import '../models/patient_profile_models.dart';
-import '../data/doctor_mock_data.dart';
+import 'doctor_clinical_records_service.dart';
 
 class DoctorPatientService {
   static final DoctorPatientService _instance = DoctorPatientService._internal();
   factory DoctorPatientService() => _instance;
   DoctorPatientService._internal();
 
-  // Simulated in-memory database state
-  late PatientProfileFullModel _patientProfileData;
+  // ---------------------------------------------------------------------------
+  // Live-data helpers
+  // ---------------------------------------------------------------------------
 
-  bool _initialized = false;
+  bool get _isLive => RepositoryContainer.instance.serverpodClient != null;
 
-  void _ensureInitialized() {
-    if (_initialized) return;
-    _initialized = true;
-
-    final basePatient = DoctorMockData.patientRahul.copyWith(
-      followUpStatus: 'Due in 4 days',
-      nextAppointmentText: '04 Oct 2026, 10:30 AM',
+  /// Builds a full patient chart from server-backed hospital operational records
+  /// that belong to this doctor's authenticated hospital tenant.
+  Future<PatientProfileFullModel> _loadLivePatientProfile(String patientId) async {
+    final container = RepositoryContainer.instance;
+    final records = container.hospitalOperationalRepository!;
+    final patientRow = await records.get('patients', patientId);
+    final appointmentRows = (await records.list('appointments', limit: 500))
+        .where((row) => '${row['patientId'] ?? ''}' == patientId).toList();
+    final prescriptionRows = (await records.list('prescriptions', limit: 500))
+        .where((row) => '${row['patientId'] ?? ''}' == patientId).toList();
+    final reportRows = (await records.list('diagnosticReports', limit: 500))
+        .where((row) => '${row['patientId'] ?? ''}' == patientId).toList();
+    final emergencyRows = (await records.list('emergencies', limit: 500))
+        .where((row) => '${row['patientId'] ?? ''}' == patientId).toList();
+    final now = DateTime.now();
+    final patientMap = patientRow ?? <String, dynamic>{};
+    final name =
+        '${patientMap['name'] ?? appointmentRows.firstOrNull?['patientName'] ?? 'Patient'}';
+    final patient = PatientModel(
+      id: patientId,
+      name: name,
+      age: (patientMap['age'] as num?)?.toInt() ?? 0,
+      gender: '${patientMap['gender'] ?? 'Not reported'}',
+      avatarUrl: '${patientMap['profileImage'] ?? ''}',
+      phone: '${patientMap['phone'] ?? ''}',
+      bloodGroup: '${patientMap['bloodGroup'] ?? ''}',
+      mrn: '${patientMap['mrn'] ?? patientMap['mrnNumber'] ?? patientId}',
+      allergies:
+          (patientMap['allergies'] as List? ?? const []).map((e) => '$e').toList(),
+      chronicConditions:
+          (patientMap['chronicConditions'] as List? ?? const []).map((e) => '$e').toList(),
+      currentMedications:
+          (patientMap['currentMedications'] as List? ?? const []).map((e) => '$e').toList(),
+      lastVisitDate: appointmentRows.isEmpty
+          ? 'Not available'
+          : '${appointmentRows.first['dateTime'] ?? ''}',
+      lastVisitDoctor: container.currentDoctorName,
+      primaryConcern:
+          '${appointmentRows.firstOrNull?['reason'] ?? patientMap['diagnosis'] ?? ''}',
+      department:
+          '${appointmentRows.firstOrNull?['department'] ?? container.currentDoctorSpecialty}',
     );
-
-    _patientProfileData = PatientProfileFullModel(
-      patient: PatientModel(
-        id: 'MED-PAT-10482',
-        name: 'Rahul Sharma',
-        age: 42,
-        gender: 'Male',
-        avatarUrl: 'https://i.pravatar.cc/150?img=11',
-        phone: '+91 98765 12345',
-        bloodGroup: 'B+',
-        mrn: 'MRN-2026-10482',
-        allergies: ['Penicillin', 'Sulfa Drugs', 'Latex (Mild)'],
-        chronicConditions: ['Hypertension (Stage 1)', 'Type 2 Diabetes Mellitus', 'Dyslipidemia'],
-        currentMedications: [
-          'Atorvastatin 20mg (OD Night)',
-          'Metoprolol 50mg (BD)',
-          'Metformin 500mg (BD After Meal)',
-        ],
-        lastVisitDate: '28 Sep 2026',
-        lastVisitDoctor: 'Dr. Sarah Jenkins',
-        primaryConcern: 'Post-ECG exertional chest tightness & mild dyspnea on stairs',
-        careStatus: PatientCareStatus.active,
-        nextAppointmentText: '04 Oct 2026, 10:30 AM',
-        followUpStatus: 'Due in 4 days',
-        department: 'Cardiology',
-        clinicalAlerts: ['Pending CBC & Lipid Profile', 'Allergy: Penicillin', 'High Risk BP'],
-      ),
-      currentVitals: {
-        'Blood Pressure': '138/88 mmHg',
-        'Heart Rate': '74 bpm',
-        'SpO2': '98% Room Air',
-        'Temperature': '98.4 °F',
-        'Weight': '78.5 kg',
-        'BMI': '25.6 kg/m²',
-        'Blood Glucose (F)': '118 mg/dL',
-      },
-      activeEmergency: null,
-      summary: AIPatientSummaryModel(
-        patient: basePatient,
-        previousVisitsCount: 6,
-        recentLabReportsCount: 4,
-        currentMedications: [
-          'Atorvastatin 20mg (OD Night)',
-          'Metoprolol 50mg (BD)',
-          'Metformin 500mg (BD After Meal)',
-        ],
-        lastConsultationText:
-            'Evaluated for mild exertion dyspnea. ECG showed sinus rhythm with non-specific T-wave flattening in V4-V6. Recommended 24-hr Holter and treadmill stress test.',
-        recentReportAttention:
-            'Lipid panel (28 Sep 2026) shows elevated LDL (142 mg/dL) despite statin therapy. HbA1c remains controlled at 6.6%.',
-        keyFindings:
-            '42yo male with known Stage 1 HTN & T2DM. Primary symptom: Grade II exertional dyspnea. Stable hemodynamics. Known Penicillin allergy. Needs lipid adjustment and stress ECHO review.',
-      ),
-      medicalHistory: const [
+    final appointments = appointmentRows.map((row) {
+      final date = DateTime.tryParse('${row['dateTime'] ?? ''}') ?? now;
+      final statusText = '${row['status'] ?? ''}'.toLowerCase();
+      final status = switch (statusText) {
+        'pending' || 'waiting' => AppointmentStatus.waiting,
+        'checkedin' || 'checked_in' => AppointmentStatus.checkedIn,
+        'inconsultation' || 'in_consultation' => AppointmentStatus.inConsultation,
+        'completed' => AppointmentStatus.completed,
+        'cancelled' => AppointmentStatus.cancelled,
+        'noshow' || 'no_show' => AppointmentStatus.noShow,
+        _ => AppointmentStatus.upcoming,
+      };
+      final appointmentTime = TimeOfDay.fromDateTime(date);
+      final displayHour =
+          appointmentTime.hourOfPeriod == 0 ? 12 : appointmentTime.hourOfPeriod;
+      final displayTime =
+          '$displayHour:${appointmentTime.minute.toString().padLeft(2, '0')} '
+          '${appointmentTime.period == DayPeriod.am ? 'AM' : 'PM'}';
+      return DoctorAppointmentModel(
+        id: '${row['id'] ?? ''}',
+        patient: patient,
+        appointmentTime: displayTime,
+        appointmentType: '${row['type'] ?? 'Consultation'}',
+        department: '${row['department'] ?? patient.department}',
+        status: status,
+        tokenNumber: '',
+        reasonForVisit: '${row['reason'] ?? ''}',
+        date: date,
+      );
+    }).toList();
+    final consultations = appointments
+        .where((a) => a.status == AppointmentStatus.completed)
+        .map(
+          (appointment) => PatientConsultationRecordModel(
+            id: appointment.id,
+            date: appointment.date.toLocal().toString().split(' ').first,
+            time: appointment.appointmentTime,
+            doctorName: container.currentDoctorName,
+            doctorSpecialty: container.currentDoctorSpecialty,
+            department: appointment.department,
+            chiefComplaint: appointment.reasonForVisit,
+            diagnosis: '',
+            vitals: const {},
+            clinicalNotes: appointment.reasonForVisit,
+            prescribedMedications: const [],
+            status: 'Completed',
+          ),
+        )
+        .toList();
+    final prescriptions = prescriptionRows.map((row) {
+      final signed =
+          DateTime.tryParse('${row['signedAt'] ?? row['createdAt'] ?? ''}') ?? now;
+      final medications =
+          (row['medications'] as List? ?? const []).whereType<Map>().map((med) =>
+              PrescriptionMedicationItem(
+                drugName: '${med['medicationName'] ?? ''}',
+                dosage: '${med['dosage'] ?? ''}',
+                frequency: '${med['frequency'] ?? ''}',
+                duration: '${med['duration'] ?? med['durationDays'] ?? ''}',
+                timing: '${med['instructions'] ?? ''}',
+              )).toList();
+      return PatientPrescriptionModel(
+        id: '${row['id'] ?? ''}',
+        prescriptionDate: signed.toLocal().toString(),
+        doctorName: '${row['doctorName'] ?? container.currentDoctorName}',
+        department: '${row['department'] ?? patient.department}',
+        diagnosis: '${row['clinicalNotes'] ?? ''}',
+        medications: medications,
+        generalInstructions: '${row['instructions'] ?? ''}',
+        isActive: '${row['status']}' == 'active',
+        validityUntil: '',
+      );
+    }).toList();
+    final reports = reportRows.map((row) {
+      final reportDate =
+          DateTime.tryParse('${row['date'] ?? row['uploadedAt'] ?? ''}') ?? now;
+      final categoryName = '${row['reportType'] ?? 'other'}';
+      final category = ReportCategory.values
+              .where(
+                  (item) => item.name.toLowerCase() == categoryName.toLowerCase())
+              .firstOrNull ??
+          ReportCategory.all;
+      final reportStatus = '${row['verificationStatus'] ?? row['status'] ?? ''}'.toLowerCase();
+      return PatientReportModel(
+        id: '${row['id'] ?? ''}',
+        title: '${row['title'] ?? ''}',
+        category: category,
+        date: reportDate.toLocal().toString(),
+        labName: '${row['facility'] ?? ''}',
+        orderingDoctor: '${row['orderingDoctorId'] ?? ''}',
+        status: reportStatus == 'verified' || reportStatus == 'released'
+            ? 'Reviewed'
+            : 'Pending Review',
+        priority: row['isCritical'] == true ? ReportPriority.urgent : ReportPriority.normal,
+        labValues: Map<String, String>.from(
+            (row['resultData'] as Map? ?? const {}).map((k, v) => MapEntry('$k', '$v'))),
+        attachmentUrl: row['reportUrl'] as String?,
+        clinicalNotes: row['summary'] as String?,
+      );
+    }).toList();
+    final notes = await DoctorClinicalRecordsService.instance.getNotes(patientId);
+    final vitals = Map<String, String>.from(
+        (patientMap['vitals'] as Map? ?? const {}).map((k, v) => MapEntry('$k', '$v')));
+    final summary = AIPatientSummaryModel(
+      patient: patient,
+      previousVisitsCount:
+          appointments.where((a) => a.status == AppointmentStatus.completed).length,
+      recentLabReportsCount: reports.length,
+      currentMedications: prescriptions
+          .where((rx) => rx.isActive)
+          .expand((rx) => rx.medications)
+          .map((m) => '${m.drugName} ${m.dosage}')
+          .toList(),
+      lastConsultationText: appointments
+              .where((a) => a.status == AppointmentStatus.completed)
+              .firstOrNull
+              ?.reasonForVisit ??
+          'No completed consultation is recorded.',
+      recentReportAttention:
+          reports.isEmpty ? 'No reports are recorded.' : reports.first.title,
+      keyFindings:
+          "Loaded from this hospital's patient, appointment, report, prescription, "
+          "and clinical-note records.",
+    );
+    final activeEmergencyRow = emergencyRows
+        .where((row) => !{'discharged', 'resolved', 'cancelled'}
+            .contains('${row['status']}'.toLowerCase()))
+        .firstOrNull;
+    final emergency = activeEmergencyRow == null
+        ? null
+        : DoctorEmergencyCaseModel(
+            id: '${activeEmergencyRow['id'] ?? ''}',
+            patient: patient,
+            severity: '${activeEmergencyRow['priority']}'.toLowerCase().contains('immediate')
+                ? EmergencySeverity.critical
+                : EmergencySeverity.high,
+            arrivalTime: '${activeEmergencyRow['arrivalTime'] ?? ''}',
+            assignedBed: '${activeEmergencyRow['location'] ?? ''}',
+            department: '${activeEmergencyRow['department'] ?? patient.department}',
+            assignedDoctor:
+                '${activeEmergencyRow['assignedDoctor'] ?? container.currentDoctorName}',
+            currentStatus: '${activeEmergencyRow['status'] ?? ''}',
+          );
+    final history = <MedicalHistoryItemModel>[
+      for (final apt in appointments.where((a) => a.status == AppointmentStatus.completed))
         MedicalHistoryItemModel(
-          id: 'MH-101',
-          date: '28 Sep 2026',
-          title: 'Cardiology OPD Consultation',
+          id: apt.id,
+          date: apt.date.toLocal().toString(),
+          title: 'Consultation',
           category: MedicalHistoryCategory.consultation,
-          doctorName: 'Dr. Sarah Jenkins',
-          department: 'Cardiology',
-          summary: 'Exertional dyspnea evaluation. Resting 12-lead ECG conducted.',
+          doctorName: container.currentDoctorName,
+          department: apt.department,
+          summary: apt.reasonForVisit,
           status: 'Completed',
           icon: Icons.medical_services_rounded,
-          badgeColor: Color(0xFF0D9488),
+          badgeColor: const Color(0xFF0D9488),
         ),
+      for (final report in reports)
         MedicalHistoryItemModel(
-          id: 'MH-102',
-          date: '28 Sep 2026',
-          title: 'Complete Blood Count (CBC) & Lipid Profile',
+          id: report.id,
+          date: report.date,
+          title: report.title,
           category: MedicalHistoryCategory.report,
-          doctorName: 'Dr. Rajesh Patel (Pathology)',
-          department: 'Laboratory',
-          summary: 'LDL elevated (142 mg/dL). HbA1c 6.6%. Hemoglobin 14.8 g/dL.',
-          status: 'Abnormal LDL',
+          doctorName: report.orderingDoctor,
+          department: report.category.name,
+          summary: report.clinicalNotes ?? '',
+          status: report.status,
           icon: Icons.science_rounded,
-          badgeColor: Color(0xFFF59E0B),
+          badgeColor: const Color(0xFF3B82F6),
         ),
-        MedicalHistoryItemModel(
-          id: 'MH-103',
-          date: '15 Aug 2026',
-          title: '2D Echocardiogram & Color Doppler',
-          category: MedicalHistoryCategory.procedure,
-          doctorName: 'Dr. Sarah Jenkins',
-          department: 'Cardiology Diagnostic',
-          summary: 'Normal LVEF (62%), mild concentric LV hypertrophy, no wall motion abnormality.',
-          status: 'Normal EF',
-          icon: Icons.monitor_heart_rounded,
-          badgeColor: Color(0xFF0284C7),
-        ),
-        MedicalHistoryItemModel(
-          id: 'MH-104',
-          date: '12 May 2026',
-          title: 'Diabetes & Hypertension Quarterly Review',
-          category: MedicalHistoryCategory.consultation,
-          doctorName: 'Dr. Sarah Jenkins',
-          department: 'Internal Medicine',
-          summary: 'BP well controlled on Metoprolol. Dose of Metformin retained at 500mg BD.',
-          status: 'Stable',
-          icon: Icons.medical_services_rounded,
-          badgeColor: Color(0xFF0D9488),
-        ),
-        MedicalHistoryItemModel(
-          id: 'MH-105',
-          date: '10 Jan 2026',
-          title: 'Chest X-Ray PA View',
-          category: MedicalHistoryCategory.report,
-          doctorName: 'Dr. Vikram Malhotra (Radiology)',
-          department: 'Radiology',
-          summary: 'Clear lung fields, normal bronchovascular markings, cardiac size normal.',
-          status: 'Normal',
-          icon: Icons.receipt_long_rounded,
-          badgeColor: Color(0xFF10B981),
-        ),
-        MedicalHistoryItemModel(
-          id: 'MH-106',
-          date: '04 Nov 2025',
-          title: 'Prescription Issued: Anti-hypertensive Refill',
-          category: MedicalHistoryCategory.prescription,
-          doctorName: 'Dr. Sarah Jenkins',
-          department: 'Cardiology',
-          summary: '3-Month refill for Metoprolol 50mg & Atorvastatin 20mg.',
-          status: 'Fulfilled',
-          icon: Icons.medication_rounded,
-          badgeColor: Color(0xFF6366F1),
-        ),
-      ],
-      consultations: const [
-        PatientConsultationRecordModel(
-          id: 'CON-9901',
-          date: '28 Sep 2026',
-          time: '10:30 AM',
-          doctorName: 'Dr. Sarah Jenkins',
-          doctorSpecialty: 'Senior Cardiologist',
-          department: 'Cardiology OPD',
-          chiefComplaint: 'Chest tightness on climbing 2 flights of stairs, mild fatigue.',
-          diagnosis: 'Exertional Angina Spectrum / Hypertensive Cardiovascular Disease',
-          vitals: {
-            'BP': '138/88 mmHg',
-            'HR': '74 bpm',
-            'SpO2': '98%',
-            'BMI': '25.6',
-          },
-          clinicalNotes:
-              'Patient reports insidious onset of exertional discomfort. No resting chest pain, no radiation to jaw/left arm. ECG shows ST-T baseline. Advised stress test & lipid optimizer.',
-          prescribedMedications: [
-            'Atorvastatin 40mg (OD Night) - Up-titrated',
-            'Metoprolol 50mg (BD)',
-            'Nitroglycerin Sublingual 0.5mg (PRN for Acute Pain)',
-          ],
-          followUpDate: '04 Oct 2026',
-          status: 'Completed',
-        ),
-        PatientConsultationRecordModel(
-          id: 'CON-8840',
-          date: '12 May 2026',
-          time: '11:15 AM',
-          doctorName: 'Dr. Sarah Jenkins',
-          doctorSpecialty: 'Senior Cardiologist',
-          department: 'Cardiology OPD',
-          chiefComplaint: 'Routine 3-month follow-up for Hypertension & Diabetes.',
-          diagnosis: 'Essential Hypertension (Controlled), T2DM (Controlled)',
-          vitals: {
-            'BP': '126/82 mmHg',
-            'HR': '70 bpm',
-            'SpO2': '99%',
-            'BMI': '25.4',
-          },
-          clinicalNotes:
-              'Patient compliant with lifestyle modifications and prescribed oral hypoglycemics. Blood pressures consistently below 130/80 on home monitor.',
-          prescribedMedications: [
-            'Atorvastatin 20mg (OD)',
-            'Metoprolol 50mg (BD)',
-            'Metformin 500mg (BD)',
-          ],
-          followUpDate: '28 Sep 2026',
-          status: 'Completed',
-        ),
-      ],
-      reports: const [
-        PatientReportModel(
-          id: 'REP-701',
-          title: 'Comprehensive Lipid Panel & HbA1c',
-          category: ReportCategory.laboratory,
-          date: '28 Sep 2026',
-          labName: 'Medrix Central Diagnostics Lab',
-          orderingDoctor: 'Dr. Sarah Jenkins',
-          status: 'Abnormal LDL',
-          priority: ReportPriority.high,
-          labValues: {
-            'Total Cholesterol': '218 mg/dL (High)',
-            'LDL Cholesterol': '142 mg/dL (Elevated)',
-            'HDL Cholesterol': '44 mg/dL (Desirable)',
-            'Triglycerides': '165 mg/dL (Borderline High)',
-            'HbA1c': '6.6 % (Good Glycemic Control)',
-            'Fasting Blood Sugar': '114 mg/dL',
-          },
-          attachmentUrl: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?w=600&q=80',
-          attachmentType: 'Lab PDF',
-          clinicalNotes: 'Up-titrated Atorvastatin to 40mg daily based on 142 mg/dL LDL target in high-risk patient.',
-        ),
-        PatientReportModel(
-          id: 'REP-702',
-          title: '12-Lead Resting Electrocardiogram (ECG)',
-          category: ReportCategory.cardiology,
-          date: '28 Sep 2026',
-          labName: 'Medrix Non-Invasive Cardiac Lab',
-          orderingDoctor: 'Dr. Sarah Jenkins',
-          status: 'Normal Baseline',
-          priority: ReportPriority.normal,
-          labValues: {
-            'Heart Rate': '74 bpm',
-            'PR Interval': '152 ms',
-            'QRS Duration': '88 ms',
-            'QT/QTc': '390/412 ms',
-            'Axis': 'Normal (+45°)',
-            'Rhythm': 'Normal Sinus Rhythm',
-          },
-          attachmentUrl: 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=600&q=80',
-          attachmentType: 'ECG Waveform',
-          clinicalNotes: 'No acute ST elevation or depression. Mild non-specific T wave flattening in V5-V6.',
-        ),
-        PatientReportModel(
-          id: 'REP-703',
-          title: 'Chest Radiograph PA View',
-          category: ReportCategory.radiology,
-          date: '10 Jan 2026',
-          labName: 'Medrix Radiology Wing',
-          orderingDoctor: 'Dr. Vikram Malhotra',
-          status: 'Normal',
-          priority: ReportPriority.normal,
-          labValues: {
-            'Lungs': 'Clear vascular markings without consolidation or effusion',
-            'Heart Size': 'Normal cardiothoracic ratio (< 0.50)',
-            'Mediastinum': 'Unremarkable',
-            'Bony Cage': 'Intact rib structure',
-          },
-          attachmentUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&q=80',
-          attachmentType: 'X-Ray Scan',
-          clinicalNotes: 'Normal baseline chest film.',
-        ),
-      ],
-      prescriptions: const [
-        PatientPrescriptionModel(
-          id: 'RX-9082',
-          prescriptionDate: '28 Sep 2026',
-          doctorName: 'Dr. Sarah Jenkins',
-          department: 'Cardiology',
-          diagnosis: 'Exertional Angina & Dyslipidemia',
-          isActive: true,
-          validityUntil: '28 Dec 2026',
-          generalInstructions:
-              'Take cholesterol medication strictly at bedtime. Avoid grapefruit juice. Continue low-salt diabetic diet.',
-          medications: [
-            PrescriptionMedicationItem(
-              drugName: 'Atorvastatin',
-              dosage: '40 mg',
-              frequency: 'Once Daily (OD)',
-              duration: '90 Days',
-              timing: 'Night / After Dinner',
-              specialInstructions: 'Increased from 20mg to lower target LDL < 100 mg/dL',
-            ),
-            PrescriptionMedicationItem(
-              drugName: 'Metoprolol Succinate ER',
-              dosage: '50 mg',
-              frequency: 'Twice Daily (BD)',
-              duration: '90 Days',
-              timing: 'Morning & Evening',
-              specialInstructions: 'Do not discontinue abruptly',
-            ),
-            PrescriptionMedicationItem(
-              drugName: 'Metformin HCl',
-              dosage: '500 mg',
-              frequency: 'Twice Daily (BD)',
-              duration: '90 Days',
-              timing: 'With Meals',
-              specialInstructions: 'Maintain glycemic log',
-            ),
-            PrescriptionMedicationItem(
-              drugName: 'Nitroglycerin Sublingual',
-              dosage: '0.5 mg',
-              frequency: 'PRN (As Needed)',
-              duration: 'Emergency Kit',
-              timing: 'Under tongue for acute chest tightness',
-              specialInstructions: 'Seek immediate ER if pain persists after 5 mins',
-            ),
-          ],
-        ),
-      ],
-      appointments: [
-        DoctorAppointmentModel(
-          id: 'APT-501',
-          patient: basePatient,
-          appointmentTime: '10:30 AM',
-          appointmentType: 'Follow-Up OPD',
-          department: 'Cardiology',
-          status: AppointmentStatus.upcoming,
-          tokenNumber: 'CARD-12',
-          isNextUpcoming: true,
-          reasonForVisit: 'Review Stress Echocardiogram & Lipid Response',
-          consultationMode: 'In-Person OPD',
-          date: DateTime.now().add(const Duration(days: 4)),
-        ),
-        DoctorAppointmentModel(
-          id: 'APT-482',
-          patient: basePatient,
-          appointmentTime: '10:30 AM',
-          appointmentType: 'Consultation',
-          department: 'Cardiology',
-          status: AppointmentStatus.completed,
-          tokenNumber: 'CARD-04',
-          reasonForVisit: 'Exertional dyspnea & chest tightness',
-          consultationMode: 'In-Person OPD',
-          date: DateTime.now().subtract(const Duration(days: 3)),
-        ),
-      ],
-      notes: const [
-        PatientNoteModel(
-          id: 'NTE-301',
-          date: '28 Sep 2026',
-          authorDoctor: 'Dr. Sarah Jenkins',
-          authorSpecialty: 'Cardiologist',
-          content:
-              'Patient expresses high compliance but occasional work stress. Wife accompanying during visits. Recommended home BP logging twice daily.',
-          isInternalPrivate: true,
-          noteType: ClinicalNoteType.internalNote,
-        ),
-        PatientNoteModel(
-          id: 'NTE-302',
-          date: '28 Sep 2026',
-          authorDoctor: 'Dr. Sarah Jenkins',
-          authorSpecialty: 'Cardiologist',
-          content:
-              'Statin dose escalated to 40mg. Scheduled Treadmill Stress Test for 04 Oct 2026. Advised to avoid heavy unaccustomed weight training.',
-          isInternalPrivate: false,
-          noteType: ClinicalNoteType.consultationNote,
-        ),
-      ],
-      followUps: const [
-        PatientFollowUpModel(
-          id: 'FLP-101',
-          dueDate: '04 Oct 2026',
-          reason: 'Review Stress Echo & Lipid Response to Atorvastatin 40mg',
-          doctorName: 'Dr. Sarah Jenkins',
-          department: 'Cardiology',
-          status: 'Due',
-          notes: 'Ensure patient fasting 8 hours if repeat lipid is requested.',
-        ),
-      ],
-      documents: const [
-        PatientDocumentModel(
-          id: 'DOC-11',
-          fileName: 'Previous_Discharge_Summary_2024.pdf',
-          fileType: 'PDF Document',
-          uploadDate: '15 Jan 2025',
-          fileSize: '2.4 MB',
-          category: 'Hospital Discharge',
-        ),
-        PatientDocumentModel(
-          id: 'DOC-12',
-          fileName: 'Insurance_PreAuth_Cardiology.pdf',
-          fileType: 'PDF Document',
-          uploadDate: '28 Sep 2026',
-          fileSize: '1.1 MB',
-          category: 'Insurance',
-        ),
-        PatientDocumentModel(
-          id: 'DOC-13',
-          fileName: 'Holter_24Hour_ECG_Trace.dicom',
-          fileType: 'DICOM Image',
-          uploadDate: '28 Sep 2026',
-          fileSize: '18.5 MB',
-          category: 'Diagnostics',
-        ),
-      ],
+    ];
+    return PatientProfileFullModel(
+      patient: patient,
+      currentVitals: vitals,
+      activeEmergency: emergency,
+      summary: summary,
+      medicalHistory: history,
+      consultations: consultations,
+      reports: reports,
+      prescriptions: prescriptions,
+      appointments: appointments,
+      notes: notes,
+      followUps: const [],
+      documents: const [],
     );
   }
 
-  // Serverpod Service APIs
+  // ---------------------------------------------------------------------------
+  // Demo-mode fallback — used ONLY when no Serverpod client is active.
+  // Fields are clearly labelled "[DEMO]" so they can never be mistaken for
+  // real patient records.
+  // ---------------------------------------------------------------------------
+
+  static const PatientModel _demoPatient = PatientModel(
+    id: 'PAT-DEMO-001',
+    name: '[DEMO] Rahul Sharma',
+    age: 42,
+    gender: 'Male',
+    avatarUrl: 'https://i.pravatar.cc/150?img=11',
+    phone: '+91 98765 12345',
+    bloodGroup: 'B+',
+    mrn: 'MRN-DEMO-001',
+    allergies: ['Penicillin', 'Sulfa Drugs'],
+    chronicConditions: ['Hypertension (Stage 1)', 'Type 2 Diabetes'],
+    currentMedications: [
+      'Atorvastatin 20mg (OD)',
+      'Metoprolol 50mg (BD)',
+      'Metformin 500mg (BD)',
+    ],
+    lastVisitDate: 'Sep 28',
+    lastVisitDoctor: 'Dr. Sarah Jenkins',
+    primaryConcern: '[DEMO] Post-ECG chest tightness, mild exertional dyspnea',
+    careStatus: PatientCareStatus.followUpDue,
+    nextAppointmentText: 'Oct 02, 10:30 AM',
+    followUpStatus: 'Due',
+    department: 'Cardiology',
+    clinicalAlerts: ['[DEMO] Sample Record'],
+  );
+
+  static PatientProfileFullModel _buildDemoProfile() {
+    final base = _demoPatient;
+    return PatientProfileFullModel(
+      patient: base,
+      currentVitals: const {
+        'Blood Pressure': '[DEMO] 138/88 mmHg',
+        'Heart Rate': '[DEMO] 74 bpm',
+        'SpO2': '[DEMO] 98%',
+        'Temperature': '[DEMO] 98.4 °F',
+      },
+      activeEmergency: null,
+      summary: AIPatientSummaryModel(
+        patient: base,
+        previousVisitsCount: 0,
+        recentLabReportsCount: 0,
+        currentMedications: const [],
+        lastConsultationText: '[DEMO MODE — connect to backend to see real data]',
+        recentReportAttention: '[DEMO MODE]',
+        keyFindings:
+            '[DEMO MODE — no real clinical data is loaded in offline mode]',
+      ),
+      medicalHistory: const [],
+      consultations: const [],
+      reports: const [],
+      prescriptions: const [],
+      appointments: const [],
+      notes: const [],
+      followUps: const [],
+      documents: const [],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
+
   Future<PatientProfileFullModel> getPatientProfile(String patientId) async {
-    _ensureInitialized();
+    if (_isLive) return _loadLivePatientProfile(patientId);
     await Future.delayed(const Duration(milliseconds: 150));
-    return _patientProfileData;
+    return _buildDemoProfile();
   }
 
   Future<List<MedicalHistoryItemModel>> getPatientMedicalHistory(
     String patientId, {
     MedicalHistoryCategory category = MedicalHistoryCategory.all,
   }) async {
-    _ensureInitialized();
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (category == MedicalHistoryCategory.all) {
-      return _patientProfileData.medicalHistory;
+    if (_isLive) {
+      final profile = await _loadLivePatientProfile(patientId);
+      if (category == MedicalHistoryCategory.all) return profile.medicalHistory;
+      return profile.medicalHistory.where((m) => m.category == category).toList();
     }
-    return _patientProfileData.medicalHistory.where((m) => m.category == category).toList();
+    await Future.delayed(const Duration(milliseconds: 100));
+    return const [];
   }
 
-  Future<List<PatientConsultationRecordModel>> getPatientConsultations(String patientId) async {
-    _ensureInitialized();
+  Future<List<PatientConsultationRecordModel>> getPatientConsultations(
+      String patientId) async {
+    if (_isLive) {
+      final profile = await _loadLivePatientProfile(patientId);
+      return profile.consultations;
+    }
     await Future.delayed(const Duration(milliseconds: 100));
-    return _patientProfileData.consultations;
+    return const [];
   }
 
   Future<List<PatientReportModel>> getPatientReports(
     String patientId, {
     ReportCategory category = ReportCategory.all,
   }) async {
-    _ensureInitialized();
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (category == ReportCategory.all) {
-      return _patientProfileData.reports;
+    if (_isLive) {
+      final profile = await _loadLivePatientProfile(patientId);
+      if (category == ReportCategory.all) return profile.reports;
+      return profile.reports.where((r) => r.category == category).toList();
     }
-    return _patientProfileData.reports.where((r) => r.category == category).toList();
+    await Future.delayed(const Duration(milliseconds: 100));
+    return const [];
   }
 
-  Future<List<PatientPrescriptionModel>> getPatientPrescriptions(String patientId) async {
-    _ensureInitialized();
+  Future<List<PatientPrescriptionModel>> getPatientPrescriptions(
+      String patientId) async {
+    if (_isLive) {
+      final profile = await _loadLivePatientProfile(patientId);
+      return profile.prescriptions;
+    }
     await Future.delayed(const Duration(milliseconds: 100));
-    return _patientProfileData.prescriptions;
+    return const [];
   }
 
-  Future<List<DoctorAppointmentModel>> getPatientAppointments(String patientId) async {
-    _ensureInitialized();
+  Future<List<DoctorAppointmentModel>> getPatientAppointments(
+      String patientId) async {
+    if (_isLive) {
+      final profile = await _loadLivePatientProfile(patientId);
+      return profile.appointments;
+    }
     await Future.delayed(const Duration(milliseconds: 100));
-    return _patientProfileData.appointments;
+    return const [];
   }
 
   Future<List<PatientNoteModel>> getPatientNotes(String patientId) async {
-    _ensureInitialized();
+    if (_isLive) {
+      return DoctorClinicalRecordsService.instance.getNotes(patientId);
+    }
     await Future.delayed(const Duration(milliseconds: 100));
-    return _patientProfileData.notes;
+    return const [];
   }
 
   Future<List<PatientFollowUpModel>> getPatientFollowUps(String patientId) async {
-    _ensureInitialized();
+    if (_isLive) {
+      final profile = await _loadLivePatientProfile(patientId);
+      return profile.followUps;
+    }
     await Future.delayed(const Duration(milliseconds: 100));
-    return _patientProfileData.followUps;
+    return const [];
   }
 
   Future<AIPatientSummaryModel> generatePatientSummary(String patientId) async {
-    _ensureInitialized();
+    if (_isLive) {
+      final profile = await _loadLivePatientProfile(patientId);
+      return profile.summary;
+    }
     await Future.delayed(const Duration(milliseconds: 300));
-    return _patientProfileData.summary;
+    return _buildDemoProfile().summary;
   }
+
+  // ---------------------------------------------------------------------------
+  // Write paths
+  // ---------------------------------------------------------------------------
 
   Future<PatientNoteModel> addClinicalNote({
     required String patientId,
@@ -472,36 +410,49 @@ class DoctorPatientService {
     required bool isInternalPrivate,
     required ClinicalNoteType noteType,
   }) async {
-    _ensureInitialized();
+    if (_isLive) {
+      final container = RepositoryContainer.instance;
+      // Build a thin PatientModel for note metadata; full chart is not needed.
+      final patientMap =
+          await container.hospitalOperationalRepository!.get('patients', patientId) ??
+              <String, dynamic>{};
+      final patient = PatientModel(
+        id: patientId,
+        name: '${patientMap['name'] ?? 'Unknown Patient'}',
+        age: 0,
+        gender: '',
+        avatarUrl: '',
+        phone: '',
+        bloodGroup: '',
+        mrn: patientId,
+        allergies: const [],
+        chronicConditions: const [],
+        currentMedications: const [],
+        lastVisitDate: '',
+        lastVisitDoctor: '',
+        primaryConcern: '',
+        department: '',
+      );
+      await DoctorClinicalRecordsService.instance.saveNote(
+        patient: patient,
+        patientRecordId: patientId,
+        type: noteType,
+        content: content,
+      );
+      final notes = await DoctorClinicalRecordsService.instance.getNotes(patientId);
+      if (notes.isNotEmpty) return notes.first;
+      throw StateError('Clinical note was not returned after saving.');
+    }
     await Future.delayed(const Duration(milliseconds: 200));
-
-    final newNote = PatientNoteModel(
+    return PatientNoteModel(
       id: 'NTE-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
       date: 'Today',
-      authorDoctor: 'Dr. Sarah Jenkins',
-      authorSpecialty: 'Cardiologist',
+      authorDoctor: '[DEMO]',
+      authorSpecialty: '[DEMO]',
       content: content,
       isInternalPrivate: isInternalPrivate,
       noteType: noteType,
     );
-
-    final updatedNotes = [newNote, ..._patientProfileData.notes];
-    _patientProfileData = PatientProfileFullModel(
-      patient: _patientProfileData.patient,
-      currentVitals: _patientProfileData.currentVitals,
-      activeEmergency: _patientProfileData.activeEmergency,
-      summary: _patientProfileData.summary,
-      medicalHistory: _patientProfileData.medicalHistory,
-      consultations: _patientProfileData.consultations,
-      reports: _patientProfileData.reports,
-      prescriptions: _patientProfileData.prescriptions,
-      appointments: _patientProfileData.appointments,
-      notes: updatedNotes,
-      followUps: _patientProfileData.followUps,
-      documents: _patientProfileData.documents,
-    );
-
-    return newNote;
   }
 
   Future<PatientPrescriptionModel> createPrescription({
@@ -510,64 +461,80 @@ class DoctorPatientService {
     required List<PrescriptionMedicationItem> medications,
     required String generalInstructions,
   }) async {
-    _ensureInitialized();
+    if (_isLive) {
+      final container = RepositoryContainer.instance;
+      final records = container.hospitalOperationalRepository!;
+      final patientMap =
+          await records.get('patients', patientId) ?? <String, dynamic>{};
+      final now = DateTime.now().toUtc();
+      final id = 'RX-${now.microsecondsSinceEpoch}';
+      await records.save('prescriptions', id, {
+        'id': id,
+        'patientId': patientId,
+        'patientName': '${patientMap['name'] ?? 'Unknown Patient'}',
+        'doctorId': container.currentDoctorId,
+        'doctorName': container.currentDoctorName,
+        'department': container.currentDoctorSpecialty,
+        'signedAt': now.toIso8601String(),
+        'status': 'active',
+        'clinicalNotes': diagnosis,
+        'instructions': generalInstructions,
+        'medications': medications
+            .map((m) => {
+                  'medicationName': m.drugName,
+                  'dosage': m.dosage,
+                  'frequency': m.frequency,
+                  'duration': m.duration,
+                  'durationDays': int.tryParse(
+                          RegExp(r'\d+').firstMatch(m.duration)?.group(0) ?? '') ??
+                      0,
+                  'instructions': m.timing,
+                })
+            .toList(),
+        'createdAt': now.toIso8601String(),
+        'updatedAt': now.toIso8601String(),
+      });
+      return PatientPrescriptionModel(
+        id: id,
+        prescriptionDate: now.toLocal().toString(),
+        doctorName: container.currentDoctorName,
+        department: container.currentDoctorSpecialty,
+        diagnosis: diagnosis,
+        medications: medications,
+        generalInstructions: generalInstructions,
+        isActive: true,
+        validityUntil: '90 Days',
+      );
+    }
     await Future.delayed(const Duration(milliseconds: 250));
-
-    final newRx = PatientPrescriptionModel(
-      id: 'RX-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+    return PatientPrescriptionModel(
+      id: 'RX-DEMO-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
       prescriptionDate: 'Today',
-      doctorName: 'Dr. Sarah Jenkins',
-      department: 'Cardiology',
+      doctorName: '[DEMO]',
+      department: '[DEMO]',
       diagnosis: diagnosis,
       medications: medications,
       generalInstructions: generalInstructions,
       isActive: true,
       validityUntil: '30 Days',
     );
-
-    final updatedRx = [newRx, ..._patientProfileData.prescriptions];
-    _patientProfileData = PatientProfileFullModel(
-      patient: _patientProfileData.patient,
-      currentVitals: _patientProfileData.currentVitals,
-      activeEmergency: _patientProfileData.activeEmergency,
-      summary: _patientProfileData.summary,
-      medicalHistory: _patientProfileData.medicalHistory,
-      consultations: _patientProfileData.consultations,
-      reports: _patientProfileData.reports,
-      prescriptions: updatedRx,
-      appointments: _patientProfileData.appointments,
-      notes: _patientProfileData.notes,
-      followUps: _patientProfileData.followUps,
-      documents: _patientProfileData.documents,
-    );
-
-    return newRx;
   }
 
   Future<void> markFollowUpCompleted(String followUpId) async {
-    _ensureInitialized();
-    await Future.delayed(const Duration(milliseconds: 150));
-
-    final updatedFollowUps = _patientProfileData.followUps.map((f) {
-      if (f.id == followUpId) {
-        return f.copyWith(status: 'Completed');
+    if (_isLive) {
+      final records = RepositoryContainer.instance.hospitalOperationalRepository!;
+      final row = await records.get('doctorFollowUps', followUpId);
+      if (row != null) {
+        await records.save('doctorFollowUps', followUpId, {
+          ...row,
+          'status': 'Completed',
+          'completedAt': DateTime.now().toUtc().toIso8601String(),
+          'updatedAt': DateTime.now().toUtc().toIso8601String(),
+        });
       }
-      return f;
-    }).toList();
-
-    _patientProfileData = PatientProfileFullModel(
-      patient: _patientProfileData.patient.copyWith(followUpStatus: 'Completed'),
-      currentVitals: _patientProfileData.currentVitals,
-      activeEmergency: _patientProfileData.activeEmergency,
-      summary: _patientProfileData.summary,
-      medicalHistory: _patientProfileData.medicalHistory,
-      consultations: _patientProfileData.consultations,
-      reports: _patientProfileData.reports,
-      prescriptions: _patientProfileData.prescriptions,
-      appointments: _patientProfileData.appointments,
-      notes: _patientProfileData.notes,
-      followUps: updatedFollowUps,
-      documents: _patientProfileData.documents,
-    );
+      return;
+    }
+    await Future.delayed(const Duration(milliseconds: 150));
+    // No-op in demo mode — no in-memory state to mutate.
   }
 }

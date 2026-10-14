@@ -22,15 +22,15 @@ import 'package:healthify_server_server/src/generated/hospital/hospital_operatio
     as _i6;
 import 'package:healthify_server_server/src/generated/hospital/hospital_audit_event.dart'
     as _i7;
+import 'dart:typed_data' as _i8;
 import 'package:healthify_server_server/src/generated/hospital/hospital_membership.dart'
-    as _i8;
-import 'package:healthify_server_server/src/generated/hospital/hospital_info.dart'
     as _i9;
-import 'package:healthify_server_server/src/generated/hospital/hospital_profile.dart'
+import 'package:healthify_server_server/src/generated/hospital/hospital_info.dart'
     as _i10;
-import 'package:healthify_server_server/src/generated/hospital/verification_document.dart'
+import 'package:healthify_server_server/src/generated/hospital/hospital_profile.dart'
     as _i11;
-import 'dart:typed_data' as _i12;
+import 'package:healthify_server_server/src/generated/hospital/verification_document.dart'
+    as _i12;
 import 'package:healthify_server_server/src/generated/hospital/hospital_settings.dart'
     as _i13;
 import 'package:healthify_server_server/src/generated/hospital/hospital_user_access.dart'
@@ -554,6 +554,488 @@ class _HospitalEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
+  _i3.Future<String> getPatientDirectory(
+    _i1.TestSessionBuilder sessionBuilder,
+    String collection,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'getPatientDirectory',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'getPatientDirectory',
+          parameters: _i1.testObjectToJson({'collection': collection}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i6.HospitalOperationalRecord>> listMyPatientRecords(
+    _i1.TestSessionBuilder sessionBuilder,
+    String collection, {
+    required int limit,
+    required int offset,
+  }) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'listMyPatientRecords',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'listMyPatientRecords',
+          parameters: _i1.testObjectToJson({
+            'collection': collection,
+            'limit': limit,
+            'offset': offset,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i6.HospitalOperationalRecord>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i6.HospitalOperationalRecord?> getMyPatientRecord(
+    _i1.TestSessionBuilder sessionBuilder,
+    String collection,
+    String recordKey,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'getMyPatientRecord',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'getMyPatientRecord',
+          parameters: _i1.testObjectToJson({
+            'collection': collection,
+            'recordKey': recordKey,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i6.HospitalOperationalRecord?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i6.HospitalOperationalRecord> saveMyPatientRecord(
+    _i1.TestSessionBuilder sessionBuilder,
+    String collection,
+    String recordKey,
+    String payload,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'saveMyPatientRecord',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'saveMyPatientRecord',
+          parameters: _i1.testObjectToJson({
+            'collection': collection,
+            'recordKey': recordKey,
+            'payload': payload,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i6.HospitalOperationalRecord>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<bool> deleteMyPatientRecord(
+    _i1.TestSessionBuilder sessionBuilder,
+    String collection,
+    String recordKey,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'deleteMyPatientRecord',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'deleteMyPatientRecord',
+          parameters: _i1.testObjectToJson({
+            'collection': collection,
+            'recordKey': recordKey,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> requestHospitalPatientAccountLink(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String patientId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'requestHospitalPatientAccountLink',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'requestHospitalPatientAccountLink',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'patientId': patientId,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> listHospitalPatientAccountLinkRequests(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'listHospitalPatientAccountLinkRequests',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'listHospitalPatientAccountLinkRequests',
+          parameters: _i1.testObjectToJson({'hospitalKey': hospitalKey}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<bool> reviewHospitalPatientAccountLinkRequest(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String requestId,
+    bool approve,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'reviewHospitalPatientAccountLinkRequest',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'reviewHospitalPatientAccountLinkRequest',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'requestId': requestId,
+            'approve': approve,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> listMyHospitalPatientAccountLinks(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'listMyHospitalPatientAccountLinks',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'listMyHospitalPatientAccountLinks',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> listMyHospitalPatientAccountLinkRequests(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'listMyHospitalPatientAccountLinkRequests',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'listMyHospitalPatientAccountLinkRequests',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<bool> revokeMyHospitalPatientAccountLink(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String patientId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'revokeMyHospitalPatientAccountLink',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'revokeMyHospitalPatientAccountLink',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'patientId': patientId,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<bool> checkMyPatientReviewEligibility(
+    _i1.TestSessionBuilder sessionBuilder,
+    String targetType,
+    String targetId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'checkMyPatientReviewEligibility',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'checkMyPatientReviewEligibility',
+          parameters: _i1.testObjectToJson({
+            'targetType': targetType,
+            'targetId': targetId,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> listPatientReviews(
+    _i1.TestSessionBuilder sessionBuilder,
+    String targetType,
+    String targetId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'listPatientReviews',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'listPatientReviews',
+          parameters: _i1.testObjectToJson({
+            'targetType': targetType,
+            'targetId': targetId,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> createPatientReview(
+    _i1.TestSessionBuilder sessionBuilder,
+    String targetType,
+    String targetId,
+    double rating,
+    String feedback,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'createPatientReview',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'createPatientReview',
+          parameters: _i1.testObjectToJson({
+            'targetType': targetType,
+            'targetId': targetId,
+            'rating': rating,
+            'feedback': feedback,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _i3.Future<List<_i6.HospitalOperationalRecord>> listOperationalRecords(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
@@ -669,6 +1151,84 @@ class _HospitalEndpoint {
     });
   }
 
+  _i3.Future<List<_i6.HospitalOperationalRecord>> saveOperationalRecords(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    List<String> collections,
+    List<String> recordKeys,
+    List<String> payloads,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'saveOperationalRecords',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'saveOperationalRecords',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'collections': collections,
+            'recordKeys': recordKeys,
+            'payloads': payloads,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i6.HospitalOperationalRecord>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i6.HospitalOperationalRecord> createAdmission(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String patientId,
+    String recordKey,
+    String payload,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'createAdmission',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'createAdmission',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'patientId': patientId,
+            'recordKey': recordKey,
+            'payload': payload,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i6.HospitalOperationalRecord>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _i3.Future<bool> deleteOperationalRecord(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
@@ -743,7 +1303,118 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i8.HospitalMembershipRecord?> getMyHospital(
+  _i3.Future<void> logAuditAction(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String action,
+    String targetEntityType,
+    String targetEntityId,
+    String details,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'logAuditAction',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'logAuditAction',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'action': action,
+            'targetEntityType': targetEntityType,
+            'targetEntityId': targetEntityId,
+            'details': details,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<void>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> uploadPatientReportFile(
+    _i1.TestSessionBuilder sessionBuilder,
+    String recordKey,
+    String fileName,
+    String mimeType,
+    _i8.ByteData fileBytes,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'uploadPatientReportFile',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'uploadPatientReportFile',
+          parameters: _i1.testObjectToJson({
+            'recordKey': recordKey,
+            'fileName': fileName,
+            'mimeType': mimeType,
+            'fileBytes': fileBytes,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i8.ByteData> getPatientReportFileBytes(
+    _i1.TestSessionBuilder sessionBuilder,
+    String recordKey,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'getPatientReportFileBytes',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'getPatientReportFileBytes',
+          parameters: _i1.testObjectToJson({'recordKey': recordKey}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i8.ByteData>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i9.HospitalMembershipRecord?> getMyHospital(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -765,7 +1436,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i8.HospitalMembershipRecord?>);
+                as _i3.Future<_i9.HospitalMembershipRecord?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -773,10 +1444,41 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i8.HospitalMembershipRecord> registerHospital(
+  _i3.Future<String> getMyDoctorProfile(
     _i1.TestSessionBuilder sessionBuilder,
-    _i9.HospitalInfoRecord info,
-    _i10.HospitalProfileRecord profile,
+    String hospitalKey,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'getMyDoctorProfile',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'getMyDoctorProfile',
+          parameters: _i1.testObjectToJson({'hospitalKey': hospitalKey}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i9.HospitalMembershipRecord> registerHospital(
+    _i1.TestSessionBuilder sessionBuilder,
+    _i10.HospitalInfoRecord info,
+    _i11.HospitalProfileRecord profile,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -800,7 +1502,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i8.HospitalMembershipRecord>);
+                as _i3.Future<_i9.HospitalMembershipRecord>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -808,7 +1510,7 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i9.HospitalInfoRecord?> getInfo(
+  _i3.Future<_i10.HospitalInfoRecord?> getInfo(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
   ) async {
@@ -831,7 +1533,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i9.HospitalInfoRecord?>);
+                as _i3.Future<_i10.HospitalInfoRecord?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -839,9 +1541,9 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i9.HospitalInfoRecord> saveInfo(
+  _i3.Future<_i10.HospitalInfoRecord> saveInfo(
     _i1.TestSessionBuilder sessionBuilder,
-    _i9.HospitalInfoRecord info,
+    _i10.HospitalInfoRecord info,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -862,7 +1564,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i9.HospitalInfoRecord>);
+                as _i3.Future<_i10.HospitalInfoRecord>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -870,7 +1572,7 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i10.HospitalProfileRecord?> getProfile(
+  _i3.Future<_i11.HospitalProfileRecord?> getProfile(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
   ) async {
@@ -893,7 +1595,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i10.HospitalProfileRecord?>);
+                as _i3.Future<_i11.HospitalProfileRecord?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -901,9 +1603,9 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i10.HospitalProfileRecord> saveProfile(
+  _i3.Future<_i11.HospitalProfileRecord> saveProfile(
     _i1.TestSessionBuilder sessionBuilder,
-    _i10.HospitalProfileRecord profile,
+    _i11.HospitalProfileRecord profile,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -924,7 +1626,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i10.HospitalProfileRecord>);
+                as _i3.Future<_i11.HospitalProfileRecord>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -963,14 +1665,14 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i11.VerificationDocumentRecord> uploadVerificationDocument(
+  _i3.Future<_i12.VerificationDocumentRecord> uploadVerificationDocument(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
     String title,
     String documentType,
     String fileName,
     String mimeType,
-    _i12.ByteData fileBytes,
+    _i8.ByteData fileBytes,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -998,7 +1700,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i11.VerificationDocumentRecord>);
+                as _i3.Future<_i12.VerificationDocumentRecord>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1006,7 +1708,7 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i12.ByteData> getVerificationDocumentBytes(
+  _i3.Future<_i8.ByteData> getVerificationDocumentBytes(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
     int documentId,
@@ -1033,7 +1735,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i12.ByteData>);
+                as _i3.Future<_i8.ByteData>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1041,7 +1743,188 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<_i10.HospitalProfileRecord> submitVerification(
+  _i3.Future<String> uploadDoctorReportFile(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String reportId,
+    String fileName,
+    String mimeType,
+    _i8.ByteData fileBytes,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'uploadDoctorReportFile',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'uploadDoctorReportFile',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'reportId': reportId,
+            'fileName': fileName,
+            'mimeType': mimeType,
+            'fileBytes': fileBytes,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i8.ByteData> getDoctorReportFileBytes(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String reportId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'getDoctorReportFileBytes',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'getDoctorReportFileBytes',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'reportId': reportId,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i8.ByteData>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> setDoctorReportPatientSharing(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String reportId,
+    bool isShared,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'setDoctorReportPatientSharing',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'setDoctorReportPatientSharing',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'reportId': reportId,
+            'isShared': isShared,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i8.ByteData> getMySharedReportFileBytes(
+    _i1.TestSessionBuilder sessionBuilder,
+    String reportId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'getMySharedReportFileBytes',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'getMySharedReportFileBytes',
+          parameters: _i1.testObjectToJson({'reportId': reportId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i8.ByteData>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<bool> reviewBreakGlassRequest(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String requestId,
+    bool approve,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'reviewBreakGlassRequest',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'reviewBreakGlassRequest',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'requestId': requestId,
+            'approve': approve,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i11.HospitalProfileRecord> submitVerification(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
   ) async {
@@ -1064,7 +1947,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i10.HospitalProfileRecord>);
+                as _i3.Future<_i11.HospitalProfileRecord>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1072,7 +1955,7 @@ class _HospitalEndpoint {
     });
   }
 
-  _i3.Future<List<_i11.VerificationDocumentRecord>> getVerificationDocuments(
+  _i3.Future<List<_i12.VerificationDocumentRecord>> getVerificationDocuments(
     _i1.TestSessionBuilder sessionBuilder,
     String hospitalKey,
   ) async {
@@ -1095,7 +1978,7 @@ class _HospitalEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i11.VerificationDocumentRecord>>);
+                as _i3.Future<List<_i12.VerificationDocumentRecord>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1127,6 +2010,114 @@ class _HospitalEndpoint {
                   _localCallContext.arguments,
                 )
                 as _i3.Future<_i13.HospitalSettingsRecord?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i11.HospitalProfileRecord>> listPendingHospitalVerifications(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'listPendingHospitalVerifications',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'listPendingHospitalVerifications',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i11.HospitalProfileRecord>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<bool> reviewHospitalVerification(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    bool approve,
+    String reviewerNotes,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'reviewHospitalVerification',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'reviewHospitalVerification',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'approve': approve,
+            'reviewerNotes': reviewerNotes,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<String> inviteHospitalStaff(
+    _i1.TestSessionBuilder sessionBuilder,
+    String hospitalKey,
+    String email,
+    String fullName,
+    String role,
+    String department,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'hospital',
+            method: 'inviteHospitalStaff',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'hospital',
+          methodName: 'inviteHospitalStaff',
+          parameters: _i1.testObjectToJson({
+            'hospitalKey': hospitalKey,
+            'email': email,
+            'fullName': fullName,
+            'role': role,
+            'department': department,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<String>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

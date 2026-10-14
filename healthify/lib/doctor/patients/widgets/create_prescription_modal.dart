@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_dashboard_models.dart';
+import '../../services/doctor_clinical_records_service.dart';
 
 class CreatePrescriptionModal {
   static void show({
@@ -8,9 +9,9 @@ class CreatePrescriptionModal {
     required PatientModel patient,
     required VoidCallback onPrescriptionCreated,
   }) {
-    final medController = TextEditingController(text: 'Atorvastatin 20mg (OD)');
-    final dosageController = TextEditingController(text: '1 tablet once daily at night');
-    final durationController = TextEditingController(text: '30 Days');
+    final medController = TextEditingController();
+    final dosageController = TextEditingController();
+    final durationController = TextEditingController();
 
     showHealthifyGlassBottomSheet(
       context: context,
@@ -106,18 +107,41 @@ class CreatePrescriptionModal {
                   Expanded(
                     flex: 2,
                     child: GlassPrimaryButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (medController.text.trim().isEmpty ||
+                            dosageController.text.trim().isEmpty ||
+                            durationController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Complete the medication, dosage, and duration fields.')),
+                          );
+                          return;
+                        }
+                        try {
+                          await DoctorClinicalRecordsService.instance.saveQuickPrescription(
+                            patient: patient,
+                            medicine: medController.text,
+                            dosage: dosageController.text,
+                            duration: durationController.text,
+                          );
+                        } catch (error) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Could not save prescription: $error')),
+                          );
+                          return;
+                        }
+                        if (!context.mounted) return;
                         Navigator.pop(context);
                         onPrescriptionCreated();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('E-Prescription generated & sent to Pharmacy for ${patient.name}.'),
+                            content: Text('Prescription saved for ${patient.name}. Pharmacy dispatch is not connected.'),
                             backgroundColor: HealthifyGlassTheme.primaryTeal,
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
                       },
-                      child: const Text('Sign & Send E-Prescription'),
+                      child: const Text('Save Prescription'),
                     ),
                   ),
                 ],

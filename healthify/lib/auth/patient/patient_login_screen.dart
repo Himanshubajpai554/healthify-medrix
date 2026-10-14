@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -32,38 +34,45 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     setState(() => _loginErrorMessage = null);
 
     if (_formKey.currentState!.validate()) {
-      final phone = _phoneController.text.trim();
-      final password = _passwordController.text;
-
-      // Demo login error state example
-      if (phone.endsWith('0000')) {
-        setState(() {
-          _loginErrorMessage = 'Account not found for this phone number. Please check or sign up.';
-        });
-        return;
-      } else if (password == 'wrong') {
-        setState(() {
-          _loginErrorMessage = 'Incorrect password. Please try again or click Forgot Password.';
-        });
+      final email = _phoneController.text.trim().toLowerCase();
+      final client = RepositoryContainer.instance.serverpodClient;
+      if (client == null) {
+        setState(() => _loginErrorMessage = 'Patient account server is not configured.');
         return;
       }
-
       setState(() => _isLoading = true);
-
-      Future.delayed(const Duration(milliseconds: 700), () {
+      final auth = EmailAuthController(
+        client: client,
+        startScreen: EmailFlowScreen.login,
+        onAuthenticated: () {},
+        onError: (error) {
+          if (mounted) setState(() => _loginErrorMessage = error.toString());
+        },
+      );
+      auth.emailController.text = email;
+      auth.passwordController.text = _passwordController.text;
+      try {
+        await auth.login();
         if (!mounted) return;
         setState(() => _isLoading = false);
-
-        // Navigate to Location Permission check before Patient Home
         Navigator.pushReplacement(
           context,
           FadePageRoute(page: const PatientLocationPermissionScreen()),
         );
-      });
+      } catch (error) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _loginErrorMessage = error.toString();
+          });
+        }
+      } finally {
+        auth.dispose();
+      }
     }
   }
 
@@ -167,7 +176,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
 
                         // 1. PHONE NUMBER FIELD
                         Text(
-                          'Phone Number',
+                          'Email Address',
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
@@ -177,20 +186,18 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                         const SizedBox(height: 6),
                         TextFormField(
                           controller: _phoneController,
-                          keyboardType: TextInputType.phone,
+                          keyboardType: TextInputType.emailAddress,
+                          autocorrect: false,
                           style: TextStyle(color: primaryTextColor),
                           decoration: GlassTextFieldTheme.getDecoration(
                             context: context,
-                            hintText: '+91 98765 43210',
-                            prefixIcon: const Icon(Icons.phone_iphone_rounded),
+                            hintText: 'you@example.com',
+                            prefixIcon: const Icon(Icons.email_outlined),
                           ),
                           validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your phone number';
-                            }
-                            final cleanStr = value.replaceAll(RegExp(r'\D'), '');
-                            if (cleanStr.length < 10) {
-                              return 'Please enter a valid 10-digit phone number';
+                            final email = value?.trim() ?? '';
+                            if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+                              return 'Please enter a valid email address';
                             }
                             return null;
                           },

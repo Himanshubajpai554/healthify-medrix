@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -7,11 +8,13 @@ import './patient_location_permission_screen.dart';
 class PatientProfileSetupScreen extends StatefulWidget {
   final String fullName;
   final String phoneNumber;
+  final String email;
 
   const PatientProfileSetupScreen({
     super.key,
     this.fullName = 'Alex Rivera',
     this.phoneNumber = '+91 98765 43210',
+    this.email = '',
   });
 
   @override
@@ -50,18 +53,38 @@ class _PatientProfileSetupScreenState extends State<PatientProfileSetupScreen> {
     super.dispose();
   }
 
-  void _proceedNext() {
+  Future<void> _proceedNext() async {
     setState(() => _isSaving = true);
-
-    Future.delayed(const Duration(milliseconds: 600), () {
+    try {
+      final portal = RepositoryContainer.instance.patientPortalRepository;
+      if (portal != null) {
+        await portal.save('patientProfiles', 'profile', {
+          'name': widget.fullName,
+          'email': widget.email,
+          'phone': widget.phoneNumber,
+          'phoneVerified': false,
+          'dateOfBirth': _dateOfBirth?.toIso8601String(),
+          'gender': _selectedGender,
+          'bloodGroup': _selectedBloodGroup,
+          'emergencyContactName': _emergencyNameController.text.trim(),
+          'emergencyContactPhone': _emergencyPhoneController.text.trim(),
+          'allergies': _allergiesController.text.trim(),
+          'medicalConditions': _medicalConditionsController.text.trim(),
+        });
+      }
       if (!mounted) return;
       setState(() => _isSaving = false);
-
       Navigator.pushReplacement(
         context,
         FadePageRoute(page: const PatientLocationPermissionScreen()),
       );
-    });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save patient profile: $error')),
+      );
+    }
   }
 
   void _selectDob() async {

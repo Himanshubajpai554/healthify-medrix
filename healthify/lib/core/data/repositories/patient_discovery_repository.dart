@@ -33,4 +33,6 @@ abstract class PatientDiscoveryRepository {
   Future<List<EmergencyHospitalRecommendation>> getEmergencyRecommendations(
     EmergencyRecommendationQuery query,
   );
+  Future<List<Map<String, dynamic>>> getVisibleBloodAvailability();
+  Future<List<Map<String, dynamic>>> getVisibleBedAvailability();
 }

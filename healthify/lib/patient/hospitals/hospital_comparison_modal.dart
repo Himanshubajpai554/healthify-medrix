@@ -278,7 +278,9 @@ class HospitalComparisonModal extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
-                                      '${hospital.rating}',
+                                        hospital.reviewsCount > 0
+                                            ? '${hospital.rating} (${hospital.reviewsCount})'
+                                            : 'No reviews',
                                       style: const TextStyle(
                                         color: Colors.amber,
                                         fontSize: 11.5,
@@ -364,7 +366,9 @@ class HospitalComparisonModal extends StatelessWidget {
                                     _buildCell('Distance', isDark: isDark),
                                     ...displayHospitals.map(
                                       (h) => _buildCell(
-                                        '${h.distanceKm} km\n(~${(h.distanceKm * 3 + 4).toInt()} min)',
+                                        h.distanceAvailable
+                                            ? '${h.distanceKm} km\n(~${(h.distanceKm * 3 + 4).toInt()} min)'
+                                            : 'Unavailable',
                                         isDark: isDark,
                                       ),
                                     ),
@@ -377,7 +381,9 @@ class HospitalComparisonModal extends StatelessWidget {
                                     _buildCell('Rating', isDark: isDark),
                                     ...displayHospitals.map(
                                       (h) => _buildCell(
-                                        '★ ${h.rating} (${h.reviewsCount})',
+                                        h.reviewsCount > 0
+                                            ? '★ ${h.rating} (${h.reviewsCount})'
+                                            : 'No reviews yet',
                                         isDark: isDark,
                                         textColor: Colors.amber,
                                         isBold: true,
@@ -392,13 +398,17 @@ class HospitalComparisonModal extends StatelessWidget {
                                     _buildCell('24/7 ER', isDark: isDark),
                                     ...displayHospitals.map(
                                       (h) => _buildCell(
-                                        h.isEmergencyOpen
-                                            ? '●  ER Open'
-                                            : '●  Closed',
+                                        !h.emergencyStatusKnown
+                                            ? 'Not reported'
+                                            : h.isEmergencyOpen
+                                                ? '●  ER Open'
+                                                : '●  Closed',
                                         isDark: isDark,
-                                        textColor: h.isEmergencyOpen
-                                            ? Colors.green
-                                            : Colors.red,
+                                        textColor: !h.emergencyStatusKnown
+                                            ? Colors.blueGrey
+                                            : h.isEmergencyOpen
+                                                ? Colors.green
+                                                : Colors.red,
                                         isBold: true,
                                       ),
                                     ),
@@ -411,9 +421,13 @@ class HospitalComparisonModal extends StatelessWidget {
                                     _buildCell('ICU Beds', isDark: isDark),
                                     ...displayHospitals.map(
                                       (h) => _buildCell(
-                                        '${h.icuAvailable} / ${h.icuTotal} Free',
+                                        h.availabilityKnown
+                                            ? '${h.icuAvailable} / ${h.icuTotal} Free'
+                                            : 'Not reported',
                                         isDark: isDark,
-                                        textColor: h.icuAvailable > 0
+                                        textColor: !h.availabilityKnown
+                                            ? Colors.blueGrey
+                                            : h.icuAvailable > 0
                                             ? Colors.green
                                             : Colors.red,
                                         isBold: true,
@@ -428,7 +442,9 @@ class HospitalComparisonModal extends StatelessWidget {
                                     _buildCell('General Beds', isDark: isDark),
                                     ...displayHospitals.map(
                                       (h) => _buildCell(
-                                        '${h.availableBeds} / ${h.totalBeds} Free',
+                                        h.availabilityKnown
+                                            ? '${h.availableBeds} / ${h.totalBeds} Free'
+                                            : 'Not reported',
                                         isDark: isDark,
                                       ),
                                     ),
@@ -441,9 +457,13 @@ class HospitalComparisonModal extends StatelessWidget {
                                     _buildCell('Blood O−', isDark: isDark),
                                     ...displayHospitals.map(
                                       (h) => _buildCell(
-                                        '${h.bloodStock['O-'] ?? 0} Units',
+                                        h.availabilityKnown
+                                            ? '${h.bloodStock['O-'] ?? 0} Units'
+                                            : 'Not reported',
                                         isDark: isDark,
-                                        textColor: (h.bloodStock['O-'] ?? 0) > 0
+                                        textColor: !h.availabilityKnown
+                                            ? Colors.blueGrey
+                                            : (h.bloodStock['O-'] ?? 0) > 0
                                             ? _primary
                                             : Colors.red,
                                         isBold: true,
@@ -471,7 +491,7 @@ class HospitalComparisonModal extends StatelessWidget {
                                     _buildCell('Last Update', isDark: isDark),
                                     ...displayHospitals.map(
                                       (h) => _buildCell(
-                                        'Updated 8m ago',
+                                        h.availabilityKnown ? 'Reported by hospital' : 'Not reported',
                                         isDark: isDark,
                                         textColor: _secondaryText(isDark),
                                       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_resource_repository.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/resource_model.dart';
 import '../../core/queries/domain_queries.dart';
@@ -44,7 +45,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _resourceService = ResourceService(resourceRepository: MockResourceRepository());
+    _resourceService = ResourceService(resourceRepository: RepositoryContainer.instance.resourceRepository);
     _loadData();
   }
 

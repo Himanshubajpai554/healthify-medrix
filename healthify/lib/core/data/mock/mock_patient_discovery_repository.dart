@@ -7,6 +7,33 @@ import '../../queries/domain_queries.dart';
 import '../repositories/patient_discovery_repository.dart';
 
 class MockPatientDiscoveryRepository implements PatientDiscoveryRepository {
+  @override
+  Future<List<Map<String, dynamic>>> getVisibleBloodAvailability() async => const [];
+
+  @override
+  Future<List<Map<String, dynamic>>> getVisibleBedAvailability() async => [
+    {
+      'hospitalId': 'HOSP-101',
+      'type': 'General',
+      'available': 15,
+      'total': 100,
+      'lastUpdated': DateTime.now().toIso8601String(),
+    },
+    {
+      'hospitalId': 'HOSP-101',
+      'type': 'ICU',
+      'available': 4,
+      'total': 20,
+      'lastUpdated': DateTime.now().toIso8601String(),
+    },
+    {
+      'hospitalId': 'HOSP-102',
+      'type': 'General',
+      'available': 8,
+      'total': 60,
+      'lastUpdated': DateTime.now().toIso8601String(),
+    },
+  ];
   final List<Hospital> _hospitals = [
     Hospital(
       id: 'HOSP-101',

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../core/enums/domain_enums.dart';
 import '../../core/models/prescription_model.dart';
 import '../../core/provider/repository_provider.dart';
 import '../../theme/app_theme.dart';
@@ -27,12 +28,49 @@ class _PatientPrescriptionsScreenState extends State<PatientPrescriptionsScreen>
 
   Future<void> _loadPrescriptions() async {
     setState(() => _isLoading = true);
-    final repo = RepositoryContainer.instance.prescriptionRepository;
-    final items = await repo.getPrescriptions();
-    setState(() {
-      _prescriptions = items;
-      _isLoading = false;
-    });
+    try {
+      final rows = await RepositoryContainer.instance.patientPortalRepository
+              ?.list('patientPrescriptions') ??
+          const <Map<String, dynamic>>[];
+      PrescriptionStatus parseStatus(Object? value) => PrescriptionStatus.values
+          .where((item) => item.name == value)
+          .firstOrNull ?? PrescriptionStatus.signed;
+      PharmacyFulfillmentStatus parseFulfillment(Object? value) =>
+          PharmacyFulfillmentStatus.values.where((item) => item.name == value).firstOrNull ??
+          PharmacyFulfillmentStatus.pending;
+      final items = rows.map((row) => PrescriptionIndex(
+        id: '${row['id']}',
+        hospitalId: '${row['hospitalId'] ?? ''}',
+        patientId: widget.patientId,
+        hospitalPatientLinkId: row['hospitalPatientLinkId'] as String?,
+        doctorId: '${row['doctorId'] ?? ''}',
+        appointmentId: row['appointmentId'] as String?,
+        admissionId: row['admissionId'] as String?,
+        prescriptionReference: '${row['prescriptionReference'] ?? row['id']}',
+        signedAt: DateTime.tryParse('${row['signedAt']}') ?? DateTime.now(),
+        status: parseStatus(row['status']),
+        pharmacyFulfillmentStatus: parseFulfillment(row['pharmacyFulfillmentStatus']),
+        medications: (row['medications'] as List? ?? const []).whereType<Map>().map((m) => PrescriptionItem(
+          medicationName: '${m['medicationName'] ?? ''}',
+          dosage: '${m['dosage'] ?? ''}',
+          frequency: '${m['frequency'] ?? ''}',
+          durationDays: (m['durationDays'] as num?)?.toInt() ?? 0,
+          instructions: '${m['instructions'] ?? ''}',
+        )).toList(),
+        clinicalNotes: row['clinicalNotes'] as String?,
+        instructions: '${row['instructions'] ?? ''}',
+        createdAt: DateTime.tryParse('${row['createdAt']}') ?? DateTime.now(),
+        updatedAt: DateTime.tryParse('${row['updatedAt']}') ?? DateTime.now(),
+      )).toList();
+      if (mounted) setState(() { _prescriptions = items; _isLoading = false; });
+    } catch (error) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load prescriptions: $error')),
+        );
+      }
+    }
   }
 
   @override

@@ -3,9 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../shared/widgets/animated_pulse_background.dart';
+import '../../core/provider/repository_provider.dart';
+import '../../core/queries/domain_queries.dart' as queries;
 import '../../theme/app_theme.dart';
 import '../models/patient_portal_models.dart';
-import '../symptom_checker/symptom_checker_service.dart';
 
 class PatientHospitalProfileScreen extends StatefulWidget {
   final NearbyHospital hospital;
@@ -30,10 +31,6 @@ class _PatientHospitalProfileScreenState
 
   static const Color primary = Color(0xFF0D9488);
   static const Color primaryDark = Color(0xFF0F766E);
-
-  Color _surface(bool isDark) => isDark
-      ? Colors.white.withValues(alpha: 0.045)
-      : Colors.white.withValues(alpha: 0.72);
 
   Color _surfaceStrong(bool isDark) => isDark
       ? Colors.white.withValues(alpha: 0.075)
@@ -91,7 +88,41 @@ class _PatientHospitalProfileScreenState
 
     _tabController = TabController(length: 4, vsync: this);
 
-    _affiliatedDoctors = SymptomCheckerService.getDoctors();
+    _affiliatedDoctors = const [];
+    _loadAffiliatedDoctors();
+  }
+
+  Future<void> _loadAffiliatedDoctors() async {
+    try {
+      final doctors = await RepositoryContainer.instance.patientDiscoveryRepository
+          .searchDoctors(queries.DoctorSearchQuery(
+        hospitalId: widget.hospital.id,
+        pageSize: 100,
+      ));
+      if (!mounted) return;
+      setState(() {
+        _affiliatedDoctors = doctors.map((doctor) => DoctorSearchResult(
+          id: doctor.id,
+          name: doctor.name,
+          specialty: doctor.specialization,
+          department: doctor.departmentId.isEmpty ? doctor.specialization : doctor.departmentId,
+          hospitalName: widget.hospital.name,
+          distanceKm: widget.hospital.distanceKm,
+          distanceAvailable: widget.hospital.distanceAvailable,
+          rating: doctor.rating,
+          reviewsCount: doctor.reviewCount,
+          experienceYears: doctor.experienceYears,
+          consultationFee: doctor.consultationFee,
+          availableSlots: const [],
+          isTeleconsultAvailable: false,
+          hospitalId: doctor.hospitalId,
+          departmentId: doctor.departmentId,
+        )).toList();
+      });
+    } catch (_) {
+      // Keep the directory-backed screen empty when the service is unavailable;
+      // never substitute unrelated sample doctors for this hospital.
+    }
   }
 
   @override
@@ -382,7 +413,7 @@ class _PatientHospitalProfileScreenState
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                '${h.distanceKm} km away • ${h.address}',
+                                '${h.distanceAvailable ? '${h.distanceKm} km away • ' : ''}${h.address}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -716,15 +747,15 @@ class _PatientHospitalProfileScreenState
         const SizedBox(height: 18),
 
         _sectionHeader(
-          title: 'Live Bed & ICU Capacity',
-          subtitle: 'Real-time availability',
+          title: 'Bed & ICU Capacity',
+          subtitle: h.availabilityKnown ? 'Hospital-published availability' : 'Live availability not reported',
           isDark: isDark,
           icon: Icons.monitor_heart_rounded,
         ),
 
         const SizedBox(height: 12),
 
-        GridView.count(
+        if (h.availabilityKnown) GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -761,20 +792,23 @@ class _PatientHospitalProfileScreenState
               isDark,
             ),
           ],
-        ),
+        ) else _buildUnavailableCapacity(isDark),
 
         const SizedBox(height: 25),
 
         _sectionHeader(
           title: 'Blood Bank Reserve',
-          subtitle: 'Current stock levels',
+          subtitle: h.availabilityKnown ? 'Hospital-published stock' : 'Current stock not reported',
           isDark: isDark,
           icon: Icons.bloodtype_rounded,
         ),
 
         const SizedBox(height: 12),
 
-        _buildBloodInventory(h, isDark),
+        if (h.availabilityKnown && h.bloodStock.isNotEmpty)
+          _buildBloodInventory(h, isDark)
+        else
+          _buildUnavailableCapacity(isDark),
       ],
     );
   }
@@ -809,7 +843,7 @@ class _PatientHospitalProfileScreenState
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  'Live capacity reported by hospital desk • Updated 8 mins ago. Availability may change rapidly during emergency traffic.',
+                  'Capacity and blood stock appear here only when the hospital publishes live availability. Contact the hospital to confirm current status.',
                   style: TextStyle(
                     fontSize: 10.5,
                     color: AppTheme.textSecondary,
@@ -819,6 +853,26 @@ class _PatientHospitalProfileScreenState
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnavailableCapacity(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _surfaceStrong(isDark),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _border(isDark)),
+      ),
+      child: Text(
+        'The hospital has not published this availability yet. Call the hospital to confirm.',
+        style: TextStyle(
+          fontSize: 12,
+          height: 1.4,
+          color: _secondaryText(isDark),
         ),
       ),
     );

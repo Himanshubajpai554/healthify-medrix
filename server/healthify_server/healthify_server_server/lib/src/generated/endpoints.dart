@@ -16,11 +16,11 @@ import '../auth/email_idp_endpoint.dart' as _i2;
 import '../auth/jwt_refresh_endpoint.dart' as _i3;
 import '../greetings/greeting_endpoint.dart' as _i4;
 import '../hospital/hospital_endpoint.dart' as _i5;
+import 'dart:typed_data' as _i6;
 import 'package:healthify_server_server/src/generated/hospital/hospital_info.dart'
-    as _i6;
-import 'package:healthify_server_server/src/generated/hospital/hospital_profile.dart'
     as _i7;
-import 'dart:typed_data' as _i8;
+import 'package:healthify_server_server/src/generated/hospital/hospital_profile.dart'
+    as _i8;
 import 'package:healthify_server_server/src/generated/hospital/hospital_settings.dart'
     as _i9;
 import 'package:healthify_server_server/src/generated/hospital/hospital_user_access.dart'
@@ -291,6 +291,344 @@ class Endpoints extends _i1.EndpointDispatch {
       name: 'hospital',
       endpoint: endpoints['hospital']!,
       methodConnectors: {
+        'getPatientDirectory': _i1.MethodConnector(
+          name: 'getPatientDirectory',
+          params: {
+            'collection': _i1.ParameterDescription(
+              name: 'collection',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .getPatientDirectory(
+                    session,
+                    params['collection'],
+                  ),
+        ),
+        'listMyPatientRecords': _i1.MethodConnector(
+          name: 'listMyPatientRecords',
+          params: {
+            'collection': _i1.ParameterDescription(
+              name: 'collection',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'limit': _i1.ParameterDescription(
+              name: 'limit',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'offset': _i1.ParameterDescription(
+              name: 'offset',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .listMyPatientRecords(
+                    session,
+                    params['collection'],
+                    limit: params['limit'],
+                    offset: params['offset'],
+                  ),
+        ),
+        'getMyPatientRecord': _i1.MethodConnector(
+          name: 'getMyPatientRecord',
+          params: {
+            'collection': _i1.ParameterDescription(
+              name: 'collection',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'recordKey': _i1.ParameterDescription(
+              name: 'recordKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .getMyPatientRecord(
+                    session,
+                    params['collection'],
+                    params['recordKey'],
+                  ),
+        ),
+        'saveMyPatientRecord': _i1.MethodConnector(
+          name: 'saveMyPatientRecord',
+          params: {
+            'collection': _i1.ParameterDescription(
+              name: 'collection',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'recordKey': _i1.ParameterDescription(
+              name: 'recordKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'payload': _i1.ParameterDescription(
+              name: 'payload',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .saveMyPatientRecord(
+                    session,
+                    params['collection'],
+                    params['recordKey'],
+                    params['payload'],
+                  ),
+        ),
+        'deleteMyPatientRecord': _i1.MethodConnector(
+          name: 'deleteMyPatientRecord',
+          params: {
+            'collection': _i1.ParameterDescription(
+              name: 'collection',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'recordKey': _i1.ParameterDescription(
+              name: 'recordKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .deleteMyPatientRecord(
+                    session,
+                    params['collection'],
+                    params['recordKey'],
+                  ),
+        ),
+        'requestHospitalPatientAccountLink': _i1.MethodConnector(
+          name: 'requestHospitalPatientAccountLink',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'patientId': _i1.ParameterDescription(
+              name: 'patientId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .requestHospitalPatientAccountLink(
+                    session,
+                    params['hospitalKey'],
+                    params['patientId'],
+                  ),
+        ),
+        'listHospitalPatientAccountLinkRequests': _i1.MethodConnector(
+          name: 'listHospitalPatientAccountLinkRequests',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .listHospitalPatientAccountLinkRequests(
+                    session,
+                    params['hospitalKey'],
+                  ),
+        ),
+        'reviewHospitalPatientAccountLinkRequest': _i1.MethodConnector(
+          name: 'reviewHospitalPatientAccountLinkRequest',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'requestId': _i1.ParameterDescription(
+              name: 'requestId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'approve': _i1.ParameterDescription(
+              name: 'approve',
+              type: _i1.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .reviewHospitalPatientAccountLinkRequest(
+                    session,
+                    params['hospitalKey'],
+                    params['requestId'],
+                    params['approve'],
+                  ),
+        ),
+        'listMyHospitalPatientAccountLinks': _i1.MethodConnector(
+          name: 'listMyHospitalPatientAccountLinks',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .listMyHospitalPatientAccountLinks(session),
+        ),
+        'listMyHospitalPatientAccountLinkRequests': _i1.MethodConnector(
+          name: 'listMyHospitalPatientAccountLinkRequests',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .listMyHospitalPatientAccountLinkRequests(session),
+        ),
+        'revokeMyHospitalPatientAccountLink': _i1.MethodConnector(
+          name: 'revokeMyHospitalPatientAccountLink',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'patientId': _i1.ParameterDescription(
+              name: 'patientId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .revokeMyHospitalPatientAccountLink(
+                    session,
+                    params['hospitalKey'],
+                    params['patientId'],
+                  ),
+        ),
+        'checkMyPatientReviewEligibility': _i1.MethodConnector(
+          name: 'checkMyPatientReviewEligibility',
+          params: {
+            'targetType': _i1.ParameterDescription(
+              name: 'targetType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'targetId': _i1.ParameterDescription(
+              name: 'targetId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .checkMyPatientReviewEligibility(
+                    session,
+                    params['targetType'],
+                    params['targetId'],
+                  ),
+        ),
+        'listPatientReviews': _i1.MethodConnector(
+          name: 'listPatientReviews',
+          params: {
+            'targetType': _i1.ParameterDescription(
+              name: 'targetType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'targetId': _i1.ParameterDescription(
+              name: 'targetId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .listPatientReviews(
+                    session,
+                    params['targetType'],
+                    params['targetId'],
+                  ),
+        ),
+        'createPatientReview': _i1.MethodConnector(
+          name: 'createPatientReview',
+          params: {
+            'targetType': _i1.ParameterDescription(
+              name: 'targetType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'targetId': _i1.ParameterDescription(
+              name: 'targetId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'rating': _i1.ParameterDescription(
+              name: 'rating',
+              type: _i1.getType<double>(),
+              nullable: false,
+            ),
+            'feedback': _i1.ParameterDescription(
+              name: 'feedback',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .createPatientReview(
+                    session,
+                    params['targetType'],
+                    params['targetId'],
+                    params['rating'],
+                    params['feedback'],
+                  ),
+        ),
         'listOperationalRecords': _i1.MethodConnector(
           name: 'listOperationalRecords',
           params: {
@@ -400,29 +738,75 @@ class Endpoints extends _i1.EndpointDispatch {
           name: 'saveOperationalRecords',
           params: {
             'hospitalKey': _i1.ParameterDescription(
-              name: 'hospitalKey', type: _i1.getType<String>(), nullable: false,
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
             ),
             'collections': _i1.ParameterDescription(
-              name: 'collections', type: _i1.getType<List<String>>(), nullable: false,
+              name: 'collections',
+              type: _i1.getType<List<String>>(),
+              nullable: false,
             ),
             'recordKeys': _i1.ParameterDescription(
-              name: 'recordKeys', type: _i1.getType<List<String>>(), nullable: false,
+              name: 'recordKeys',
+              type: _i1.getType<List<String>>(),
+              nullable: false,
             ),
             'payloads': _i1.ParameterDescription(
-              name: 'payloads', type: _i1.getType<List<String>>(), nullable: false,
+              name: 'payloads',
+              type: _i1.getType<List<String>>(),
+              nullable: false,
             ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
-              .saveOperationalRecords(
-                session,
-                params['hospitalKey'],
-                (params['collections'] as List).cast<String>(),
-                (params['recordKeys'] as List).cast<String>(),
-                (params['payloads'] as List).cast<String>(),
-              ),
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .saveOperationalRecords(
+                    session,
+                    params['hospitalKey'],
+                    params['collections'],
+                    params['recordKeys'],
+                    params['payloads'],
+                  ),
+        ),
+        'createAdmission': _i1.MethodConnector(
+          name: 'createAdmission',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'patientId': _i1.ParameterDescription(
+              name: 'patientId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'recordKey': _i1.ParameterDescription(
+              name: 'recordKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'payload': _i1.ParameterDescription(
+              name: 'payload',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .createAdmission(
+                    session,
+                    params['hospitalKey'],
+                    params['patientId'],
+                    params['recordKey'],
+                    params['payload'],
+                  ),
         ),
         'deleteOperationalRecord': _i1.MethodConnector(
           name: 'deleteOperationalRecord',
@@ -489,19 +873,101 @@ class Endpoints extends _i1.EndpointDispatch {
         'logAuditAction': _i1.MethodConnector(
           name: 'logAuditAction',
           params: {
-            'hospitalKey': _i1.ParameterDescription(name: 'hospitalKey', type: _i1.getType<String>(), nullable: false),
-            'action': _i1.ParameterDescription(name: 'action', type: _i1.getType<String>(), nullable: false),
-            'targetEntityType': _i1.ParameterDescription(name: 'targetEntityType', type: _i1.getType<String>(), nullable: false),
-            'targetEntityId': _i1.ParameterDescription(name: 'targetEntityId', type: _i1.getType<String>(), nullable: false),
-            'details': _i1.ParameterDescription(name: 'details', type: _i1.getType<String>(), nullable: false),
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'action': _i1.ParameterDescription(
+              name: 'action',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'targetEntityType': _i1.ParameterDescription(
+              name: 'targetEntityType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'targetEntityId': _i1.ParameterDescription(
+              name: 'targetEntityId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'details': _i1.ParameterDescription(
+              name: 'details',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async => (endpoints['hospital'] as _i5.HospitalEndpoint).logAuditAction(
-            session, params['hospitalKey'], params['action'], params['targetEntityType'],
-            params['targetEntityId'], params['details'],
-          ),
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .logAuditAction(
+                    session,
+                    params['hospitalKey'],
+                    params['action'],
+                    params['targetEntityType'],
+                    params['targetEntityId'],
+                    params['details'],
+                  ),
+        ),
+        'uploadPatientReportFile': _i1.MethodConnector(
+          name: 'uploadPatientReportFile',
+          params: {
+            'recordKey': _i1.ParameterDescription(
+              name: 'recordKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'fileName': _i1.ParameterDescription(
+              name: 'fileName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'mimeType': _i1.ParameterDescription(
+              name: 'mimeType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'fileBytes': _i1.ParameterDescription(
+              name: 'fileBytes',
+              type: _i1.getType<_i6.ByteData>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .uploadPatientReportFile(
+                    session,
+                    params['recordKey'],
+                    params['fileName'],
+                    params['mimeType'],
+                    params['fileBytes'],
+                  ),
+        ),
+        'getPatientReportFileBytes': _i1.MethodConnector(
+          name: 'getPatientReportFileBytes',
+          params: {
+            'recordKey': _i1.ParameterDescription(
+              name: 'recordKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .getPatientReportFileBytes(
+                    session,
+                    params['recordKey'],
+                  ),
         ),
         'getMyHospital': _i1.MethodConnector(
           name: 'getMyHospital',
@@ -513,17 +979,36 @@ class Endpoints extends _i1.EndpointDispatch {
               ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
                   .getMyHospital(session),
         ),
+        'getMyDoctorProfile': _i1.MethodConnector(
+          name: 'getMyDoctorProfile',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .getMyDoctorProfile(
+                    session,
+                    params['hospitalKey'],
+                  ),
+        ),
         'registerHospital': _i1.MethodConnector(
           name: 'registerHospital',
           params: {
             'info': _i1.ParameterDescription(
               name: 'info',
-              type: _i1.getType<_i6.HospitalInfoRecord>(),
+              type: _i1.getType<_i7.HospitalInfoRecord>(),
               nullable: false,
             ),
             'profile': _i1.ParameterDescription(
               name: 'profile',
-              type: _i1.getType<_i7.HospitalProfileRecord>(),
+              type: _i1.getType<_i8.HospitalProfileRecord>(),
               nullable: false,
             ),
           },
@@ -562,7 +1047,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'info': _i1.ParameterDescription(
               name: 'info',
-              type: _i1.getType<_i6.HospitalInfoRecord>(),
+              type: _i1.getType<_i7.HospitalInfoRecord>(),
               nullable: false,
             ),
           },
@@ -600,7 +1085,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'profile': _i1.ParameterDescription(
               name: 'profile',
-              type: _i1.getType<_i7.HospitalProfileRecord>(),
+              type: _i1.getType<_i8.HospitalProfileRecord>(),
               nullable: false,
             ),
           },
@@ -663,7 +1148,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'fileBytes': _i1.ParameterDescription(
               name: 'fileBytes',
-              type: _i1.getType<_i8.ByteData>(),
+              type: _i1.getType<_i6.ByteData>(),
               nullable: false,
             ),
           },
@@ -705,6 +1190,155 @@ class Endpoints extends _i1.EndpointDispatch {
                     session,
                     params['hospitalKey'],
                     params['documentId'],
+                  ),
+        ),
+        'uploadDoctorReportFile': _i1.MethodConnector(
+          name: 'uploadDoctorReportFile',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'reportId': _i1.ParameterDescription(
+              name: 'reportId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'fileName': _i1.ParameterDescription(
+              name: 'fileName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'mimeType': _i1.ParameterDescription(
+              name: 'mimeType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'fileBytes': _i1.ParameterDescription(
+              name: 'fileBytes',
+              type: _i1.getType<_i6.ByteData>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .uploadDoctorReportFile(
+                    session,
+                    params['hospitalKey'],
+                    params['reportId'],
+                    params['fileName'],
+                    params['mimeType'],
+                    params['fileBytes'],
+                  ),
+        ),
+        'getDoctorReportFileBytes': _i1.MethodConnector(
+          name: 'getDoctorReportFileBytes',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'reportId': _i1.ParameterDescription(
+              name: 'reportId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .getDoctorReportFileBytes(
+                    session,
+                    params['hospitalKey'],
+                    params['reportId'],
+                  ),
+        ),
+        'setDoctorReportPatientSharing': _i1.MethodConnector(
+          name: 'setDoctorReportPatientSharing',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'reportId': _i1.ParameterDescription(
+              name: 'reportId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'isShared': _i1.ParameterDescription(
+              name: 'isShared',
+              type: _i1.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .setDoctorReportPatientSharing(
+                    session,
+                    params['hospitalKey'],
+                    params['reportId'],
+                    params['isShared'],
+                  ),
+        ),
+        'getMySharedReportFileBytes': _i1.MethodConnector(
+          name: 'getMySharedReportFileBytes',
+          params: {
+            'reportId': _i1.ParameterDescription(
+              name: 'reportId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .getMySharedReportFileBytes(
+                    session,
+                    params['reportId'],
+                  ),
+        ),
+        'reviewBreakGlassRequest': _i1.MethodConnector(
+          name: 'reviewBreakGlassRequest',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'requestId': _i1.ParameterDescription(
+              name: 'requestId',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'approve': _i1.ParameterDescription(
+              name: 'approve',
+              type: _i1.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .reviewBreakGlassRequest(
+                    session,
+                    params['hospitalKey'],
+                    params['requestId'],
+                    params['approve'],
                   ),
         ),
         'submitVerification': _i1.MethodConnector(
@@ -762,6 +1396,90 @@ class Endpoints extends _i1.EndpointDispatch {
                   (endpoints['hospital'] as _i5.HospitalEndpoint).getSettings(
                     session,
                     params['hospitalKey'],
+                  ),
+        ),
+        'listPendingHospitalVerifications': _i1.MethodConnector(
+          name: 'listPendingHospitalVerifications',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .listPendingHospitalVerifications(session),
+        ),
+        'reviewHospitalVerification': _i1.MethodConnector(
+          name: 'reviewHospitalVerification',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'approve': _i1.ParameterDescription(
+              name: 'approve',
+              type: _i1.getType<bool>(),
+              nullable: false,
+            ),
+            'reviewerNotes': _i1.ParameterDescription(
+              name: 'reviewerNotes',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .reviewHospitalVerification(
+                    session,
+                    params['hospitalKey'],
+                    params['approve'],
+                    params['reviewerNotes'],
+                  ),
+        ),
+        'inviteHospitalStaff': _i1.MethodConnector(
+          name: 'inviteHospitalStaff',
+          params: {
+            'hospitalKey': _i1.ParameterDescription(
+              name: 'hospitalKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'email': _i1.ParameterDescription(
+              name: 'email',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'fullName': _i1.ParameterDescription(
+              name: 'fullName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'role': _i1.ParameterDescription(
+              name: 'role',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'department': _i1.ParameterDescription(
+              name: 'department',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['hospital'] as _i5.HospitalEndpoint)
+                  .inviteHospitalStaff(
+                    session,
+                    params['hospitalKey'],
+                    params['email'],
+                    params['fullName'],
+                    params['role'],
+                    params['department'],
                   ),
         ),
         'saveSettings': _i1.MethodConnector(

@@ -1,11 +1,18 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../core/models/appointment_model.dart' as core;
+import '../../core/enums/domain_enums.dart' as domain;
+import '../../core/provider/repository_provider.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../data/doctor_mock_data.dart';
+import '../services/doctor_emergency_service.dart';
+import '../services/doctor_reports_service.dart';
 import '../widgets/emergency_cases_widget.dart';
 import '../modals/doctor_modals.dart';
 import '../models/doctor_dashboard_models.dart';
+import '../models/emergency_models.dart';
+import '../models/reports_models.dart';
 import '../widgets/ai_patient_summary_widget.dart';
 import '../widgets/patient_queue_widget.dart';
 import '../widgets/pending_reports_widget.dart';
@@ -53,11 +60,13 @@ class _DoctorCareScreenState extends State<DoctorCareScreen>
 
     _tabController = TabController(length: 5, vsync: this);
 
-    _appointments = DoctorMockData.getAppointments();
-    _patientQueue = DoctorMockData.getPatientQueue();
-    _emergencyCases = DoctorMockData.getEmergencyCases();
-    _pendingReports = DoctorMockData.getPendingReports();
+    final connected = RepositoryContainer.instance.serverpodClient != null;
+    _appointments = connected ? <DoctorAppointmentModel>[] : DoctorMockData.getAppointments();
+    _patientQueue = connected ? <PatientQueueItemModel>[] : DoctorMockData.getPatientQueue();
+    _emergencyCases = connected ? <DoctorEmergencyCaseModel>[] : DoctorMockData.getEmergencyCases();
+    _pendingReports = connected ? <PendingReportModel>[] : DoctorMockData.getPendingReports();
     _aiSummary = DoctorMockData.getAISummary();
+    if (connected) _loadLiveCareData();
   }
 
   @override
@@ -66,7 +75,17 @@ class _DoctorCareScreenState extends State<DoctorCareScreen>
     super.dispose();
   }
 
-  void _markAppointmentCompleted(DoctorAppointmentModel appointment) {
+  Future<void> _markAppointmentCompleted(DoctorAppointmentModel appointment) async {
+    if (RepositoryContainer.instance.serverpodClient != null) {
+      try {
+        await RepositoryContainer.instance.appointmentRepository.updateAppointmentStatus(
+          appointment.id, domain.AppointmentStatus.completed,
+        );
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not complete appointment: $error')));
+        return;
+      }
+    }
     setState(() {
       _appointments = _appointments.map((a) {
         if (a.id == appointment.id) {
@@ -78,15 +97,179 @@ class _DoctorCareScreenState extends State<DoctorCareScreen>
     });
   }
 
-  void _rescheduleAppointment(
+  Future<void> _loadLiveCareData() async {
+    final container = RepositoryContainer.instance;
+    try {
+      final appointmentRows = await container.appointmentRepository
+          .getAppointmentsByDoctor(widget.doctorId);
+      final emergencyRows = await DoctorEmergencyService().getEmergencyCases();
+      final reportRows = await DoctorReportsService().getReports();
+      final appointments = appointmentRows.map(_appointmentFromRecord).toList();
+      final activeEmergencies = emergencyRows.where((item) =>
+          item.status != EmergencyCaseStatus.resolved &&
+          item.status != EmergencyCaseStatus.cancelled).map((item) => DoctorEmergencyCaseModel(
+            id: item.id,
+            patient: PatientModel(
+              id: item.patientId,
+              name: item.patientName,
+              age: item.patientAge,
+              gender: item.patientGender,
+              avatarUrl: '',
+              phone: item.emergencyContactPhone,
+              bloodGroup: item.bloodGroup,
+              mrn: item.patientId,
+              lastVisitDate: 'Not available',
+              lastVisitDoctor: widget.doctorName,
+              primaryConcern: item.emergencyReason,
+              department: item.department,
+            ),
+            severity: item.priority == EmergencyOperationalPriority.immediate
+                ? EmergencySeverity.critical
+                : item.priority == EmergencyOperationalPriority.high
+                    ? EmergencySeverity.high : EmergencySeverity.moderate,
+            arrivalTime: item.arrivalTime.toLocal().toString(),
+            assignedBed: item.location,
+            department: item.department,
+            assignedDoctor: item.assignedDoctor,
+            currentStatus: item.status.label,
+          )).toList();
+      final pendingReports = reportRows.where((report) => report.status != ReportStatus.reviewed).map((report) => PendingReportModel(
+        id: report.id,
+        patient: PatientModel(
+          id: report.patientId,
+          name: report.patientName,
+          age: report.patientAge,
+          gender: report.patientGender,
+          avatarUrl: '',
+          phone: '',
+          bloodGroup: '',
+          mrn: report.patientId,
+          lastVisitDate: 'Not available',
+          lastVisitDoctor: widget.doctorName,
+          primaryConcern: report.title,
+          department: report.department,
+        ),
+        reportType: report.title,
+        date: report.uploadedDate.toLocal().toString(),
+        priority: ReportPriority.normal,
+        isReviewed: report.status == ReportStatus.reviewed,
+        clinicalNotes: report.reviewNotes,
+        labValues: const {},
+      )).toList();
+      final summaryPatient = appointments.firstOrNull?.patient ?? PatientModel(
+        id: '', name: 'No assigned patient', age: 0, gender: 'Not reported', avatarUrl: '',
+        phone: '', bloodGroup: '', mrn: '', lastVisitDate: 'Not available',
+        lastVisitDoctor: widget.doctorName, primaryConcern: '', department: widget.specialty,
+      );
+      final liveSummary = AIPatientSummaryModel(
+        patient: summaryPatient,
+        previousVisitsCount: appointments.where((item) => item.status == AppointmentStatus.completed).length,
+        recentLabReportsCount: reportRows.length,
+        currentMedications: const [],
+        lastConsultationText: appointments.where((item) => item.status == AppointmentStatus.completed).firstOrNull?.reasonForVisit ?? 'No completed consultation is recorded.',
+        recentReportAttention: pendingReports.isEmpty ? 'No reports are awaiting review.' : '${pendingReports.length} report(s) need review.',
+        keyFindings: 'Summary of assigned hospital records. No AI clinical inference was performed.',
+      );
+      final waiting = appointments.where((item) => item.status == AppointmentStatus.waiting || item.status == AppointmentStatus.checkedIn).toList();
+      if (!mounted) return;
+      setState(() {
+        _appointments = appointments;
+        _patientQueue = [
+          for (var i = 0; i < waiting.length; i++)
+            PatientQueueItemModel(position: '${i + 1}', patient: waiting[i].patient,
+              appointmentTime: waiting[i].appointmentTime, waitingTime: 'Not reported', status: waiting[i].status),
+        ];
+        _emergencyCases = activeEmergencies;
+        _pendingReports = pendingReports;
+        _aiSummary = liveSummary;
+      });
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load clinical workspace: $error')),
+        );
+      }
+    }
+  }
+
+  DoctorAppointmentModel _appointmentFromRecord(core.AppointmentItem row) {
+    final time = TimeOfDay.fromDateTime(row.dateTime);
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final patient = PatientModel(id: row.patientId.isEmpty ? row.id : row.patientId,
+      name: row.patientName.isEmpty ? 'Patient' : row.patientName, age: 0,
+      gender: 'Not reported', avatarUrl: '', phone: '', bloodGroup: '', mrn: row.patientId,
+      lastVisitDate: 'Not available', lastVisitDoctor: widget.doctorName,
+      primaryConcern: row.reason, department: row.department);
+    final status = switch (row.status.toLowerCase()) {
+      'pending' || 'waiting' => AppointmentStatus.waiting,
+      'checkedin' || 'checked_in' => AppointmentStatus.checkedIn,
+      'inconsultation' || 'in_consultation' || 'inprogress' => AppointmentStatus.inConsultation,
+      'completed' => AppointmentStatus.completed,
+      'cancelled' => AppointmentStatus.cancelled,
+      'noshow' || 'no_show' || 'missed' => AppointmentStatus.noShow,
+      _ => AppointmentStatus.upcoming,
+    };
+    return DoctorAppointmentModel(id: row.id, patient: patient,
+      appointmentTime: '$hour:${time.minute.toString().padLeft(2, '0')} ${time.period == DayPeriod.am ? 'AM' : 'PM'}',
+      appointmentType: row.type.isEmpty ? 'Consultation' : row.type, department: row.department,
+      status: status, tokenNumber: '', reasonForVisit: row.reason, date: row.dateTime);
+  }
+
+  Future<void> _startConsultation(DoctorAppointmentModel appointment) async {
+    if (RepositoryContainer.instance.serverpodClient != null) {
+      try {
+        await RepositoryContainer.instance.appointmentRepository.updateAppointmentStatus(
+          appointment.id, domain.AppointmentStatus.inConsultation,
+        );
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not start consultation: $error')));
+        return;
+      }
+    }
+    if (!mounted) return;
+    DoctorModals.showStartConsultationModal(
+      context: context,
+      appointment: appointment.copyWith(status: AppointmentStatus.inConsultation),
+      onConsultationCompleted: () => _markAppointmentCompleted(appointment),
+    );
+  }
+
+  Future<void> _rescheduleAppointment(
     DoctorAppointmentModel appointment,
     String newSlot,
-  ) {
+  ) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    var newDate = appointment.date;
+    final parsed = RegExp(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$', caseSensitive: false).firstMatch(newSlot.trim());
+    if (parsed != null) {
+      var hour = int.parse(parsed.group(1)!);
+      final minute = int.parse(parsed.group(2)!);
+      final period = parsed.group(3)!.toUpperCase();
+      if (period == 'PM' && hour != 12) hour += 12;
+      if (period == 'AM' && hour == 12) hour = 0;
+      newDate = DateTime(appointment.date.year, appointment.date.month, appointment.date.day, hour, minute);
+      if (!newDate.isAfter(DateTime.now())) newDate = newDate.add(const Duration(days: 1));
+    }
+    if (records != null) {
+      try {
+        final row = await records.get('appointments', appointment.id);
+        if (row == null) throw StateError('Appointment not found.');
+        await records.save('appointments', appointment.id, {
+          ...row, 'dateTime': newDate.toUtc().toIso8601String(),
+          'appointmentTime': newSlot, 'status': 'scheduled',
+          'updatedAt': DateTime.now().toUtc().toIso8601String(),
+        });
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not reschedule appointment: $error')));
+        return;
+      }
+    }
     setState(() {
       _appointments = _appointments.map((a) {
         if (a.id == appointment.id) {
           return a.copyWith(
             appointmentTime: newSlot,
+            date: newDate,
             status: AppointmentStatus.upcoming,
           );
         }
@@ -801,12 +984,7 @@ class _DoctorCareScreenState extends State<DoctorCareScreen>
 
           TodayAppointmentsSection(
             appointments: followUps,
-            onStartConsultation: (apt) =>
-                DoctorModals.showStartConsultationModal(
-                  context: context,
-                  appointment: apt,
-                  onConsultationCompleted: () => _markAppointmentCompleted(apt),
-                ),
+            onStartConsultation: _startConsultation,
             onViewPatient: (apt) => DoctorModals.showPatientProfileModal(
               context: context,
               patient: apt.patient,
@@ -1069,7 +1247,23 @@ class _DoctorCareScreenState extends State<DoctorCareScreen>
             onReviewReport: (r) => DoctorModals.showReviewReportModal(
               context: context,
               report: r,
-              onReportReviewed: (notes) {},
+              onReportReviewed: (notes) async {
+                final messenger = ScaffoldMessenger.of(context);
+                try {
+                  await DoctorReportsService().markAsReviewed(
+                    reportId: r.id,
+                    reviewNotes: notes,
+                    doctorName: widget.doctorName,
+                  );
+                  await _loadLiveCareData();
+                } catch (error) {
+                  if (mounted) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Could not review report: $error')),
+                    );
+                  }
+                }
+              },
             ),
           ),
         ],

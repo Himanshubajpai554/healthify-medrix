@@ -27,12 +27,14 @@ import 'package:healthify_server_client/src/protocol/hospital/hospital_audit_eve
     as _i12;
 import 'package:healthify_server_client/src/protocol/hospital/verification_document.dart'
     as _i13;
-import 'package:healthify_server_client/src/protocol/hospital/hospital_user_access.dart'
+import 'package:healthify_server_client/src/protocol/hospital/hospital_profile.dart'
     as _i14;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:healthify_server_client/src/protocol/hospital/hospital_user_access.dart'
     as _i15;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i16;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i17;
 export 'greetings/greeting.dart';
 export 'hospital/hospital_audit_event.dart';
 export 'hospital/hospital_info.dart';
@@ -148,6 +150,9 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_i12.HospitalAuditEvent>) {
       return (data as List)
               .map((e) => deserialize<_i12.HospitalAuditEvent>(e))
@@ -160,17 +165,23 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           as T;
     }
-    if (t == List<_i14.HospitalUserAccessRecord>) {
+    if (t == List<_i14.HospitalProfileRecord>) {
       return (data as List)
-              .map((e) => deserialize<_i14.HospitalUserAccessRecord>(e))
+              .map((e) => deserialize<_i14.HospitalProfileRecord>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i15.HospitalUserAccessRecord>) {
+      return (data as List)
+              .map((e) => deserialize<_i15.HospitalUserAccessRecord>(e))
               .toList()
           as T;
     }
     try {
-      return _i15.Protocol().deserialize<T>(data, t);
+      return _i16.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i16.Protocol().deserialize<T>(data, t);
+      return _i17.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -222,11 +233,11 @@ class Protocol extends _i1.SerializationManager {
       case _i10.VerificationDocumentRecord():
         return 'VerificationDocumentRecord';
     }
-    className = _i15.Protocol().getClassNameForObject(data);
+    className = _i16.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i16.Protocol().getClassNameForObject(data);
+    className = _i17.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -268,11 +279,11 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i15.Protocol().deserializeByClassName(data);
+      return _i16.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i16.Protocol().deserializeByClassName(data);
+      return _i17.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
@@ -287,10 +298,10 @@ class Protocol extends _i1.SerializationManager {
       return null;
     }
     try {
-      return _i15.Protocol().mapRecordToJson(record);
+      return _i16.Protocol().mapRecordToJson(record);
     } catch (_) {}
     try {
-      return _i16.Protocol().mapRecordToJson(record);
+      return _i17.Protocol().mapRecordToJson(record);
     } catch (_) {}
     throw Exception('Unsupported record type ${record.runtimeType}');
   }

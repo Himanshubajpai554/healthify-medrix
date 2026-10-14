@@ -12,12 +12,32 @@ jwtRefresh:
 greeting:
   - hello:
 hospital:
+  - getPatientDirectory:
+  - listMyPatientRecords:
+  - getMyPatientRecord:
+  - saveMyPatientRecord:
+  - deleteMyPatientRecord:
+  - requestHospitalPatientAccountLink:
+  - listHospitalPatientAccountLinkRequests:
+  - reviewHospitalPatientAccountLinkRequest:
+  - listMyHospitalPatientAccountLinks:
+  - listMyHospitalPatientAccountLinkRequests:
+  - revokeMyHospitalPatientAccountLink:
+  - checkMyPatientReviewEligibility:
+  - listPatientReviews:
+  - createPatientReview:
   - listOperationalRecords:
   - getOperationalRecord:
   - saveOperationalRecord:
+  - saveOperationalRecords:
+  - createAdmission:
   - deleteOperationalRecord:
   - getOperationalAuditEvents:
+  - logAuditAction:
+  - uploadPatientReportFile:
+  - getPatientReportFileBytes:
   - getMyHospital:
+  - getMyDoctorProfile:
   - registerHospital:
   - getInfo:
   - saveInfo:
@@ -26,9 +46,17 @@ hospital:
   - getVerificationStatus:
   - uploadVerificationDocument:
   - getVerificationDocumentBytes:
+  - uploadDoctorReportFile:
+  - getDoctorReportFileBytes:
+  - setDoctorReportPatientSharing:
+  - getMySharedReportFileBytes:
+  - reviewBreakGlassRequest:
   - submitVerification:
   - getVerificationDocuments:
   - getSettings:
+  - listPendingHospitalVerifications:
+  - reviewHospitalVerification:
+  - inviteHospitalStaff:
   - saveSettings:
   - getUserAccessList:
   - saveUserAccess:

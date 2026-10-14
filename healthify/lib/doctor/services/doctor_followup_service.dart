@@ -1,4 +1,5 @@
 import '../models/followup_models.dart';
+import '../../core/provider/repository_provider.dart';
 
 class DoctorFollowUpService {
   static final DoctorFollowUpService _instance = DoctorFollowUpService._internal();
@@ -349,11 +350,24 @@ class DoctorFollowUpService {
   ];
 
   Future<List<DoctorFollowUpFullModel>> getFollowUps() async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final rows = await records.list('doctorFollowUps', limit: 500);
+      _followUps
+        ..clear()
+        ..addAll(rows.map(_fromRecord));
+      return List.unmodifiable(_followUps);
+    }
     await Future.delayed(const Duration(milliseconds: 250));
     return List.unmodifiable(_followUps);
   }
 
   Future<DoctorFollowUpFullModel?> getFollowUp(String id) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final row = await records.get('doctorFollowUps', id);
+      return row == null ? null : _fromRecord(row);
+    }
     await Future.delayed(const Duration(milliseconds: 150));
     try {
       return _followUps.firstWhere((f) => f.id == id);
@@ -429,6 +443,7 @@ class DoctorFollowUpService {
   Future<DoctorFollowUpFullModel> createFollowUp(DoctorFollowUpFullModel newFollowUp) async {
     await Future.delayed(const Duration(milliseconds: 250));
     _followUps.insert(0, newFollowUp);
+    await _saveRecord(newFollowUp);
     return newFollowUp;
   }
 
@@ -474,6 +489,7 @@ class DoctorFollowUpService {
         timeline: newTimeline,
         rescheduleHistory: newReschedules,
       );
+      await _saveRecord(_followUps[index]);
     }
   }
 
@@ -504,6 +520,7 @@ class DoctorFollowUpService {
         cancelledAt: DateTime.now(),
         timeline: newTimeline,
       );
+      await _saveRecord(_followUps[index]);
     }
   }
 
@@ -534,6 +551,7 @@ class DoctorFollowUpService {
         completionNote: completionNote,
         timeline: newTimeline,
       );
+      await _saveRecord(_followUps[index]);
     }
   }
 
@@ -559,7 +577,102 @@ class DoctorFollowUpService {
         notes: newNotes,
         timeline: newTimeline,
       );
+      await _saveRecord(_followUps[index]);
     }
+  }
+
+  Future<void> _saveRecord(DoctorFollowUpFullModel item) async {
+    final container = RepositoryContainer.instance;
+    final records = container.hospitalOperationalRepository;
+    if (records == null || container.currentDoctorId.isEmpty) return;
+    final now = DateTime.now().toUtc();
+    await records.save('doctorFollowUps', item.id, {
+      'id': item.id,
+      'patientId': item.patientId,
+      'patientName': item.patientName,
+      'patientAge': item.patientAge,
+      'patientGender': item.patientGender,
+      'bloodGroup': item.bloodGroup,
+      'allergies': item.allergies,
+      'phone': item.phone,
+      'followUpDate': item.followUpDate.toUtc().toIso8601String(),
+      'followUpTime': item.followUpTime,
+      'department': item.department,
+      'doctorId': container.currentDoctorId,
+      'assignedDoctorId': container.currentDoctorId,
+      'doctorName': container.currentDoctorName,
+      'reason': item.reason,
+      'additionalNotes': item.additionalNotes,
+      'createdDate': item.createdDate.toUtc().toIso8601String(),
+      'createdBy': container.currentDoctorName,
+      'status': item.status.name,
+      'previousConsultation': item.previousConsultation == null ? null : {
+        'id': item.previousConsultation!.id,
+        'date': item.previousConsultation!.date.toUtc().toIso8601String(),
+        'doctorName': item.previousConsultation!.doctorName,
+        'department': item.previousConsultation!.department,
+        'reason': item.previousConsultation!.reason,
+        'clinicalNotesSummary': item.previousConsultation!.clinicalNotesSummary,
+        'reportIds': item.previousConsultation!.reportIds,
+        'prescriptionIds': item.previousConsultation!.prescriptionIds,
+      },
+      'upcomingAppointment': item.upcomingAppointment == null ? null : {
+        'id': item.upcomingAppointment!.id,
+        'appointmentDate': item.upcomingAppointment!.appointmentDate.toUtc().toIso8601String(),
+        'timeSlot': item.upcomingAppointment!.timeSlot,
+        'department': item.upcomingAppointment!.department,
+        'doctorName': item.upcomingAppointment!.doctorName,
+        'type': item.upcomingAppointment!.type,
+        'status': item.upcomingAppointment!.status,
+      },
+      'timeline': item.timeline.map((event) => {'id': event.id, 'timestamp': event.timestamp.toUtc().toIso8601String(), 'actor': event.actor, 'action': event.action, 'optionalNote': event.optionalNote}).toList(),
+      'rescheduleHistory': item.rescheduleHistory.map((entry) => {'id': entry.id, 'previousDate': entry.previousDate.toUtc().toIso8601String(), 'previousTimeSlot': entry.previousTimeSlot, 'newDate': entry.newDate.toUtc().toIso8601String(), 'newTimeSlot': entry.newTimeSlot, 'changedBy': entry.changedBy, 'changedAt': entry.changedAt.toUtc().toIso8601String(), 'reason': entry.reason}).toList(),
+      'notes': item.notes.map((note) => {'id': note.id, 'noteType': note.noteType.name, 'content': note.content, 'author': note.author, 'createdAt': note.createdAt.toUtc().toIso8601String()}).toList(),
+      'completedDate': item.completedDate?.toUtc().toIso8601String(),
+      'completedBy': item.completedBy,
+      'completionNote': item.completionNote,
+      'cancellationReason': item.cancellationReason,
+      'cancelledBy': item.cancelledBy,
+      'cancelledAt': item.cancelledAt?.toUtc().toIso8601String(),
+      'aiSummary': item.aiSummary,
+      'updatedAt': now.toIso8601String(),
+    });
+  }
+
+  DoctorFollowUpFullModel _fromRecord(Map<String, dynamic> row) {
+    String str(Object? value) => value?.toString() ?? '';
+    DateTime date(Object? value) => DateTime.tryParse(str(value)) ?? DateTime.now();
+    final status = FollowUpStatus.values.where((value) => value.name == row['status']).firstOrNull ?? FollowUpStatus.scheduled;
+    final previous = row['previousConsultation'] as Map?;
+    final upcoming = row['upcomingAppointment'] as Map?;
+    return DoctorFollowUpFullModel(
+      id: str(row['id']), patientId: str(row['patientId']), patientName: str(row['patientName']),
+      patientAge: (row['patientAge'] as num?)?.toInt() ?? 0, patientGender: str(row['patientGender']),
+      bloodGroup: str(row['bloodGroup']), allergies: (row['allergies'] as List? ?? const []).map(str).toList(),
+      phone: str(row['phone']), followUpDate: date(row['followUpDate']), followUpTime: str(row['followUpTime']),
+      department: str(row['department']), doctorName: str(row['doctorName']), reason: str(row['reason']),
+      additionalNotes: row['additionalNotes'] as String?, createdDate: date(row['createdDate']),
+      createdBy: str(row['createdBy']), status: status,
+      previousConsultation: previous == null ? null : PreviousConsultationSummaryModel(
+        id: str(previous['id']), date: date(previous['date']), doctorName: str(previous['doctorName']),
+        department: str(previous['department']), reason: str(previous['reason']), clinicalNotesSummary: str(previous['clinicalNotesSummary']),
+        reportIds: (previous['reportIds'] as List? ?? const []).map(str).toList(), prescriptionIds: (previous['prescriptionIds'] as List? ?? const []).map(str).toList()),
+      upcomingAppointment: upcoming == null ? null : UpcomingAppointmentInfoModel(
+        id: str(upcoming['id']), appointmentDate: date(upcoming['appointmentDate']), timeSlot: str(upcoming['timeSlot']),
+        department: str(upcoming['department']), doctorName: str(upcoming['doctorName']), type: str(upcoming['type']), status: str(upcoming['status'])),
+      timeline: (row['timeline'] as List? ?? const []).whereType<Map>().map((item) => FollowUpTimelineItem(
+        id: str(item['id']), timestamp: date(item['timestamp']), actor: str(item['actor']), action: str(item['action']), optionalNote: item['optionalNote'] as String?)).toList(),
+      rescheduleHistory: (row['rescheduleHistory'] as List? ?? const []).whereType<Map>().map((item) => FollowUpRescheduleHistoryModel(
+        id: str(item['id']), previousDate: date(item['previousDate']), previousTimeSlot: str(item['previousTimeSlot']),
+        newDate: date(item['newDate']), newTimeSlot: str(item['newTimeSlot']), changedBy: str(item['changedBy']), changedAt: date(item['changedAt']), reason: str(item['reason']))).toList(),
+      notes: (row['notes'] as List? ?? const []).whereType<Map>().map((item) => FollowUpNoteModel(
+        id: str(item['id']), noteType: FollowUpNoteType.values.where((value) => value.name == item['noteType']).firstOrNull ?? FollowUpNoteType.internal,
+        content: str(item['content']), author: str(item['author']), createdAt: date(item['createdAt']))).toList(),
+      completedDate: row['completedDate'] == null ? null : date(row['completedDate']),
+      completedBy: row['completedBy'] as String?, completionNote: row['completionNote'] as String?,
+      cancellationReason: row['cancellationReason'] as String?, cancelledBy: row['cancelledBy'] as String?,
+      cancelledAt: row['cancelledAt'] == null ? null : date(row['cancelledAt']), aiSummary: row['aiSummary'] as String?,
+    );
   }
 
   Map<String, int> getSummaryMetrics() {

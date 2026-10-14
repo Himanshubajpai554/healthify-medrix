@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_ai_insight_repository.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/ai_insight_model.dart';
 import '../../core/services/ai_insight_service.dart';
@@ -49,7 +50,7 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _aiService = AIService(aiRepository: MockAIInsightRepository());
+    _aiService = AIService(aiRepository: RepositoryContainer.instance.aiInsightRepository);
     _loadData();
   }
 

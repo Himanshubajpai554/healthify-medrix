@@ -12,12 +12,18 @@ import '../data/serverpod/serverpod_clinical_document_repositories.dart';
 import '../data/serverpod/serverpod_audit_repository.dart';
 import '../data/serverpod/serverpod_ai_insight_repository.dart';
 import '../data/serverpod/serverpod_security_repository.dart';
+import '../data/serverpod/serverpod_patient_doctor_emergency_repositories.dart';
+import '../data/serverpod/serverpod_settings_repository.dart';
+import '../data/serverpod/serverpod_patient_portal_repository.dart';
+import '../data/serverpod/serverpod_patient_discovery_repository.dart';
+import '../data/serverpod/serverpod_patient_review_repositories.dart';
 import '../data/repositories/repositories.dart';
 
 /// Central Dependency Injection container / InheritedWidget for Medrix repositories.
 class RepositoryContainer {
   final Client? serverpodClient;
   final HospitalOperationalRepository? hospitalOperationalRepository;
+  final ServerpodPatientPortalRepository? patientPortalRepository;
   final HospitalRepository hospitalRepository;
   final HospitalSettingsRepository hospitalSettingsRepository;
   final DepartmentRepository departmentRepository;
@@ -35,6 +41,7 @@ class RepositoryContainer {
   final FacilityRepository facilityRepository;
   final EquipmentRepository equipmentRepository;
   final EmergencyRepository emergencyRepository;
+  final ResourceRepository resourceRepository;
   final ReportRepository reportRepository;
   final PrescriptionRepository prescriptionRepository;
   final AnalyticsRepository analyticsRepository;
@@ -50,10 +57,14 @@ class RepositoryContainer {
   final ReviewRepository reviewRepository;
   final ReviewEligibilityRepository reviewEligibilityRepository;
   final PatientDiscoveryRepository patientDiscoveryRepository;
+  String currentDoctorId = '';
+  String currentDoctorName = '';
+  String currentDoctorSpecialty = '';
 
   RepositoryContainer({
     this.serverpodClient,
     this.hospitalOperationalRepository,
+    this.patientPortalRepository,
     HospitalRepository? hospitalRepository,
     HospitalSettingsRepository? hospitalSettingsRepository,
     DepartmentRepository? departmentRepository,
@@ -70,6 +81,7 @@ class RepositoryContainer {
     FacilityRepository? facilityRepository,
     EquipmentRepository? equipmentRepository,
     EmergencyRepository? emergencyRepository,
+    ResourceRepository? resourceRepository,
     ReportRepository? reportRepository,
     PrescriptionRepository? prescriptionRepository,
     AnalyticsRepository? analyticsRepository,
@@ -101,6 +113,7 @@ class RepositoryContainer {
         facilityRepository = facilityRepository ?? MockFacilityRepository(),
         equipmentRepository = equipmentRepository ?? MockEquipmentRepository(),
         emergencyRepository = emergencyRepository ?? MockEmergencyRepository(),
+        resourceRepository = resourceRepository ?? MockResourceRepository(),
         reportRepository = reportRepository ?? MockReportRepository(),
         prescriptionRepository = prescriptionRepository ?? MockPrescriptionRepository(),
         analyticsRepository = analyticsRepository ?? MockAnalyticsRepository(),
@@ -130,6 +143,15 @@ class RepositoryContainer {
     final audit = ServerpodAuditRepository(operationalRecords);
     final aiInsights = ServerpodAIInsightRepository(operationalRecords);
     final security = ServerpodSecurityRepository(operationalRecords);
+    final patients = ServerpodPatientRepository(operationalRecords);
+    final hospitalPatients = ServerpodHospitalPatientRepository(operationalRecords);
+    final doctors = ServerpodDoctorRepository(operationalRecords);
+    final emergencies = ServerpodEmergencyRepository(operationalRecords);
+    final settings = ServerpodSettingsRepository(operationalRecords);
+    final patientDiscovery = ServerpodPatientDiscoveryRepository(client);
+    final reviews = ServerpodReviewRepository(client);
+    final reviewEligibility = ServerpodReviewEligibilityRepository(client);
+    MockDoctorRepository.serverpodFactory = () => doctors;
     MockAnalyticsRepository.serverpodFactory = () => analytics;
     MockNotificationRepository.serverpodFactory = () => notifications;
     MockResourceRepository.serverpodFactory = () => resources;
@@ -141,6 +163,15 @@ class RepositoryContainer {
     return RepositoryContainer(
       serverpodClient: client,
       hospitalOperationalRepository: operationalRecords,
+      patientPortalRepository: ServerpodPatientPortalRepository(client),
+      patientDiscoveryRepository: patientDiscovery,
+      reviewRepository: reviews,
+      reviewEligibilityRepository: reviewEligibility,
+      patientRepository: patients,
+      hospitalPatientRepository: hospitalPatients,
+      doctorRepository: doctors,
+      emergencyRepository: emergencies,
+      settingsRepository: settings,
       departmentRepository:
           ServerpodDepartmentRepository(operationalRecords),
       staffRepository: ServerpodStaffRepository(operationalRecords),
@@ -152,6 +183,7 @@ class RepositoryContainer {
       bloodBankRepository: ServerpodBloodRepository(operationalRecords),
       facilityRepository: ServerpodFacilityRepository(operationalRecords),
       equipmentRepository: ServerpodEquipmentRepository(operationalRecords),
+      resourceRepository: resources,
       analyticsRepository: analytics,
       notificationRepository: notifications,
       reportRepository: reports,
@@ -178,7 +210,15 @@ class RepositoryContainer {
       settings.hospitalKey = hospitalKey;
     }
   }
-
+  void setDoctorIdentity({
+    required String doctorId,
+    required String name,
+    required String specialty,
+  }) {
+    currentDoctorId = doctorId;
+    currentDoctorName = name;
+    currentDoctorSpecialty = specialty;
+  }
 
 }
 
@@ -200,4 +240,5 @@ class RepositoryScope extends InheritedWidget {
   bool updateShouldNotify(covariant RepositoryScope oldWidget) {
     return container != oldWidget.container;
   }
+
 }

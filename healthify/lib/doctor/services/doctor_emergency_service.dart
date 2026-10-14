@@ -1,4 +1,5 @@
 import '../models/emergency_models.dart';
+import '../../core/provider/repository_provider.dart';
 
 class DoctorEmergencyService {
   static final DoctorEmergencyService _instance = DoctorEmergencyService._internal();
@@ -362,11 +363,24 @@ class DoctorEmergencyService {
   ];
 
   Future<List<DoctorEmergencyCaseFullModel>> getEmergencyCases() async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final rows = await records.list('emergencies', limit: 500);
+      _cases
+        ..clear()
+        ..addAll(rows.map(_fromRecord));
+      return List.unmodifiable(_cases);
+    }
     await Future.delayed(const Duration(milliseconds: 200));
     return List.from(_cases);
   }
 
   Future<DoctorEmergencyCaseFullModel?> getEmergencyCase(String id) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final row = await records.get('emergencies', id);
+      return row == null ? null : _fromRecord(row);
+    }
     await Future.delayed(const Duration(milliseconds: 100));
     try {
       return _cases.firstWhere((c) => c.id == id);
@@ -412,6 +426,7 @@ class DoctorEmergencyService {
   Future<DoctorEmergencyCaseFullModel> createEmergencyCase(DoctorEmergencyCaseFullModel newCase) async {
     await Future.delayed(const Duration(milliseconds: 250));
     _cases.insert(0, newCase);
+    await _persistCase(newCase);
     return newCase;
   }
 
@@ -437,6 +452,7 @@ class DoctorEmergencyService {
         assignedDoctor: doctorName,
         timeline: newTimeline,
       );
+      await _persistCase(_cases[index]);
     }
   }
 
@@ -464,6 +480,7 @@ class DoctorEmergencyService {
         status: newStatus,
         timeline: newTimeline,
       );
+      await _persistCase(_cases[index]);
     }
   }
 
@@ -488,6 +505,7 @@ class DoctorEmergencyService {
         observations: obs,
         timeline: newTimeline,
       );
+      await _persistCase(_cases[index]);
     }
   }
 
@@ -513,6 +531,7 @@ class DoctorEmergencyService {
         notes: newNotes,
         timeline: newTimeline,
       );
+      await _persistCase(_cases[index]);
     }
   }
 
@@ -540,6 +559,7 @@ class DoctorEmergencyService {
         location: transferInfo.transferredToWard,
         timeline: newTimeline,
       );
+      await _persistCase(_cases[index]);
     }
   }
 
@@ -567,6 +587,7 @@ class DoctorEmergencyService {
         location: resolutionInfo.disposition.label,
         timeline: newTimeline,
       );
+      await _persistCase(_cases[index]);
     }
   }
 
@@ -593,7 +614,153 @@ class DoctorEmergencyService {
         consultationId: consultationId,
         timeline: newTimeline,
       );
+      await _persistCase(_cases[index]);
     }
+  }
+
+  Future<void> _persistCase(DoctorEmergencyCaseFullModel item) async {
+    final container = RepositoryContainer.instance;
+    final records = container.hospitalOperationalRepository;
+    final doctorId = container.currentDoctorId;
+    if (records == null || doctorId.isEmpty) return;
+    final prior = await records.get('emergencies', item.id) ?? <String, dynamic>{};
+    final status = switch (item.status) {
+      EmergencyCaseStatus.waiting => 'waiting',
+      EmergencyCaseStatus.inTreatment => 'inTreatment',
+      EmergencyCaseStatus.observation => 'stabilizing',
+      EmergencyCaseStatus.transferred => 'transferred',
+      EmergencyCaseStatus.resolved => 'discharged',
+      EmergencyCaseStatus.cancelled => 'cancelled',
+    };
+    final now = DateTime.now().toUtc();
+    await records.save('emergencies', item.id, {
+      ...prior,
+      'id': item.id,
+      'patientId': item.patientId,
+      'patientName': item.patientName,
+      'age': item.patientAge,
+      'gender': item.patientGender,
+      'bloodGroup': item.bloodGroup,
+      'allergies': item.allergies,
+      'knownConditions': item.knownConditions,
+      'currentMedications': item.currentMedications,
+      'emergencyContactName': item.emergencyContactName,
+      'emergencyContactRelation': item.emergencyContactRelation,
+      'emergencyContactPhone': item.emergencyContactPhone,
+      'arrivalTime': item.arrivalTime.toUtc().toIso8601String(),
+      'arrivalMode': item.arrivalMethod,
+      'referralSource': item.referralSource,
+      'chiefComplaint': item.emergencyReason,
+      'patientReportedInfo': item.patientReportedInfo,
+      'arrivalNotes': item.arrivalNotes,
+      'priority': item.priority.name,
+      'triageLevel': item.priority == EmergencyOperationalPriority.immediate ? 'level1Resuscitation' : item.priority == EmergencyOperationalPriority.high ? 'level2Emergent' : 'level3Urgent',
+      'status': status,
+      'doctorId': doctorId,
+      'assignedDoctorId': doctorId,
+      'assignedDoctor': item.assignedDoctor.isEmpty ? container.currentDoctorName : item.assignedDoctor,
+      'department': item.department,
+      'departmentId': item.department,
+      'location': item.location,
+      'locationBed': item.location,
+      'vitals': item.observations == null ? (prior['vitals'] ?? <String, dynamic>{}) : {
+        'bpSystolic': item.observations!.bpSystolic,
+        'bpDiastolic': item.observations!.bpDiastolic,
+        'heartRate': item.observations!.heartRate,
+        'temperature': item.observations!.temperature,
+        'respiratoryRate': item.observations!.respiratoryRate,
+        'oxygenSaturation': item.observations!.oxygenSaturation,
+        'weight': item.observations!.weight,
+        'additionalObservations': item.observations!.additionalObservations,
+        'recordedBy': item.observations!.recordedBy,
+        'recordedAt': item.observations!.recordedAt.toUtc().toIso8601String(),
+      },
+      'observations': item.observations == null ? null : {
+        'bpSystolic': item.observations!.bpSystolic,
+        'bpDiastolic': item.observations!.bpDiastolic,
+        'heartRate': item.observations!.heartRate,
+        'temperature': item.observations!.temperature,
+        'respiratoryRate': item.observations!.respiratoryRate,
+        'oxygenSaturation': item.observations!.oxygenSaturation,
+        'weight': item.observations!.weight,
+        'additionalObservations': item.observations!.additionalObservations,
+        'recordedBy': item.observations!.recordedBy,
+        'recordedAt': item.observations!.recordedAt.toUtc().toIso8601String(),
+      },
+      'notes': item.notes.map((note) => {
+        'id': note.id, 'noteType': note.noteType.name, 'content': note.content,
+        'isInternalPrivate': note.isInternalPrivate, 'author': note.author,
+        'createdAt': note.createdAt.toUtc().toIso8601String(),
+      }).toList(),
+      'timeline': item.timeline.map((event) => {
+        'id': event.id, 'timestamp': event.timestamp.toUtc().toIso8601String(),
+        'actor': event.actor, 'action': event.action, 'optionalNote': event.optionalNote,
+      }).toList(),
+      'consultationId': item.consultationId,
+      'attachedReportIds': item.attachedReportIds,
+      'attachedPrescriptionIds': item.attachedPrescriptionIds,
+      'updatedAt': now.toIso8601String(),
+      'createdAt': prior['createdAt'] ?? item.arrivalTime.toUtc().toIso8601String(),
+    });
+  }
+
+  DoctorEmergencyCaseFullModel _fromRecord(Map<String, dynamic> row) {
+    String str(Object? value, [String fallback = '']) => value?.toString() ?? fallback;
+    DateTime date(Object? value) => DateTime.tryParse(str(value)) ?? DateTime.now();
+    final priorityValue = str(row['priority'] ?? row['triageLevel']).toLowerCase();
+    final priority = priorityValue.contains('immediate') || priorityValue.contains('level1')
+        ? EmergencyOperationalPriority.immediate
+        : priorityValue.contains('high') || priorityValue.contains('level2')
+            ? EmergencyOperationalPriority.high
+            : EmergencyOperationalPriority.standard;
+    final rawStatus = str(row['status']).toLowerCase();
+    final status = switch (rawStatus) {
+      'intreatment' || 'in_treatment' || 'admitted' => EmergencyCaseStatus.inTreatment,
+      'observation' || 'stabilizing' => EmergencyCaseStatus.observation,
+      'transferred' => EmergencyCaseStatus.transferred,
+      'resolved' || 'discharged' || 'deceased' => EmergencyCaseStatus.resolved,
+      'cancelled' => EmergencyCaseStatus.cancelled,
+      _ => EmergencyCaseStatus.waiting,
+    };
+    final notes = (row['notes'] as List? ?? const []).whereType<Map>().map((note) => EmergencyNoteModel(
+      id: str(note['id']),
+      noteType: EmergencyNoteType.values.where((value) => value.name == note['noteType']).firstOrNull ?? EmergencyNoteType.clinicalNote,
+      content: str(note['content']),
+      isInternalPrivate: note['isInternalPrivate'] as bool? ?? true,
+      author: str(note['author']),
+      createdAt: date(note['createdAt']),
+    )).toList();
+    final timeline = (row['timeline'] as List? ?? const []).whereType<Map>().map((event) => EmergencyTimelineItem(
+      id: str(event['id']), timestamp: date(event['timestamp']), actor: str(event['actor']),
+      action: str(event['action']), optionalNote: event['optionalNote'] as String?,
+    )).toList();
+    final rawVitals = (row['observations'] as Map?) ?? (row['vitals'] as Map?) ?? const {};
+    final observations = rawVitals.isEmpty ? null : EmergencyObservationsModel(
+      bpSystolic: str(rawVitals['bpSystolic']), bpDiastolic: str(rawVitals['bpDiastolic']),
+      heartRate: str(rawVitals['heartRate']), temperature: str(rawVitals['temperature']),
+      respiratoryRate: str(rawVitals['respiratoryRate']), oxygenSaturation: str(rawVitals['oxygenSaturation']),
+      weight: str(rawVitals['weight']), additionalObservations: str(rawVitals['additionalObservations']),
+      recordedBy: str(rawVitals['recordedBy']), recordedAt: date(rawVitals['recordedAt']),
+    );
+    return DoctorEmergencyCaseFullModel(
+      id: str(row['id'] ?? row['_key']), patientId: str(row['patientId']),
+      patientName: str(row['patientName'], 'Patient'), patientAge: (row['age'] as num?)?.toInt() ?? 0,
+      patientGender: str(row['gender']), bloodGroup: str(row['bloodGroup']),
+      allergies: (row['allergies'] as List? ?? const []).map(str).toList(),
+      knownConditions: (row['knownConditions'] as List? ?? const []).map(str).toList(),
+      currentMedications: (row['currentMedications'] as List? ?? const []).map(str).toList(),
+      emergencyContactName: str(row['emergencyContactName']), emergencyContactRelation: str(row['emergencyContactRelation']),
+      emergencyContactPhone: str(row['emergencyContactPhone']), arrivalTime: date(row['arrivalTime']),
+      arrivalMethod: str(row['arrivalMode'] ?? row['arrivalMethod']), referralSource: str(row['referralSource']),
+      emergencyReason: str(row['chiefComplaint'] ?? row['emergencyReason']), patientReportedInfo: str(row['patientReportedInfo']),
+      arrivalNotes: str(row['arrivalNotes']), priority: priority, status: status,
+      assignedDoctor: str(row['assignedDoctor'] ?? row['doctorName']), department: str(row['department'] ?? row['departmentId']),
+      location: str(row['location'] ?? row['locationBed']), observations: observations, notes: notes,
+      timeline: timeline, consultationId: row['consultationId'] as String?,
+      attachedReportIds: (row['attachedReportIds'] as List? ?? const []).map(str).toList(),
+      attachedPrescriptionIds: (row['attachedPrescriptionIds'] as List? ?? const []).map(str).toList(),
+      auditHistory: const [],
+    );
   }
 
   Map<String, int> getSummaryMetrics() {

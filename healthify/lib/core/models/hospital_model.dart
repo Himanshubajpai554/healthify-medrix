@@ -206,6 +206,9 @@ class Hospital {
   final double rating;
   final int totalBeds;
   final int totalDoctors;
+  final int reviewCount;
+  final int icuBeds;
+  final bool has247Emergency;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -219,6 +222,9 @@ class Hospital {
     required this.rating,
     required this.totalBeds,
     required this.totalDoctors,
+    this.reviewCount = 0,
+    this.icuBeds = 0,
+    this.has247Emergency = false,
     required this.createdAt,
     required this.updatedAt,
   });

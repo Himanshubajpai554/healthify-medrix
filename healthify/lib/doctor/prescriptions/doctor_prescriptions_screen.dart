@@ -141,7 +141,13 @@ class _DoctorPrescriptionsScreenState extends State<DoctorPrescriptionsScreen> {
     final isDesktop = screenWidth >= 1024;
     final isMobile = screenWidth < 768;
 
-    final metrics = _prescriptionService.getSummaryMetrics();
+    final today = DateTime.now();
+    final metrics = <String, int>{
+      'total': _allPrescriptions.length,
+      'createdToday': _allPrescriptions.where((p) => p.date.year == today.year && p.date.month == today.month && p.date.day == today.day).length,
+      'active': _allPrescriptions.where((p) => p.status == PrescriptionStatus.active).length,
+      'drafts': _allPrescriptions.where((p) => p.status == PrescriptionStatus.draft).length,
+    };
 
     if (widget.embedInDashboard) {
       if (isDesktop) {

@@ -21,7 +21,7 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
   String _searchQuery = '';
   String _activeQuickFilter = 'All Beds';
   bool _isEmergencyMode = false;
-  final bool _isLoading = false;
+  bool _isLoading = true;
   bool _isOffline = false;
   bool _hasLocationPermission = true;
   bool _showAvailabilityChangedAlert = true;
@@ -31,12 +31,12 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
   final List<HospitalBedData> _selectedForComparison = [];
 
   final TextEditingController _searchController = TextEditingController();
+  List<HospitalBedData> _bedData = const [];
 
   // ─────────────────────────────────────────────────────────────
   // Healthify Glass Theme — Light + Dark
   // ─────────────────────────────────────────────────────────────
   static const Color _primary = Color(0xFF0D9488);
-  static const Color _primaryDark = Color(0xFF0F766E);
 
   Color _surface(bool isDark) => isDark
       ? Colors.white.withValues(alpha: 0.045)
@@ -153,19 +153,43 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadBedData();
+  }
+
+  Future<void> _loadBedData() async {
+    try {
+      final results = await BedDiscoveryService.getHospitalBedDataList();
+      if (!mounted) return;
+      setState(() {
+        _bedData = results;
+        _isLoading = false;
+        _isOffline = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isOffline = true;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
   List<HospitalBedData> get _filteredHospitals {
-    var list = BedDiscoveryService.getHospitalBedDataList();
+    var list = List<HospitalBedData>.of(_bedData);
 
     // Emergency mode filter
     if (_isEmergencyMode) {
       list = list
           .where(
-            (d) => d.hospital.isEmergencyOpen && d.emergencyDoctorAvailable,
+            (d) => d.hospital.emergencyStatusKnown && d.hospital.isEmergencyOpen,
           )
           .toList();
     }
@@ -193,7 +217,7 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
 
     // Filter criteria
     list = list.where((d) {
-      final matchesDist =
+      final matchesDist = !d.hospital.distanceAvailable ||
           d.hospital.distanceKm <= _filterCriteria.maxDistanceKm;
       final matchesEr =
           !_filterCriteria.requiresEmergency || d.hospital.isEmergencyOpen;
@@ -206,7 +230,12 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
     // Sort options
     if (_filterCriteria.sortBy == 'nearest') {
       list.sort(
-        (a, b) => a.hospital.distanceKm.compareTo(b.hospital.distanceKm),
+        (a, b) {
+          if (a.hospital.distanceAvailable != b.hospital.distanceAvailable) {
+            return a.hospital.distanceAvailable ? -1 : 1;
+          }
+          return a.hospital.distanceKm.compareTo(b.hospital.distanceKm);
+        },
       );
     } else if (_filterCriteria.sortBy == 'most_available') {
       list.sort((a, b) {
@@ -222,6 +251,7 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
   }
 
   String _formatTimestamp(DateTime dt) {
+    if (dt.millisecondsSinceEpoch == 0) return 'Update time unavailable';
     final diff = DateTime.now().difference(dt);
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
@@ -335,7 +365,7 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
                             ),
                             SizedBox(width: 4),
                             Text(
-                              'Near me',
+                              'Hospitals',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -350,7 +380,7 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Find nearby hospitals with available bed capacity in real-time.',
+                  'See live bed availability that hospitals have shared with patients.',
                   style: TextStyle(fontSize: 13, color: _secondaryText(isDark)),
                 ),
                 const SizedBox(height: 16),
@@ -839,17 +869,19 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
             _buildEdgeStateCard(
               icon: Icons.wifi_off_rounded,
               title: 'Network Disconnected',
-              subtitle:
-                  'Showing last cached bed availability data. Reconnect to refresh live capacity feed.',
+              subtitle: 'Could not refresh hospital-published bed availability.',
               buttonText: 'Retry Connection',
-              onTap: () => setState(() => _isOffline = false),
+              onTap: () {
+                setState(() => _isLoading = true);
+                _loadBedData();
+              },
             ),
           ] else if (results.isEmpty) ...[
             _buildEdgeStateCard(
               icon: Icons.king_bed_outlined,
               title: 'No Matching Available Beds Nearby',
               subtitle:
-                  'No hospitals within radius report available beds for the selected criteria. Try expanding search distance or selecting alternate bed categories.',
+                  'No verified hospital has published matching bed availability for these filters.',
               buttonText: 'Reset Filters & Expand Distance',
               onTap: () {
                 setState(() {
@@ -1118,8 +1150,7 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
                                   const SizedBox(width: 5),
                                   Expanded(
                                     child: Text(
-                                      '${h.distanceKm} km '
-                                      '(${bedData.estimatedTravelTime}) • '
+                                      '${h.distanceAvailable ? '${h.distanceKm} km • ${bedData.estimatedTravelTime} • ' : 'Distance unavailable • '}'
                                       '${h.address}',
                                       style: const TextStyle(
                                         fontSize: 12,

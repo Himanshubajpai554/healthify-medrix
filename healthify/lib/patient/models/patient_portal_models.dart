@@ -3,16 +3,20 @@ class NearbyHospital {
   final String id;
   final String name;
   final String address;
+  final String type;
   final double distanceKm;
+  final bool distanceAvailable;
   final double rating;
   final int reviewsCount;
   final bool isEmergencyOpen;
+  final bool emergencyStatusKnown;
   final int availableBeds;
   final int totalBeds;
   final int icuAvailable;
   final int icuTotal;
   final Map<String, int> bloodStock; // e.g. {'O+': 14, 'O-': 2, 'A+': 18, 'B+': 10}
   final List<String> facilities;
+  final bool availabilityKnown;
   final String phone;
   final String openHours;
 
@@ -20,16 +24,20 @@ class NearbyHospital {
     required this.id,
     required this.name,
     required this.address,
+    this.type = 'Hospital',
     required this.distanceKm,
+    this.distanceAvailable = true,
     required this.rating,
     required this.reviewsCount,
     required this.isEmergencyOpen,
+    this.emergencyStatusKnown = true,
     required this.availableBeds,
     required this.totalBeds,
     required this.icuAvailable,
     required this.icuTotal,
     required this.bloodStock,
     required this.facilities,
+    this.availabilityKnown = true,
     required this.phone,
     this.openHours = '24/7 Emergency Care',
   });
@@ -43,12 +51,15 @@ class DoctorSearchResult {
   final String department;
   final String hospitalName;
   final double distanceKm;
+  final bool distanceAvailable;
   final double rating;
   final int reviewsCount;
   final int experienceYears;
   final double consultationFee;
   final List<String> availableSlots;
   final bool isTeleconsultAvailable;
+  final String? hospitalId;
+  final String? departmentId;
 
   const DoctorSearchResult({
     required this.id,
@@ -57,12 +68,15 @@ class DoctorSearchResult {
     required this.department,
     required this.hospitalName,
     required this.distanceKm,
+    this.distanceAvailable = true,
     required this.rating,
     required this.reviewsCount,
     required this.experienceYears,
     required this.consultationFee,
     required this.availableSlots,
     this.isTeleconsultAvailable = true,
+    this.hospitalId,
+    this.departmentId,
   });
 }
 
@@ -127,6 +141,7 @@ class MedicalReport {
   final String fileFormat; // 'PDF', 'DICOM', 'DOC', 'JPG'
   final String fileSize;
   final bool isExternalUploaded;
+  final bool hasAttachedFile;
   final List<ReportParameter> parameters;
   final List<ReportAccessLog> accessLogs;
   final List<SharedReportLink> sharedLinks;
@@ -142,6 +157,7 @@ class MedicalReport {
     this.fileFormat = 'PDF',
     this.fileSize = '2.4 MB',
     this.isExternalUploaded = false,
+    this.hasAttachedFile = false,
     this.parameters = const [],
     this.accessLogs = const [],
     this.sharedLinks = const [],
@@ -158,6 +174,7 @@ class MedicalReport {
     String? fileFormat,
     String? fileSize,
     bool? isExternalUploaded,
+    bool? hasAttachedFile,
     List<ReportParameter>? parameters,
     List<ReportAccessLog>? accessLogs,
     List<SharedReportLink>? sharedLinks,
@@ -173,6 +190,7 @@ class MedicalReport {
       fileFormat: fileFormat ?? this.fileFormat,
       fileSize: fileSize ?? this.fileSize,
       isExternalUploaded: isExternalUploaded ?? this.isExternalUploaded,
+      hasAttachedFile: hasAttachedFile ?? this.hasAttachedFile,
       parameters: parameters ?? this.parameters,
       accessLogs: accessLogs ?? this.accessLogs,
       sharedLinks: sharedLinks ?? this.sharedLinks,
@@ -206,6 +224,8 @@ class SymptomAnalysisResult {
 /// Represents a booked, rescheduled, completed or cancelled patient appointment
 class PatientAppointment {
   final String id;
+  final String? doctorId;
+  final String? hospitalId;
   final String doctorName;
   final String specialty;
   final String hospitalName;
@@ -223,6 +243,8 @@ class PatientAppointment {
 
   const PatientAppointment({
     required this.id,
+    this.doctorId,
+    this.hospitalId,
     required this.doctorName,
     required this.specialty,
     required this.hospitalName,
@@ -241,6 +263,8 @@ class PatientAppointment {
 
   PatientAppointment copyWith({
     String? id,
+    String? doctorId,
+    String? hospitalId,
     String? doctorName,
     String? specialty,
     String? hospitalName,
@@ -258,6 +282,8 @@ class PatientAppointment {
   }) {
     return PatientAppointment(
       id: id ?? this.id,
+      doctorId: doctorId ?? this.doctorId,
+      hospitalId: hospitalId ?? this.hospitalId,
       doctorName: doctorName ?? this.doctorName,
       specialty: specialty ?? this.specialty,
       hospitalName: hospitalName ?? this.hospitalName,
@@ -317,8 +343,8 @@ class HospitalBedData {
   final NearbyHospital hospital;
   final String estimatedTravelTime;
   final DateTime lastUpdated;
-  final bool emergencyDoctorAvailable;
-  final bool ctScanAvailable;
+  final bool? emergencyDoctorAvailable;
+  final bool? ctScanAvailable;
   final List<BedCategoryDetail> categories;
   final List<BedAvailabilityTimelineEntry> timeline;
 
@@ -326,8 +352,8 @@ class HospitalBedData {
     required this.hospital,
     this.estimatedTravelTime = '~10 min',
     required this.lastUpdated,
-    this.emergencyDoctorAvailable = true,
-    this.ctScanAvailable = true,
+    this.emergencyDoctorAvailable,
+    this.ctScanAvailable,
     required this.categories,
     required this.timeline,
   });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_dashboard_models.dart';
+import '../../services/doctor_clinical_records_service.dart';
 
 class AddClinicalNoteModal {
   static void show({
@@ -152,7 +153,7 @@ class AddClinicalNoteModal {
                           child: Text(
                             isInternal
                                 ? 'PRIVATE NOTE: Visible ONLY to doctors and medical team in Medrix EHR.'
-                                : 'PATIENT VISIBLE: Included in patient consultation summary on Patient App.',
+                                : 'CARE TEAM NOTE: Saved to the hospital EHR. Patient portal sharing is not connected.',
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.bold,
@@ -191,7 +192,28 @@ class AddClinicalNoteModal {
                       Expanded(
                         flex: 2,
                         child: GlassPrimaryButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            final content = noteController.text.trim();
+                            if (content.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Enter the clinical note first.')),
+                              );
+                              return;
+                            }
+                            try {
+                              await DoctorClinicalRecordsService.instance.saveNote(
+                                patient: patient,
+                                type: noteType,
+                                content: content,
+                              );
+                            } catch (error) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Could not save clinical note: $error')),
+                              );
+                              return;
+                            }
+                            if (!context.mounted) return;
                             Navigator.pop(context);
                             onNoteAdded();
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -32,8 +32,10 @@ import 'package:healthify_server_server/src/generated/hospital/hospital_audit_ev
     as _i15;
 import 'package:healthify_server_server/src/generated/hospital/verification_document.dart'
     as _i16;
-import 'package:healthify_server_server/src/generated/hospital/hospital_user_access.dart'
+import 'package:healthify_server_server/src/generated/hospital/hospital_profile.dart'
     as _i17;
+import 'package:healthify_server_server/src/generated/hospital/hospital_user_access.dart'
+    as _i18;
 export 'greetings/greeting.dart';
 export 'hospital/hospital_audit_event.dart';
 export 'hospital/hospital_info.dart';
@@ -1122,6 +1124,9 @@ class Protocol extends _i1.SerializationManagerServer {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_i15.HospitalAuditEvent>) {
       return (data as List)
               .map((e) => deserialize<_i15.HospitalAuditEvent>(e))
@@ -1134,9 +1139,15 @@ class Protocol extends _i1.SerializationManagerServer {
               .toList()
           as T;
     }
-    if (t == List<_i17.HospitalUserAccessRecord>) {
+    if (t == List<_i17.HospitalProfileRecord>) {
       return (data as List)
-              .map((e) => deserialize<_i17.HospitalUserAccessRecord>(e))
+              .map((e) => deserialize<_i17.HospitalProfileRecord>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i18.HospitalUserAccessRecord>) {
+      return (data as List)
+              .map((e) => deserialize<_i18.HospitalUserAccessRecord>(e))
               .toList()
           as T;
     }

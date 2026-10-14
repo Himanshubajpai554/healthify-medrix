@@ -1,9 +1,67 @@
 import '../models/reports_models.dart';
+import '../../core/provider/repository_provider.dart';
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
+import '../models/doctor_dashboard_models.dart';
 
 class DoctorReportsService {
   static final DoctorReportsService _instance = DoctorReportsService._internal();
   factory DoctorReportsService() => _instance;
   DoctorReportsService._internal();
+
+  Future<List<PatientModel>> getAssignablePatients() async {
+    final container = RepositoryContainer.instance;
+    final records = container.hospitalOperationalRepository;
+    if (records == null || container.currentDoctorId.isEmpty) return const [];
+
+    final patientsById = <String, PatientModel>{};
+    final appointmentRows = await records.list('appointments', limit: 500);
+    for (final row in appointmentRows) {
+      final patientId = '${row['patientId'] ?? ''}'.trim();
+      if (patientId.isEmpty) continue;
+      patientsById.putIfAbsent(
+        patientId,
+        () => PatientModel(
+          id: patientId,
+          name: '${row['patientName'] ?? 'Patient'}',
+          age: 0,
+          gender: 'Not reported',
+          avatarUrl: '',
+          phone: '',
+          bloodGroup: '',
+          mrn: patientId,
+          lastVisitDate: 'Not available',
+          lastVisitDoctor: container.currentDoctorName,
+          primaryConcern: '${row['reason'] ?? ''}',
+          department: '${row['department'] ?? container.currentDoctorSpecialty}',
+        ),
+      );
+    }
+
+    final patientRows = await records.list('patients', limit: 500);
+    for (final row in patientRows) {
+      final patientId = '${row['id'] ?? row['_key'] ?? ''}'.trim();
+      if (patientId.isEmpty) continue;
+      final previous = patientsById[patientId];
+      patientsById[patientId] = PatientModel(
+        id: patientId,
+        name: '${row['name'] ?? previous?.name ?? 'Patient'}',
+        age: (row['age'] as num?)?.toInt() ?? previous?.age ?? 0,
+        gender: '${row['gender'] ?? previous?.gender ?? 'Not reported'}',
+        avatarUrl: '${row['profileImage'] ?? ''}',
+        phone: '',
+        bloodGroup: '${row['bloodGroup'] ?? ''}',
+        mrn: '${row['mrn'] ?? row['mrnNumber'] ?? patientId}',
+        lastVisitDate: previous?.lastVisitDate ?? 'Not available',
+        lastVisitDoctor: container.currentDoctorName,
+        primaryConcern: '${row['diagnosis'] ?? previous?.primaryConcern ?? ''}',
+        department: '${row['department'] ?? previous?.department ?? container.currentDoctorSpecialty}',
+      );
+    }
+    final result = patientsById.values.toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return result;
+  }
 
   final List<DoctorReportFullModel> _reports = [
     DoctorReportFullModel(
@@ -231,11 +289,21 @@ class DoctorReportsService {
   ];
 
   Future<List<DoctorReportFullModel>> getReports() async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final rows = await records.list('diagnosticReports', limit: 500);
+      return rows.map(_fromRecord).toList();
+    }
     await Future.delayed(const Duration(milliseconds: 250));
     return List.from(_reports);
   }
 
   Future<DoctorReportFullModel?> getReportById(String id) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final row = await records.get('diagnosticReports', id);
+      return row == null ? null : _fromRecord(row);
+    }
     await Future.delayed(const Duration(milliseconds: 100));
     try {
       return _reports.firstWhere((r) => r.id == id);
@@ -244,9 +312,71 @@ class DoctorReportsService {
     }
   }
 
-  Future<void> uploadReport(DoctorReportFullModel report) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    _reports.insert(0, report);
+  Future<void> uploadReport(
+    DoctorReportFullModel report,
+    PlatformFile file,
+  ) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      await records.save('diagnosticReports', report.id, _toRecord(report));
+      final bytes = file.bytes;
+      if (bytes == null || bytes.isEmpty) throw StateError('Selected report file is empty.');
+      final extension = file.extension?.toLowerCase();
+      final mimeType = switch (extension) {
+        'pdf' => 'application/pdf',
+        'png' => 'image/png',
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'dcm' => 'application/dicom',
+        _ => throw StateError('Unsupported report file type.'),
+      };
+      try {
+        await records.uploadDoctorReportFile(
+          report.id, file.name, mimeType, ByteData.sublistView(bytes),
+        );
+      } catch (_) {
+        await records.delete('diagnosticReports', report.id);
+        rethrow;
+      }
+      return;
+    }
+    if (file.bytes == null || file.bytes!.isEmpty) {
+      throw StateError('Selected report file is empty.');
+    }
+    _reports.insert(0, report.copyWith(fileUrl: file.name));
+  }
+
+  Future<({Uint8List bytes, String fileName, String mimeType})> downloadReportFile(
+    String reportId,
+  ) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records == null || RepositoryContainer.instance.currentDoctorId.isEmpty) {
+      throw StateError('Sign in to your doctor account to download report files.');
+    }
+    final report = await records.get('diagnosticReports', reportId);
+    if (report == null) throw StateError('Report not found.');
+    final reference = report['fileReference'];
+    if (reference is! Map || reference['fileName'] is! String || reference['mimeType'] is! String) {
+      throw StateError('No file is attached to this report.');
+    }
+    final data = await records.getDoctorReportFileBytes(reportId);
+    return (
+      bytes: data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      fileName: reference['fileName'] as String,
+      mimeType: reference['mimeType'] as String,
+    );
+  }
+
+  Future<void> setPatientSharing({
+    required String reportId,
+    required bool isShared,
+  }) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records == null || RepositoryContainer.instance.currentDoctorId.isEmpty) {
+      throw StateError('Sign in to your doctor account to share a report.');
+    }
+    await records.client.hospital.setDoctorReportPatientSharing(
+      records.hospitalKey, reportId, isShared,
+    );
   }
 
   Future<void> markAsReviewed({
@@ -254,6 +384,23 @@ class DoctorReportsService {
     required String reviewNotes,
     required String doctorName,
   }) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final row = await records.get('diagnosticReports', reportId);
+      if (row == null) throw StateError('Report not found.');
+      final now = DateTime.now().toUtc();
+      await records.save('diagnosticReports', reportId, {
+        ...row,
+        'verificationStatus': 'verified',
+        'status': 'verified',
+        'verifiedByDoctorId': RepositoryContainer.instance.currentDoctorId,
+        'verifiedAt': now.toIso8601String(),
+        'reviewDoctorName': doctorName,
+        'reviewNotes': reviewNotes,
+        'updatedAt': now.toIso8601String(),
+      });
+      return;
+    }
     await Future.delayed(const Duration(milliseconds: 200));
     final index = _reports.indexWhere((r) => r.id == reportId);
     if (index != -1) {
@@ -283,6 +430,20 @@ class DoctorReportsService {
     required String noteText,
     required bool isPrivate,
   }) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final row = await records.get('diagnosticReports', reportId);
+      if (row == null) throw StateError('Report not found.');
+      await records.save('diagnosticReports', reportId, {
+        ...row,
+        if (isPrivate) 'doctorNotesPrivate': noteText else 'doctorNotesPatientVisible': noteText,
+        'updatedAt': DateTime.now().toUtc().toIso8601String(),
+      });
+      if (!isPrivate && row['releasedToPatient'] == true) {
+        await setPatientSharing(reportId: reportId, isShared: true);
+      }
+      return;
+    }
     await Future.delayed(const Duration(milliseconds: 150));
     final index = _reports.indexWhere((r) => r.id == reportId);
     if (index != -1) {
@@ -300,6 +461,18 @@ class DoctorReportsService {
     required String consultationId,
     required String doctorName,
   }) async {
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null && RepositoryContainer.instance.currentDoctorId.isNotEmpty) {
+      final row = await records.get('diagnosticReports', reportId);
+      if (row == null) throw StateError('Report not found.');
+      await records.save('diagnosticReports', reportId, {
+        ...row,
+        'appointmentId': consultationId,
+        'attachedConsultationId': consultationId,
+        'updatedAt': DateTime.now().toUtc().toIso8601String(),
+      });
+      return;
+    }
     await Future.delayed(const Duration(milliseconds: 200));
     final index = _reports.indexWhere((r) => r.id == reportId);
     if (index != -1) {
@@ -338,6 +511,81 @@ class DoctorReportsService {
       'pending': pending,
       'reviewedToday': reviewedToday,
       'newReports': newReports,
+    };
+  }
+
+  DoctorReportFullModel _fromRecord(Map<String, dynamic> row) {
+    DateTime date(Object? value) => DateTime.tryParse('$value') ?? DateTime.now();
+    final category = ReportCategory.values.where((value) => value.name == row['reportType']).firstOrNull ?? ReportCategory.other;
+    final state = '${row['verificationStatus'] ?? row['status'] ?? 'uploaded'}'.toLowerCase();
+    final status = state == 'verified' || state == 'released' || state == 'reviewed'
+        ? ReportStatus.reviewed
+        : state == 'rejected' ? ReportStatus.archived : ReportStatus.pendingReview;
+    final reference = row['fileReference'];
+    final mime = '${(reference is Map ? reference['mimeType'] : null) ?? ''}'.toLowerCase();
+    final modality = mime.contains('pdf') ? ReportModality.pdf : ReportModality.labText;
+    return DoctorReportFullModel(
+      id: '${row['id'] ?? ''}',
+      title: '${row['title'] ?? ''}',
+      patientId: '${row['patientId'] ?? ''}',
+      patientName: '${row['patientName'] ?? row['patientId'] ?? ''}',
+      patientAge: (row['patientAge'] as num?)?.toInt() ?? 0,
+      patientGender: '${row['patientGender'] ?? ''}',
+      category: category,
+      status: status,
+      modality: modality,
+      uploadedDate: date(row['uploadedAt'] ?? row['createdAt']),
+      reviewedDate: row['verifiedAt'] == null ? null : date(row['verifiedAt']),
+      uploadedBy: '${row['fulfillingStaffId'] ?? ''}',
+      requestedBy: '${row['orderingDoctorId'] ?? ''}',
+      performedBy: '${row['fulfillingStaffId'] ?? ''}',
+      department: '${row['departmentId'] ?? ''}',
+      facility: '${row['facility'] ?? ''}',
+      fileUrl: (reference is Map ? reference['fileName'] : null) as String? ?? row['reportUrl'] as String?,
+      isReleasedToPatient: row['releasedToPatient'] as bool? ?? false,
+      summaryAiText: '${row['summary'] ?? ''}',
+      findingsText: '${row['findingsText'] ?? ''}',
+      impressionText: '${row['impressionText'] ?? ''}',
+      recommendationText: '${row['recommendationText'] ?? ''}',
+      doctorNotesPrivate: '${row['doctorNotesPrivate'] ?? ''}',
+      doctorNotesPatientVisible: '${row['doctorNotesPatientVisible'] ?? ''}',
+      reviewDoctorName: row['reviewDoctorName'] as String?,
+      reviewNotes: row['reviewNotes'] as String?,
+      attachedConsultationId: row['attachedConsultationId'] as String?,
+      auditHistory: const [],
+    );
+  }
+
+  Map<String, dynamic> _toRecord(DoctorReportFullModel report) {
+    final now = DateTime.now().toUtc();
+    return {
+      'id': report.id,
+      'patientId': report.patientId,
+      'patientName': report.patientName,
+      'patientAge': report.patientAge,
+      'patientGender': report.patientGender,
+      'orderingDoctorId': RepositoryContainer.instance.currentDoctorId,
+      'doctorId': RepositoryContainer.instance.currentDoctorId,
+      'departmentId': report.department,
+      'reportType': report.category.name == 'all' ? 'other' : report.category.name,
+      'title': report.title,
+      'uploadedAt': report.uploadedDate.toUtc().toIso8601String(),
+      'verifiedAt': report.reviewedDate?.toUtc().toIso8601String(),
+      'verifiedByDoctorId': report.status == ReportStatus.reviewed ? RepositoryContainer.instance.currentDoctorId : null,
+      'verificationStatus': report.status == ReportStatus.reviewed ? 'verified' : 'uploaded',
+      'isCritical': false,
+      'releasedToPatient': report.isReleasedToPatient,
+      'summary': report.summaryAiText,
+      'findingsText': report.findingsText,
+      'impressionText': report.impressionText,
+      'recommendationText': report.recommendationText,
+      'doctorNotesPrivate': report.doctorNotesPrivate,
+      'doctorNotesPatientVisible': report.doctorNotesPatientVisible,
+      'date': report.uploadedDate.toUtc().toIso8601String(),
+      'reportUrl': report.fileUrl,
+      'status': report.status == ReportStatus.reviewed ? 'verified' : 'uploaded',
+      'createdAt': report.uploadedDate.toUtc().toIso8601String(),
+      'updatedAt': now.toIso8601String(),
     };
   }
 }

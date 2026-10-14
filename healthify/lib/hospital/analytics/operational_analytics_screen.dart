@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_analytics_repository.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/analytics_model.dart';
 import '../../core/queries/domain_queries.dart';
@@ -47,7 +48,7 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
   @override
   void initState() {
     super.initState();
-    _analyticsService = AnalyticsService(analyticsRepository: MockAnalyticsRepository());
+    _analyticsService = AnalyticsService(analyticsRepository: RepositoryContainer.instance.analyticsRepository);
     _loadData();
   }
 

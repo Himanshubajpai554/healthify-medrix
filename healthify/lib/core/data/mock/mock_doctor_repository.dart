@@ -4,6 +4,10 @@ import '../../models/doctor_model.dart';
 import 'mock_data_store.dart';
 
 class MockDoctorRepository implements DoctorRepository {
+  static MockDoctorRepository Function()? serverpodFactory;
+  factory MockDoctorRepository() => serverpodFactory?.call() ?? MockDoctorRepository.fallback();
+  MockDoctorRepository.fallback();
+
   final MockDataStore _store = MockDataStore();
 
   @override

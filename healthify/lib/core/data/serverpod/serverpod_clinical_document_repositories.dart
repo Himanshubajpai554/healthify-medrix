@@ -131,13 +131,13 @@ class ServerpodPrescriptionRepository extends MockPrescriptionRepository {
   @override
   Future<List<PrescriptionIndex>> getDoctorPrescriptions(String doctorId) => getPrescriptions(query: PrescriptionQuery(doctorId: doctorId));
   @override
-  Future<List<DocumentActivity>> getPrescriptionHistory(String id) async => (await records.list('documentActivities', limit: 500)).where((r) => r['documentId'] == id).map((r) => DocumentActivity(id: _id(r), documentId: id, documentType: 'Prescription', actorId: '${r['actorId'] ?? ''}', actorName: '${r['actorName'] ?? ''}', action: _enum(DocumentActivityAction.values, r['action'], DocumentActivityAction.viewed), timestamp: _date(r['timestamp']), notes: r['notes'] as String?)).toList();
+  Future<List<DocumentActivity>> getPrescriptionHistory(String prescriptionId) async => (await records.list('documentActivities', limit: 500)).where((r) => r['documentId'] == prescriptionId).map((r) => DocumentActivity(id: _id(r), documentId: prescriptionId, documentType: 'Prescription', actorId: '${r['actorId'] ?? ''}', actorName: '${r['actorName'] ?? ''}', action: _enum(DocumentActivityAction.values, r['action'], DocumentActivityAction.viewed), timestamp: _date(r['timestamp']), notes: r['notes'] as String?)).toList();
   @override
-  Future<PharmacyFulfillmentStatus> getFulfillmentStatus(String id) async => (await getPrescriptionById(id))?.pharmacyFulfillmentStatus ?? PharmacyFulfillmentStatus.pending;
+  Future<PharmacyFulfillmentStatus> getFulfillmentStatus(String prescriptionId) async => (await getPrescriptionById(prescriptionId))?.pharmacyFulfillmentStatus ?? PharmacyFulfillmentStatus.pending;
   @override
-  Future<PrescriptionIndex> createPrescription(PrescriptionIndex p) async { await records.save('prescriptions', p.id, _json(p)); return p; }
+  Future<PrescriptionIndex> createPrescription(PrescriptionIndex prescription) async { await records.save('prescriptions', prescription.id, _json(prescription)); return prescription; }
   @override
-  Future<PrescriptionIndex> updateFulfillmentStatus(String id, PharmacyFulfillmentStatus status) async { final row = await records.get('prescriptions', id) ?? (throw StateError('Prescription not found.')); row['pharmacyFulfillmentStatus'] = status.name; row['updatedAt'] = DateTime.now().toUtc().toIso8601String(); await records.save('prescriptions', id, row); return _from(row); }
+  Future<PrescriptionIndex> updateFulfillmentStatus(String prescriptionId, PharmacyFulfillmentStatus status) async { final row = await records.get('prescriptions', prescriptionId) ?? (throw StateError('Prescription not found.')); row['pharmacyFulfillmentStatus'] = status.name; row['updatedAt'] = DateTime.now().toUtc().toIso8601String(); await records.save('prescriptions', prescriptionId, row); return _from(row); }
   @override
-  Future<void> cancelPrescription(String id) async { final row = await records.get('prescriptions', id) ?? (throw StateError('Prescription not found.')); row['status'] = PrescriptionStatus.cancelled.name; await records.save('prescriptions', id, row); }
+  Future<void> cancelPrescription(String prescriptionId) async { final row = await records.get('prescriptions', prescriptionId) ?? (throw StateError('Prescription not found.')); row['status'] = PrescriptionStatus.cancelled.name; await records.save('prescriptions', prescriptionId, row); }
 }

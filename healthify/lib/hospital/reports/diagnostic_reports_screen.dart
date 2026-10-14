@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_prescription_repository.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../core/data/mock/mock_report_repository.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/prescription_model.dart';
@@ -67,8 +68,8 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
     super.initState();
     _currentRole = widget.initialRole;
     _tabController = TabController(length: 3, vsync: this);
-    _reportService = ReportService(reportRepository: MockReportRepository());
-    _prescriptionService = PrescriptionService(prescriptionRepository: MockPrescriptionRepository());
+    _reportService = ReportService(reportRepository: RepositoryContainer.instance.reportRepository);
+    _prescriptionService = PrescriptionService(prescriptionRepository: RepositoryContainer.instance.prescriptionRepository);
     _loadData();
   }
 

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_notification_repository.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/notification_model.dart';
 import '../../core/queries/domain_queries.dart';
@@ -87,7 +88,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _notificationService = NotificationService(
-      notificationRepository: MockNotificationRepository(),
+      notificationRepository: RepositoryContainer.instance.notificationRepository,
     );
     _loadData();
   }

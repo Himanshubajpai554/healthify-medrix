@@ -119,9 +119,9 @@ class _FindByConcernModalState extends State<FindByConcernModal> {
       _concernController.text = text;
     });
 
-    Future.delayed(const Duration(milliseconds: 400), () {
+    Future.delayed(const Duration(milliseconds: 400), () async {
       if (!mounted) return;
-      final res = SymptomCheckerService.analyzeHealthConcern(text);
+      final res = await SymptomCheckerService.analyzeHealthConcern(text);
       setState(() {
         _result = res;
         _isAnalyzing = false;

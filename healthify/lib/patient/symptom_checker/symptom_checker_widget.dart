@@ -120,19 +120,22 @@ class _SymptomCheckerWidgetState extends State<SymptomCheckerWidget> {
     ],
   );
 
-  void _runAnalysis([String? customText]) {
+  Future<void> _runAnalysis([String? customText]) async {
     final query = customText ?? _textController.text;
     if (query.trim().isEmpty) return;
     if (customText != null) _textController.text = customText;
     setState(() => _isAnalyzing = true);
-    Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      final result = await SymptomCheckerService.analyzeHealthConcern(query);
       if (!mounted) return;
-      final result = SymptomCheckerService.analyzeHealthConcern(query);
       setState(() {
         _analysisResult = result;
         _isAnalyzing = false;
       });
-    });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isAnalyzing = false);
+    }
   }
 
   @override

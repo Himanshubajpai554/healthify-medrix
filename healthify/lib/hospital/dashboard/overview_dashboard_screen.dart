@@ -23,8 +23,8 @@ class OverviewDashboardScreen extends StatefulWidget {
 
 class _OverviewDashboardScreenState extends State<OverviewDashboardScreen> {
   late final HospitalRepository _hospitalRepository;
-  final AnalyticsRepository _analyticsRepository = MockAnalyticsRepository();
-  final NotificationRepository _notificationRepository = MockNotificationRepository();
+  late final AnalyticsRepository _analyticsRepository;
+  late final NotificationRepository _notificationRepository;
 
   UiState<HospitalOverviewMetrics> _metricsState = UiState.initial();
   String _selectedDateRange = 'Today (Day Shift)';
@@ -37,6 +37,8 @@ class _OverviewDashboardScreenState extends State<OverviewDashboardScreen> {
 
   Future<void> _loadDashboardData() async {
     _hospitalRepository = RepositoryScope.of(context).hospitalRepository;
+    _analyticsRepository = RepositoryScope.of(context).analyticsRepository;
+    _notificationRepository = RepositoryScope.of(context).notificationRepository;
     setState(() {
       _metricsState = UiState.loading();
     });

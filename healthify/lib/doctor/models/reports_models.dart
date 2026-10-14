@@ -151,6 +151,7 @@ class DoctorReportFullModel {
   final String department;
   final String facility;
   final String? fileUrl;
+  final bool isReleasedToPatient;
   final String summaryAiText;
   final String findingsText;
   final String impressionText;
@@ -180,6 +181,7 @@ class DoctorReportFullModel {
     required this.department,
     required this.facility,
     this.fileUrl,
+    this.isReleasedToPatient = false,
     required this.summaryAiText,
     required this.findingsText,
     required this.impressionText,
@@ -210,6 +212,7 @@ class DoctorReportFullModel {
     String? department,
     String? facility,
     String? fileUrl,
+    bool? isReleasedToPatient,
     String? summaryAiText,
     String? findingsText,
     String? impressionText,
@@ -239,6 +242,7 @@ class DoctorReportFullModel {
       department: department ?? this.department,
       facility: facility ?? this.facility,
       fileUrl: fileUrl ?? this.fileUrl,
+      isReleasedToPatient: isReleasedToPatient ?? this.isReleasedToPatient,
       summaryAiText: summaryAiText ?? this.summaryAiText,
       findingsText: findingsText ?? this.findingsText,
       impressionText: impressionText ?? this.impressionText,

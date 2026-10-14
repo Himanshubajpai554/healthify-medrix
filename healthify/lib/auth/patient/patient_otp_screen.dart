@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -8,12 +10,18 @@ import './patient_profile_setup_screen.dart';
 class PatientOtpScreen extends StatefulWidget {
   final String phoneNumber;
   final String fullName;
+  final String email;
+  final String password;
+  final dynamic accountRequestId;
   final bool isPasswordReset;
 
   const PatientOtpScreen({
     super.key,
     required this.phoneNumber,
     this.fullName = 'Alex Rivera',
+    this.email = '',
+    this.password = '',
+    this.accountRequestId,
     this.isPasswordReset = false,
   });
 
@@ -26,6 +34,7 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   int _resendTimerSeconds = 45;
+  late dynamic _activeRequestId;
   Timer? _timer;
   bool _canResend = false;
   bool _isLoading = false;
@@ -34,6 +43,7 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
   @override
   void initState() {
     super.initState();
+    _activeRequestId = widget.accountRequestId;
     _startResendTimer();
   }
 
@@ -68,17 +78,22 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
 
   String get _otpCode => _controllers.map((c) => c.text).join();
 
-  String get _maskedPhone {
-    final phone = widget.phoneNumber;
-    if (phone.length > 6) {
-      final prefix = phone.substring(0, 5);
-      final suffix = phone.substring(phone.length - 2);
-      return '$prefix *** **$suffix';
+  Future<void> _resendCode() async {
+    final client = RepositoryContainer.instance.serverpodClient;
+    if (client == null) return;
+    try {
+      final requestId = widget.isPasswordReset
+          ? await client.emailIdp.startPasswordReset(email: widget.email)
+          : await client.emailIdp.startRegistration(email: widget.email);
+      if (!mounted) return;
+      setState(() => _activeRequestId = requestId);
+      _startResendTimer();
+    } catch (error) {
+      if (mounted) setState(() => _errorMessage = error.toString());
     }
-    return phone;
   }
 
-  void _verifyOtp() {
+  Future<void> _verifyOtp() async {
     final code = _otpCode;
     setState(() => _errorMessage = null);
 
@@ -87,40 +102,63 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
       return;
     }
 
-    // Demo OTP validation (123456 or 654321 pass)
-    if (code != '123456' && code != '654321') {
-      setState(() => _errorMessage = 'Incorrect OTP code ($code). Try demo code "123456".');
+    setState(() => _isLoading = true);
+    final client = RepositoryContainer.instance.serverpodClient;
+    if (client == null || widget.accountRequestId == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Patient account server is not configured. Please try again.';
+      });
       return;
     }
-
-    setState(() => _isLoading = true);
-
-    Future.delayed(const Duration(milliseconds: 700), () {
+    try {
+      if (widget.isPasswordReset) {
+        final resetToken = await client.emailIdp.verifyPasswordResetCode(
+          passwordResetRequestId: _activeRequestId,
+          verificationCode: code,
+        );
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        Navigator.pop(context, resetToken);
+        return;
+      }
+      final registrationToken = await client.emailIdp.verifyRegistrationCode(
+        accountRequestId: _activeRequestId,
+        verificationCode: code,
+      );
+      await client.emailIdp.finishRegistration(
+        registrationToken: registrationToken,
+        password: widget.password,
+      );
+      final auth = EmailAuthController(
+        client: client,
+        startScreen: EmailFlowScreen.login,
+        onAuthenticated: () {},
+        onError: (error) => setState(() => _errorMessage = error.toString()),
+      );
+      auth.emailController.text = widget.email;
+      auth.passwordController.text = widget.password;
+      await auth.login();
+      auth.dispose();
       if (!mounted) return;
       setState(() => _isLoading = false);
-
-      if (widget.isPasswordReset) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('OTP verified! Proceeding to reset password.'),
-            backgroundColor: HealthifyGlassTheme.primaryTeal,
-            behavior: SnackBarBehavior.floating,
+      Navigator.pushReplacement(
+        context,
+        FadePageRoute(
+          page: PatientProfileSetupScreen(
+            fullName: widget.fullName,
+            phoneNumber: widget.phoneNumber,
+            email: widget.email,
           ),
-        );
-        Navigator.pop(context, true); // Return success to forgot password flow
-      } else {
-        // Navigate to optional first-time profile setup
-        Navigator.pushReplacement(
-          context,
-          FadePageRoute(
-            page: PatientProfileSetupScreen(
-              fullName: widget.fullName,
-              phoneNumber: widget.phoneNumber,
-            ),
-          ),
-        );
-      }
-    });
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = error.toString();
+      });
+    }
   }
 
   @override
@@ -172,7 +210,7 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'Phone Verification',
+                        'Email Verification',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 24,
@@ -183,7 +221,7 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'We sent a 6-digit security code to\n$_maskedPhone',
+                        'Enter the 6-digit email verification code for\n${widget.email}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13.5,
@@ -199,7 +237,7 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.edit_outlined, size: 14, color: HealthifyGlassTheme.primaryTeal),
                           label: const Text(
-                            'Change phone number',
+                            'Change email address',
                             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.primaryTeal),
                           ),
                         ),
@@ -207,7 +245,7 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
 
                       const SizedBox(height: 18),
 
-                      // Demo Hint Banner
+                      // Local development verification-code location.
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
@@ -221,7 +259,7 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
                             Icon(Icons.info_outline_rounded, size: 15, color: HealthifyGlassTheme.primaryTeal),
                             SizedBox(width: 6),
                             Text(
-                              'Demo test code: 1 2 3 4 5 6',
+                              'Local code is printed in the Serverpod terminal',
                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: HealthifyGlassTheme.primaryTeal),
                             ),
                           ],
@@ -327,9 +365,9 @@ class _PatientOtpScreenState extends State<PatientOtpScreen> {
                           ),
                           _canResend
                               ? InkWell(
-                                  onTap: _startResendTimer,
+                                  onTap: _resendCode,
                                   child: const Text(
-                                    'Resend OTP',
+                                    'Resend code',
                                     style: TextStyle(
                                       color: HealthifyGlassTheme.primaryTeal,
                                       fontWeight: FontWeight.bold,

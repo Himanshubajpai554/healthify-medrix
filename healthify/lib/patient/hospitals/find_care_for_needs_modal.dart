@@ -119,9 +119,9 @@ class _FindCareForNeedsModalState extends State<FindCareForNeedsModal> {
       _needController.text = needText;
     });
 
-    Future.delayed(const Duration(milliseconds: 400), () {
+    Future.delayed(const Duration(milliseconds: 400), () async {
       if (!mounted) return;
-      final res = SymptomCheckerService.analyzeHealthConcern(needText);
+      final res = await SymptomCheckerService.analyzeHealthConcern(needText);
       setState(() {
         _result = res;
         _isMatching = false;

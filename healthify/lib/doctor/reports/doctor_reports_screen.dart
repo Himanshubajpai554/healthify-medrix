@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../models/doctor_dashboard_models.dart';
 import '../models/reports_models.dart';
@@ -132,7 +133,13 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
     final isDesktop = screenWidth >= 1024;
     final isMobile = screenWidth < 768;
 
-    final metrics = _reportsService.getSummaryMetrics();
+    final today = DateTime.now();
+    final metrics = <String, int>{
+      'total': _allReports.length,
+      'pending': _allReports.where((report) => report.status == ReportStatus.pendingReview).length,
+      'reviewedToday': _allReports.where((report) => report.reviewedDate != null && report.reviewedDate!.year == today.year && report.reviewedDate!.month == today.month && report.reviewedDate!.day == today.day).length,
+      'newReports': _allReports.where((report) => report.status == ReportStatus.newReport).length,
+    };
 
     if (widget.embedInDashboard) {
       if (isDesktop) {
@@ -287,6 +294,8 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
                 onMarkReviewed: _handleMarkReviewed,
                 onSaveNote: _handleSaveNote,
                 onAttachToConsultation: () => _openAttachModal(context, _selectedReport!),
+                onDownloadReportFile: _downloadReportFile,
+                onTogglePatientSharing: _togglePatientSharing,
               ),
             ),
           ),
@@ -386,6 +395,8 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
                 Navigator.pop(context);
                 _openAttachModal(context, report);
               },
+              onDownloadReportFile: _downloadReportFile,
+              onTogglePatientSharing: _togglePatientSharing,
             ),
           ),
         );
@@ -407,6 +418,44 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
     }
   }
 
+  Future<void> _downloadReportFile(String reportId) async {
+    try {
+      final file = await _reportsService.downloadReportFile(reportId);
+      await FilePicker.saveFile(
+        fileName: file.fileName,
+        bytes: file.bytes,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not download report file: $error')),
+      );
+    }
+  }
+
+  Future<void> _togglePatientSharing(String reportId, bool isShared) async {
+    try {
+      await _reportsService.setPatientSharing(
+        reportId: reportId,
+        isShared: isShared,
+      );
+      await _loadReports();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isShared
+              ? 'Reviewed report released to the linked patient account.'
+              : 'Patient access to this report was revoked.'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not update patient sharing: $error')),
+      );
+    }
+  }
+
   void _handleSaveNote(String reportId, String noteText, bool isPrivate) async {
     await _reportsService.addDoctorNote(
       reportId: reportId,
@@ -422,8 +471,8 @@ class _DoctorReportsScreenState extends State<DoctorReportsScreen> {
       context: context,
       builder: (dialogContext) {
         return UploadReportModal(
-          onUploadComplete: (newReport) async {
-            await _reportsService.uploadReport(newReport);
+          onUploadComplete: (newReport, file) async {
+            await _reportsService.uploadReport(newReport, file);
             await _loadReports();
             if (!mounted) return;
             setState(() => _selectedReport = newReport);

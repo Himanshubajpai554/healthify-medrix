@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:healthify_server_client/healthify_server_client.dart';
 
@@ -50,6 +51,66 @@ class HospitalOperationalRepository {
     return _decode(row);
   }
 
+  Future<Map<String, dynamic>> uploadDoctorReportFile(
+    String reportId,
+    String fileName,
+    String mimeType,
+    ByteData bytes,
+  ) async {
+    _requireHospital();
+    final json = await client.hospital.uploadDoctorReportFile(
+      hospitalKey, reportId, fileName, mimeType, bytes,
+    );
+    return Map<String, dynamic>.from(jsonDecode(json) as Map);
+  }
+
+  Future<ByteData> getDoctorReportFileBytes(String reportId) {
+    _requireHospital();
+    return client.hospital.getDoctorReportFileBytes(hospitalKey, reportId);
+  }
+
+  Future<Map<String, dynamic>> createAdmission(
+    String patientId,
+    String recordKey,
+    Map<String, dynamic> value,
+  ) async {
+    _requireHospital();
+    final row = await client.hospital.createAdmission(
+      hospitalKey, patientId, recordKey, jsonEncode(value),
+    );
+    return _decode(row);
+  }
+
+  Future<Map<String, dynamic>> createAdmissionBundle({
+    required String patientId,
+    required String admissionId,
+    required Map<String, dynamic> patient,
+    required Map<String, dynamic> patientLink,
+    required Map<String, dynamic> admission,
+  }) async {
+    _requireHospital();
+    final row = await client.hospital.createAdmission(
+      hospitalKey,
+      patientId,
+      admissionId,
+      jsonEncode({'patient': patient, 'patientLink': patientLink, 'admission': admission}),
+    );
+    return _decode(row);
+  }
+
+  Future<Map<String, dynamic>> updateActiveAdmission({
+    required String patientId,
+    required String admissionId,
+    required Map<String, dynamic> value,
+  }) async {
+    _requireHospital();
+    final row = await client.hospital.createAdmission(
+      hospitalKey, patientId, admissionId,
+      jsonEncode({'operation': 'update', 'admission': value}),
+    );
+    return _decode(row);
+  }
+
   Future<List<Map<String, dynamic>>> saveMany(
     String collection,
     Map<String, Map<String, dynamic>> values,
@@ -72,6 +133,28 @@ class HospitalOperationalRepository {
       entries.map((entry) => jsonEncode(entry.value)).toList(growable: false),
     );
     return rows.map(_decode).toList(growable: false);
+  }
+
+  Future<List<Map<String, dynamic>>> listAccountLinkRequests() async {
+    _requireHospital();
+    final jsonStr = await client.hospital.listHospitalPatientAccountLinkRequests(hospitalKey);
+    final decoded = jsonDecode(jsonStr);
+    if (decoded is List) {
+      return decoded.whereType<Map>().map((m) => Map<String, dynamic>.from(m)).toList(growable: false);
+    }
+    return const [];
+  }
+
+  Future<bool> reviewAccountLinkRequest({
+    required String requestId,
+    required bool approve,
+  }) async {
+    _requireHospital();
+    return client.hospital.reviewHospitalPatientAccountLinkRequest(
+      hospitalKey,
+      requestId,
+      approve,
+    );
   }
 
   Future<bool> delete(String collection, String key) async {

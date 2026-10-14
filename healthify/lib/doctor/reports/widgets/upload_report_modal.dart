@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../shared/widgets/glass_components.dart';
+import '../../models/doctor_dashboard_models.dart';
 import '../../models/reports_models.dart';
+import '../../services/doctor_reports_service.dart';
 
 class UploadReportModal extends StatefulWidget {
-  final Function(DoctorReportFullModel newReport) onUploadComplete;
+  final Future<void> Function(
+    DoctorReportFullModel newReport,
+    PlatformFile file,
+  ) onUploadComplete;
 
   const UploadReportModal({
     super.key,
@@ -17,10 +23,10 @@ class UploadReportModal extends StatefulWidget {
 class _UploadReportModalState extends State<UploadReportModal> {
   final _formKey = GlobalKey<FormState>();
 
-  String _selectedPatientName = 'Rahul Sharma';
-  String _selectedPatientId = 'MED-PAT-10482';
-  int _patientAge = 42;
-  String _patientGender = 'Male';
+  String? _selectedPatientId;
+  List<PatientModel> _assignedPatients = const [];
+  bool _isLoadingPatients = true;
+  String? _patientLoadError;
 
   final _titleController = TextEditingController();
   final _departmentController = TextEditingController(text: 'Radiology');
@@ -34,15 +40,32 @@ class _UploadReportModalState extends State<UploadReportModal> {
 
   bool _isUploading = false;
   double _uploadProgress = 0.0;
-  String? _selectedFileName;
+  PlatformFile? _selectedFile;
 
-  final List<Map<String, dynamic>> _mockPatients = [
-    {'name': 'Rahul Sharma', 'id': 'MED-PAT-10482', 'age': 42, 'gender': 'Male'},
-    {'name': 'Priya Patel', 'id': 'MED-PAT-10391', 'age': 38, 'gender': 'Female'},
-    {'name': 'Amit Verma', 'id': 'MED-PAT-10519', 'age': 56, 'gender': 'Male'},
-    {'name': 'Ananya Sen', 'id': 'MED-PAT-10220', 'age': 29, 'gender': 'Female'},
-    {'name': 'Vikram Malhotra', 'id': 'MED-PAT-10115', 'age': 61, 'gender': 'Male'},
-  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAssignedPatients();
+  }
+
+  Future<void> _loadAssignedPatients() async {
+    try {
+      final patients = await DoctorReportsService().getAssignablePatients();
+      if (!mounted) return;
+      setState(() {
+        _assignedPatients = patients;
+        _selectedPatientId = null;
+        _isLoadingPatients = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _patientLoadError = '$error';
+        _isLoadingPatients = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -134,36 +157,47 @@ class _UploadReportModalState extends State<UploadReportModal> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: HealthifyGlassTheme.getGlassBorder(isDark)),
                       ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedPatientId,
-                          isExpanded: true,
-                          dropdownColor: isDark ? HealthifyGlassTheme.darkBackground : Colors.white,
-                          items: _mockPatients.map((p) {
-                            return DropdownMenuItem<String>(
-                              value: p['id'] as String,
-                              child: Text(
-                                '${p['name']} (${p['id']}) • ${p['age']}y / ${p['gender']}',
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  color: HealthifyGlassTheme.getTextPrimary(isDark),
+                      child: _isLoadingPatients
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 14),
+                              child: LinearProgressIndicator(),
+                            )
+                          : _assignedPatients.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  child: Text(
+                                    _patientLoadError == null
+                                        ? 'No assigned patients are available for reports.'
+                                        : 'Could not load assigned patients: $_patientLoadError',
+                                    style: TextStyle(
+                                      color: HealthifyGlassTheme.getTextSecondary(isDark),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                )
+                              : DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: _selectedPatientId,
+                                    hint: const Text('Select assigned patient'),
+                                    isExpanded: true,
+                                    dropdownColor: isDark ? HealthifyGlassTheme.darkBackground : Colors.white,
+                                    items: _assignedPatients.map((patient) {
+                                      final age = patient.age > 0 ? '${patient.age}y' : 'Age not recorded';
+                                      return DropdownMenuItem<String>(
+                                        value: patient.id,
+                                        child: Text(
+                                          '${patient.name} (${patient.id}) • $age / ${patient.gender}',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 13.5,
+                                            color: HealthifyGlassTheme.getTextPrimary(isDark),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) => setState(() => _selectedPatientId = value),
+                                  ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              final p = _mockPatients.firstWhere((element) => element['id'] == val);
-                              setState(() {
-                                _selectedPatientId = p['id'] as String;
-                                _selectedPatientName = p['name'] as String;
-                                _patientAge = p['age'] as int;
-                                _patientGender = p['gender'] as String;
-                              });
-                            }
-                          },
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 14),
 
@@ -315,11 +349,7 @@ class _UploadReportModalState extends State<UploadReportModal> {
 
                     // File picker simulation
                     InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedFileName = 'MED_REPORT_${DateTime.now().millisecondsSinceEpoch}.pdf';
-                        });
-                      },
+                      onTap: _pickReportFile,
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -335,12 +365,12 @@ class _UploadReportModalState extends State<UploadReportModal> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              _selectedFileName != null ? Icons.task_rounded : Icons.cloud_upload_rounded,
+                              _selectedFile != null ? Icons.task_rounded : Icons.cloud_upload_rounded,
                               color: HealthifyGlassTheme.primaryTeal,
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              _selectedFileName ?? 'Click to attach PDF, DICOM, or High-Res Image file',
+                              _selectedFile?.name ?? 'Click to attach PDF, DICOM, or High-Res Image file',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
@@ -403,12 +433,46 @@ class _UploadReportModalState extends State<UploadReportModal> {
     );
   }
 
-  void _startUploadProcess() async {
+  Future<void> _pickReportFile() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf', 'png', 'jpg', 'jpeg', 'dcm'],
+      withData: true,
+    );
+    if (!mounted || result == null || result.files.isEmpty) return;
+    final file = result.files.single;
+    if (file.bytes == null || file.bytes!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not read selected file. Please choose it again.')),
+      );
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report files must be 10 MB or smaller.')),
+      );
+      return;
+    }
+    setState(() => _selectedFile = file);
+  }
+
+  Future<void> _startUploadProcess() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedFileName == null) {
-      setState(() {
-        _selectedFileName = 'SCAN_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      });
+    final selectedPatient = _assignedPatients
+        .where((patient) => patient.id == _selectedPatientId)
+        .firstOrNull;
+    if (selectedPatient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select an assigned patient before submitting.')),
+      );
+      return;
+    }
+    final file = _selectedFile;
+    if (file == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select a report file before submitting.')),
+      );
+      return;
     }
 
     setState(() {
@@ -416,18 +480,17 @@ class _UploadReportModalState extends State<UploadReportModal> {
       _uploadProgress = 0.2;
     });
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
     setState(() => _uploadProgress = 0.6);
-    await Future.delayed(const Duration(milliseconds: 300));
-    setState(() => _uploadProgress = 1.0);
 
     final newReport = DoctorReportFullModel(
       id: 'REP-20261001-${(100 + (DateTime.now().millisecond % 899)).toString()}',
       title: _titleController.text.trim(),
-      patientId: _selectedPatientId,
-      patientName: _selectedPatientName,
-      patientAge: _patientAge,
-      patientGender: _patientGender,
+      patientId: selectedPatient.id,
+      patientName: selectedPatient.name,
+      patientAge: selectedPatient.age,
+      patientGender: selectedPatient.gender,
       category: _selectedCategory,
       status: ReportStatus.newReport,
       modality: _selectedModality,
@@ -437,9 +500,10 @@ class _UploadReportModalState extends State<UploadReportModal> {
       performedBy: _performedByController.text.trim(),
       department: _departmentController.text.trim(),
       facility: _facilityController.text.trim(),
+      fileUrl: file.name,
       summaryAiText: 'Automated initial indexing complete. Findings pending doctor review.',
       findingsText: _findingsController.text.trim().isEmpty
-          ? 'Diagnostic investigation completed. Report pending detailed radiologist / pathologist verification.'
+            ? 'Diagnostic investigation completed. Report pending detailed radiologist / pathologist verification.'
           : _findingsController.text.trim(),
       impressionText: 'Pending clinical evaluation.',
       recommendationText: 'Follow up with attending physician.',
@@ -449,14 +513,24 @@ class _UploadReportModalState extends State<UploadReportModal> {
           timestamp: DateTime.now(),
           action: 'Uploaded',
           performedBy: 'Dr. Sarah Jenkins',
-          details: 'Uploaded file $_selectedFileName',
+          details: 'Uploaded file ${file.name}',
         ),
       ],
     );
 
-    widget.onUploadComplete(newReport);
-    if (mounted) {
-      Navigator.pop(context);
+    try {
+      await widget.onUploadComplete(newReport, file);
+      if (mounted) {
+        setState(() => _uploadProgress = 1.0);
+        Navigator.pop(context);
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Report upload failed: $error')),
+        );
+      }
     }
   }
 }

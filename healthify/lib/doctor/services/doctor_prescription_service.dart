@@ -1,4 +1,15 @@
 import '../models/prescription_models.dart';
+import '../../core/provider/repository_provider.dart';
+
+Map<String, dynamic>? get _clinicalPrescriptionRecords =>
+    RepositoryContainer.instance.hospitalOperationalRepository == null
+        ? null
+        : <String, dynamic>{
+            'records': RepositoryContainer.instance.hospitalOperationalRepository,
+            'doctorId': RepositoryContainer.instance.currentDoctorId,
+            'doctorName': RepositoryContainer.instance.currentDoctorName,
+            'specialty': RepositoryContainer.instance.currentDoctorSpecialty,
+          };
 
 class DoctorPrescriptionService {
   static final DoctorPrescriptionService _instance = DoctorPrescriptionService._internal();
@@ -234,11 +245,92 @@ class DoctorPrescriptionService {
   ];
 
   Future<List<DoctorPrescriptionFullModel>> getPrescriptions() async {
+    final live = _clinicalPrescriptionRecords;
+    if (live != null && '${live['doctorId']}'.isNotEmpty) {
+      final records = live['records'] as dynamic;
+      final rows = await records.list('prescriptions', limit: 500);
+      return rows.map<DoctorPrescriptionFullModel>((row) => _fromRecord(row)).toList();
+    }
     await Future.delayed(const Duration(milliseconds: 200));
     return List.from(_prescriptions);
   }
 
+  DoctorPrescriptionFullModel _fromRecord(Map<String, dynamic> row) {
+    DateTime date(String? value) => DateTime.tryParse(value ?? '') ?? DateTime.now();
+    final status = PrescriptionStatus.values.where((s) => s.name == row['status']).firstOrNull ?? PrescriptionStatus.active;
+    final medications = (row['medications'] as List? ?? const []).whereType<Map>().map((med) => PrescriptionMedicineModel(
+      id: '${med['id'] ?? med['medicationName'] ?? 'MED'}',
+      medicineName: '${med['medicationName'] ?? ''}',
+      dosage: '${med['dosage'] ?? ''}',
+      frequency: '${med['frequency'] ?? ''}',
+      route: '${med['route'] ?? ''}',
+      duration: '${med['durationDays'] ?? med['duration'] ?? ''}',
+      instructions: '${med['instructions'] ?? ''}',
+    )).toList();
+    return DoctorPrescriptionFullModel(
+      id: '${row['id'] ?? ''}',
+      patientId: '${row['patientId'] ?? ''}',
+      patientName: '${row['patientName'] ?? row['patientId'] ?? ''}',
+      patientAge: (row['patientAge'] as num?)?.toInt() ?? 0,
+      patientGender: '${row['patientGender'] ?? ''}',
+      bloodGroup: '${row['bloodGroup'] ?? ''}',
+      allergies: (row['allergies'] as List? ?? const []).map((e) => '$e').toList(),
+      doctorName: '${row['doctorName'] ?? RepositoryContainer.instance.currentDoctorName}',
+      doctorQualification: '${row['doctorQualification'] ?? ''}',
+      registrationNumber: '${row['registrationNumber'] ?? ''}',
+      department: '${row['department'] ?? RepositoryContainer.instance.currentDoctorSpecialty}',
+      consultationId: '${row['consultationId'] ?? row['appointmentId'] ?? ''}',
+      date: date('${row['signedAt'] ?? row['createdAt']}'),
+      status: status,
+      medicines: medications,
+      generalInstructions: '${row['instructions'] ?? ''}',
+      lastSaved: date('${row['updatedAt'] ?? row['createdAt']}'),
+      cancelledBy: row['cancelledBy'] as String?,
+      cancelledDate: row['cancelledAt'] == null ? null : date('${row['cancelledAt']}'),
+      cancellationReason: row['cancellationReason'] as String?,
+      auditHistory: const [],
+    );
+  }
+
+  Map<String, dynamic> _toRecord(DoctorPrescriptionFullModel p) => {
+    'id': p.id,
+    'patientId': p.patientId,
+    'patientName': p.patientName,
+    'patientAge': p.patientAge,
+    'patientGender': p.patientGender,
+    'bloodGroup': p.bloodGroup,
+    'allergies': p.allergies,
+    'doctorId': RepositoryContainer.instance.currentDoctorId,
+    'doctorName': p.doctorName,
+    'department': p.department,
+    'consultationId': p.consultationId,
+    'appointmentId': p.consultationId,
+    'signedAt': p.date.toUtc().toIso8601String(),
+    'status': p.status.name,
+    'medications': p.medicines.map((m) => {
+      'id': m.id,
+      'medicationName': m.medicineName,
+      'dosage': m.dosage,
+      'frequency': m.frequency,
+      'route': m.route,
+      'duration': m.duration,
+      'durationDays': int.tryParse(RegExp(r'\d+').firstMatch(m.duration)?.group(0) ?? '') ?? 0,
+      'instructions': m.instructions,
+    }).toList(),
+    'instructions': p.generalInstructions,
+    'cancelledBy': p.cancelledBy,
+    'cancelledAt': p.cancelledDate?.toUtc().toIso8601String(),
+    'cancellationReason': p.cancellationReason,
+    'createdAt': p.date.toUtc().toIso8601String(),
+    'updatedAt': p.lastSaved.toUtc().toIso8601String(),
+  };
+
   Future<DoctorPrescriptionFullModel?> getPrescription(String id) async {
+    final live = _clinicalPrescriptionRecords;
+    if (live != null && '${live['doctorId']}'.isNotEmpty) {
+      final row = await (live['records'] as dynamic).get('prescriptions', id);
+      return row == null ? null : _fromRecord(row);
+    }
     await Future.delayed(const Duration(milliseconds: 100));
     try {
       return _prescriptions.firstWhere((p) => p.id == id);
@@ -279,8 +371,9 @@ class DoctorPrescriptionService {
   }
 
   Future<PatientMedicationHistoryModel> getPatientMedicationHistory(String patientId) async {
+    final source = await getPrescriptions();
     await Future.delayed(const Duration(milliseconds: 150));
-    final patientRx = _prescriptions.where((p) => p.patientId == patientId).toList();
+    final patientRx = source.where((p) => p.patientId == patientId).toList();
 
     final activeMeds = <PrescriptionMedicineModel>[];
     final previousMeds = <PrescriptionMedicineModel>[];
@@ -314,12 +407,24 @@ class DoctorPrescriptionService {
   }
 
   Future<DoctorPrescriptionFullModel> createPrescriptionDraft(DoctorPrescriptionFullModel draft) async {
+    final live = _clinicalPrescriptionRecords;
+    if (live != null && '${live['doctorId']}'.isNotEmpty) {
+      await (live['records'] as dynamic).save('prescriptions', draft.id, _toRecord(draft));
+      return draft;
+    }
     await Future.delayed(const Duration(milliseconds: 250));
     _prescriptions.insert(0, draft);
     return draft;
   }
 
   Future<void> updatePrescriptionDraft(DoctorPrescriptionFullModel updated) async {
+    final live = _clinicalPrescriptionRecords;
+    if (live != null && '${live['doctorId']}'.isNotEmpty) {
+      final row = await (live['records'] as dynamic).get('prescriptions', updated.id);
+      if (row == null) throw StateError('Prescription not found.');
+      await (live['records'] as dynamic).save('prescriptions', updated.id, {...row, ..._toRecord(updated), 'createdAt': row['createdAt']});
+      return;
+    }
     await Future.delayed(const Duration(milliseconds: 200));
     final index = _prescriptions.indexWhere((p) => p.id == updated.id);
     if (index != -1) {
@@ -341,6 +446,14 @@ class DoctorPrescriptionService {
   }
 
   Future<void> activatePrescription(String prescriptionId) async {
+    final live = _clinicalPrescriptionRecords;
+    if (live != null && '${live['doctorId']}'.isNotEmpty) {
+      final records = live['records'] as dynamic;
+      final row = await records.get('prescriptions', prescriptionId);
+      if (row == null) throw StateError('Prescription not found.');
+      await records.save('prescriptions', prescriptionId, {...row, 'status': 'active', 'signedAt': DateTime.now().toUtc().toIso8601String(), 'updatedAt': DateTime.now().toUtc().toIso8601String()});
+      return;
+    }
     await Future.delayed(const Duration(milliseconds: 200));
     final index = _prescriptions.indexWhere((p) => p.id == prescriptionId);
     if (index != -1) {
@@ -368,6 +481,15 @@ class DoctorPrescriptionService {
     required String reason,
     required String doctorName,
   }) async {
+    final live = _clinicalPrescriptionRecords;
+    if (live != null && '${live['doctorId']}'.isNotEmpty) {
+      final records = live['records'] as dynamic;
+      final row = await records.get('prescriptions', prescriptionId);
+      if (row == null) throw StateError('Prescription not found.');
+      final now = DateTime.now().toUtc();
+      await records.save('prescriptions', prescriptionId, {...row, 'status': 'cancelled', 'cancelledBy': doctorName, 'cancelledAt': now.toIso8601String(), 'cancellationReason': reason, 'updatedAt': now.toIso8601String()});
+      return;
+    }
     await Future.delayed(const Duration(milliseconds: 200));
     final index = _prescriptions.indexWhere((p) => p.id == prescriptionId);
     if (index != -1) {
@@ -397,8 +519,27 @@ class DoctorPrescriptionService {
     required String sourcePrescriptionId,
     required String doctorName,
   }) async {
+    final source = await getPrescription(sourcePrescriptionId);
+    if (source == null) throw StateError('Prescription not found.');
+    final live = _clinicalPrescriptionRecords;
+    if (live != null && '${live['doctorId']}'.isNotEmpty) {
+      final now = DateTime.now();
+      final newId = 'RX-${now.microsecondsSinceEpoch}';
+      final duplicate = source.copyWith(
+        id: newId,
+        doctorName: doctorName,
+        date: now,
+        status: PrescriptionStatus.draft,
+        lastSaved: now,
+        cancelledBy: null,
+        cancelledDate: null,
+        cancellationReason: null,
+        auditHistory: const [],
+      );
+      await createPrescriptionDraft(duplicate);
+      return duplicate;
+    }
     await Future.delayed(const Duration(milliseconds: 250));
-    final source = _prescriptions.firstWhere((p) => p.id == sourcePrescriptionId);
     final newId = 'RX-2026-${(1000 + DateTime.now().millisecond % 8999).toString()}';
 
     final duplicate = DoctorPrescriptionFullModel(

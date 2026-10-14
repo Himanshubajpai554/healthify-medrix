@@ -6,6 +6,7 @@ import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
 import './admit_patient_modal.dart';
 import './patient_profile_drawer.dart';
+import '../../hospital/patients/account_link_requests_modal.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -356,6 +357,24 @@ class _PatientsScreenState extends State<PatientsScreen> {
       ),
     );
 
+    final linkClaimsButton = SizedBox(
+      height: 46,
+      child: OutlinedButton.icon(
+        onPressed: () => AccountLinkRequestsModal.show(context),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _primary,
+          side: const BorderSide(color: _primary, width: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+        icon: const Icon(Icons.link_rounded, size: 18),
+        label: const Text(
+          'Account-Link Claims',
+          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
+        ),
+      ),
+    );
+
     if (isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +383,11 @@ class _PatientsScreenState extends State<PatientsScreen> {
           const SizedBox(height: 5),
           subtitle,
           const SizedBox(height: 15),
-          button,
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [button, linkClaimsButton],
+          ),
         ],
       );
     }
@@ -378,7 +401,9 @@ class _PatientsScreenState extends State<PatientsScreen> {
             children: [title, const SizedBox(height: 5), subtitle],
           ),
         ),
-        const SizedBox(width: 20),
+        const SizedBox(width: 14),
+        linkClaimsButton,
+        const SizedBox(width: 10),
         button,
       ],
     );

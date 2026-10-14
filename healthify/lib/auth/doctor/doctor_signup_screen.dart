@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../doctor/dashboard/doctor_dashboard_screen.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -28,7 +27,6 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen>
   late Animation<Offset> _slideAnimation;
 
   bool _isPasswordVisible = false;
-  bool _isLoading = false;
   bool _isNameValid = false;
   bool _isEmailValid = false;
 
@@ -79,38 +77,73 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen>
   }
 
   void _handleDoctorSignup() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) return;
 
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
+    final refId = 'DOC-REQ-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final email = _emailController.text.trim();
+    final name = _fullNameController.text.trim();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Doctor account registered successfully! Welcome to MEDRIX.'),
-            backgroundColor: Colors.indigo,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-
-        Navigator.pushAndRemoveUntil(
-          context,
-          FadePageRoute(
-            page: DoctorDashboardScreen(
-              doctorName: _fullNameController.text.trim().isNotEmpty
-                  ? _fullNameController.text.trim()
-                  : 'Dr. John Doe',
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(Icons.verified_user_rounded, color: Colors.teal, size: 24),
+            SizedBox(width: 10),
+            Text('Doctor Application Received', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Dr. $name, your hospital clinical credential application has been registered.'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.teal.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.teal.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Application Reference ID:', style: TextStyle(fontSize: 11, color: Colors.teal)),
+                  Text(refId, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.teal)),
+                  const SizedBox(height: 4),
+                  Text('Registered Email: $email', style: const TextStyle(fontSize: 11)),
+                ],
+              ),
             ),
+            const SizedBox(height: 12),
+            const Text(
+              'Under hospital governance, a hospital administrator must verify your medical council registration before clinical chart access is activated. Once verified, you will receive an invitation email to activate your account.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+            child: const Text('Back to Sign In'),
           ),
-          (route) => false,
-        );
-      });
-    }
+        ],
+      ),
+    );
   }
 
   @override
@@ -375,7 +408,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen>
           GlassPrimaryButton(
             height: 52,
             color: Colors.indigo,
-            isLoading: _isLoading,
+            isLoading: false,
             onPressed: _handleDoctorSignup,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,

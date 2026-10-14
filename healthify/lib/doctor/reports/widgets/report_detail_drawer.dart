@@ -10,6 +10,8 @@ class ReportDetailDrawer extends StatefulWidget {
   final Function(String reportId, String reviewNote) onMarkReviewed;
   final Function(String reportId, String noteText, bool isPrivate) onSaveNote;
   final VoidCallback onAttachToConsultation;
+  final Future<void> Function(String reportId) onDownloadReportFile;
+  final Future<void> Function(String reportId, bool isShared) onTogglePatientSharing;
 
   const ReportDetailDrawer({
     super.key,
@@ -20,6 +22,8 @@ class ReportDetailDrawer extends StatefulWidget {
     required this.onMarkReviewed,
     required this.onSaveNote,
     required this.onAttachToConsultation,
+    required this.onDownloadReportFile,
+    required this.onTogglePatientSharing,
   });
 
   static String formatDate(DateTime dt) {
@@ -266,24 +270,40 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
         ),
 
         GlassSecondaryButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Downloading official PDF for ${report.id}...'),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          },
+          onPressed: report.fileUrl == null
+              ? null
+              : () => widget.onDownloadReportFile(report.id),
           height: 42,
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.download_rounded, size: 18),
               SizedBox(width: 6),
-              Text('Download PDF', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              Text('Download file', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
+        if (report.status == ReportStatus.reviewed && report.fileUrl != null)
+          GlassSecondaryButton(
+            onPressed: () => widget.onTogglePatientSharing(
+              report.id, !report.isReleasedToPatient,
+            ),
+            height: 42,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  report.isReleasedToPatient ? Icons.lock_outline_rounded : Icons.share_rounded,
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  report.isReleasedToPatient ? 'Revoke patient access' : 'Share with patient',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }

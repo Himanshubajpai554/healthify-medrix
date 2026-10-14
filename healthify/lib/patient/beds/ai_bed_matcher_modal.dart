@@ -58,9 +58,9 @@ class _AiBedMatcherModalState extends State<AiBedMatcherModal> {
       _matchResults = null;
     });
 
-    Future.delayed(const Duration(milliseconds: 600), () {
+    Future.delayed(const Duration(milliseconds: 600), () async {
       if (!mounted) return;
-      final all = BedDiscoveryService.getHospitalBedDataList();
+      final all = await BedDiscoveryService.getHospitalBedDataList();
       final matched = all.where((data) {
         final matchesRadius = data.hospital.distanceKm <= _radius;
         final hasBedType = data.categories.any((c) => c.name == _bedType && c.available > 0);

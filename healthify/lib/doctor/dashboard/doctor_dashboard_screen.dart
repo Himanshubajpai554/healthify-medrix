@@ -1,6 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import '../../core/provider/repository_provider.dart';
+import '../../core/models/appointment_model.dart' as core;
+import '../../core/enums/domain_enums.dart' as domain;
 
 import '../../auth/login/login_screen.dart';
 import '../../hospital/dashboard/main_dashboard_screen.dart';
@@ -13,14 +17,21 @@ import '../analytics/doctor_analytics_screen.dart';
 import '../appointments/doctor_appointments_screen.dart';
 import '../care/doctor_care_screen.dart';
 import '../data/doctor_mock_data.dart';
+import '../services/doctor_clinical_records_service.dart';
+import '../services/doctor_emergency_service.dart';
+import '../services/doctor_reports_service.dart';
 import '../emergency/doctor_emergency_cases_screen.dart';
 import '../followups/doctor_followups_screen.dart';
 import '../help/doctor_help_support_screen.dart';
 import '../modals/doctor_modals.dart';
 import '../models/doctor_dashboard_models.dart';
+import '../models/emergency_models.dart';
+import '../models/reports_models.dart';
 import '../more/doctor_more_screen.dart';
 import '../notifications/doctor_notifications_screen.dart';
 import '../patients/my_patients_screen.dart';
+import '../patients/widgets/add_clinical_note_modal.dart';
+import '../patients/widgets/create_prescription_modal.dart';
 import '../prescriptions/doctor_prescriptions_screen.dart';
 import '../reports/doctor_reports_screen.dart';
 import '../settings/doctor_profile_settings_screen.dart';
@@ -209,14 +220,115 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   void initState() {
     super.initState();
 
-    _appointments = DoctorMockData.getAppointments();
-    _patientQueue = DoctorMockData.getPatientQueue();
-    _emergencyCases = DoctorMockData.getEmergencyCases();
-    _pendingReports = DoctorMockData.getPendingReports();
+    final connected = RepositoryContainer.instance.serverpodClient != null;
+    _appointments = connected ? <DoctorAppointmentModel>[] : DoctorMockData.getAppointments();
+    _patientQueue = connected ? <PatientQueueItemModel>[] : DoctorMockData.getPatientQueue();
+    _emergencyCases = connected ? <DoctorEmergencyCaseModel>[] : DoctorMockData.getEmergencyCases();
+    _pendingReports = connected ? <PendingReportModel>[] : DoctorMockData.getPendingReports();
     _aiSummary = DoctorMockData.getAISummary();
-    _notifications = DoctorMockData.getNotifications();
+    _notifications = connected ? <DoctorNotificationModel>[] : DoctorMockData.getNotifications();
     _analytics = DoctorMockData.getAnalytics();
     _availabilityConfig = DoctorMockData.getAvailabilityConfig();
+    if (connected) _loadLiveDashboardData();
+  }
+
+  Future<void> _loadLiveDashboardData() async {
+    final container = RepositoryContainer.instance;
+    try {
+      final appointmentRows = await container.appointmentRepository
+          .getAppointmentsByDoctor(widget.doctorId);
+      final emergencyRows = await DoctorEmergencyService().getEmergencyCases();
+      final reportRows = await DoctorReportsService().getReports();
+      final schedule = await DoctorClinicalRecordsService.instance.loadAvailabilityConfig();
+      final appointments = appointmentRows.map(_dashboardAppointment).toList();
+      final emergencies = emergencyRows.where((item) =>
+        item.status != EmergencyCaseStatus.resolved && item.status != EmergencyCaseStatus.cancelled).map((item) => DoctorEmergencyCaseModel(
+          id: item.id,
+          patient: PatientModel(id: item.patientId, name: item.patientName, age: item.patientAge,
+            gender: item.patientGender, avatarUrl: '', phone: item.emergencyContactPhone,
+            bloodGroup: item.bloodGroup, mrn: item.patientId, lastVisitDate: 'Not available',
+            lastVisitDoctor: widget.doctorName, primaryConcern: item.emergencyReason, department: item.department),
+          severity: item.priority == EmergencyOperationalPriority.immediate ? EmergencySeverity.critical :
+            item.priority == EmergencyOperationalPriority.high ? EmergencySeverity.high : EmergencySeverity.moderate,
+          arrivalTime: item.arrivalTime.toLocal().toString(), assignedBed: item.location,
+          department: item.department, assignedDoctor: item.assignedDoctor, currentStatus: item.status.label,
+        )).toList();
+      final reports = reportRows.where((report) => report.status != ReportStatus.reviewed).map((report) => PendingReportModel(
+        id: report.id,
+        patient: PatientModel(id: report.patientId, name: report.patientName, age: report.patientAge,
+          gender: report.patientGender, avatarUrl: '', phone: '', bloodGroup: '', mrn: report.patientId,
+          lastVisitDate: 'Not available', lastVisitDoctor: widget.doctorName,
+          primaryConcern: report.title, department: report.department),
+        reportType: report.title, date: report.uploadedDate.toLocal().toString(),
+        priority: ReportPriority.normal, isReviewed: false,
+        clinicalNotes: report.reviewNotes, labValues: const {},
+      )).toList();
+      final queue = appointments.where((a) => a.status == AppointmentStatus.waiting || a.status == AppointmentStatus.checkedIn).toList();
+      final summaryPatient = appointments.firstOrNull?.patient ?? PatientModel(
+        id: '', name: 'No assigned patient', age: 0, gender: 'Not reported', avatarUrl: '',
+        phone: '', bloodGroup: '', mrn: '', lastVisitDate: 'Not available',
+        lastVisitDoctor: widget.doctorName, primaryConcern: '', department: widget.specialty,
+      );
+      final liveSummary = AIPatientSummaryModel(
+        patient: summaryPatient,
+        previousVisitsCount: appointments.where((item) => item.status == AppointmentStatus.completed).length,
+        recentLabReportsCount: reportRows.length,
+        currentMedications: const [],
+        lastConsultationText: appointments.where((item) => item.status == AppointmentStatus.completed).firstOrNull?.reasonForVisit ?? 'No completed consultation is recorded.',
+        recentReportAttention: reports.isEmpty ? 'No reports are awaiting review.' : '${reports.length} report(s) need review.',
+        keyFindings: 'Summary of assigned hospital records. No AI clinical inference was performed.',
+      );
+      if (!mounted) return;
+      setState(() {
+        _appointments = appointments;
+        _patientQueue = [for (var i = 0; i < queue.length; i++) PatientQueueItemModel(
+          position: '${i + 1}', patient: queue[i].patient, appointmentTime: queue[i].appointmentTime,
+          waitingTime: 'Not reported', status: queue[i].status)];
+        _emergencyCases = emergencies;
+        _pendingReports = reports;
+        _aiSummary = liveSummary;
+        if (schedule != null) {
+          _availabilityConfig = schedule;
+          _availabilityStatus = schedule.status;
+        }
+        _analytics = DoctorAnalyticsModel(
+          patientsSeenThisWeek: appointments.where((a) => a.status == AppointmentStatus.completed).length,
+          appointmentsCompletedPercent: appointments.isEmpty ? 0.0 : appointments.where((a) => a.status == AppointmentStatus.completed).length * 100 / appointments.length,
+          followUpRatePercent: 0.0, avgConsultationTime: 'Not available', cancelledPercent: appointments.isEmpty ? 0.0 : appointments.where((a) => a.status == AppointmentStatus.cancelled).length * 100 / appointments.length,
+          patientRating: 0, dailyPatientsSeen: const [],
+        );
+      });
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load doctor dashboard data: $error')),
+        );
+      }
+    }
+  }
+
+  DoctorAppointmentModel _dashboardAppointment(core.AppointmentItem row) {
+    final time = TimeOfDay.fromDateTime(row.dateTime);
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final patient = PatientModel(id: row.patientId.isEmpty ? row.id : row.patientId,
+      name: row.patientName.isEmpty ? 'Patient' : row.patientName, age: 0,
+      gender: 'Not reported', avatarUrl: '', phone: '', bloodGroup: '', mrn: row.patientId,
+      lastVisitDate: 'Not available', lastVisitDoctor: widget.doctorName,
+      primaryConcern: row.reason, department: row.department);
+    final status = switch (row.status.toLowerCase()) {
+      'pending' || 'waiting' => AppointmentStatus.waiting,
+      'checkedin' || 'checked_in' => AppointmentStatus.checkedIn,
+      'inconsultation' || 'in_consultation' || 'inprogress' => AppointmentStatus.inConsultation,
+      'completed' => AppointmentStatus.completed,
+      'cancelled' => AppointmentStatus.cancelled,
+      'noshow' || 'no_show' || 'missed' => AppointmentStatus.noShow,
+      _ => AppointmentStatus.upcoming,
+    };
+    return DoctorAppointmentModel(id: row.id, patient: patient,
+      appointmentTime: '$hour:${time.minute.toString().padLeft(2, '0')} ${time.period == DayPeriod.am ? 'AM' : 'PM'}',
+      appointmentType: row.type.isEmpty ? 'Consultation' : row.type,
+      department: row.department, status: status, tokenNumber: '',
+      reasonForVisit: row.reason, date: row.dateTime);
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -269,11 +381,15 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
               ),
-              onPressed: () {
+              onPressed: () async {
+                final navigator = Navigator.of(context);
                 Navigator.pop(context);
+                try {
+                  await RepositoryContainer.instance.serverpodClient?.auth.signOutDevice();
+                } catch (_) {}
+                if (!mounted) return;
 
-                Navigator.pushAndRemoveUntil(
-                  context,
+                navigator.pushAndRemoveUntil(
                   FadePageRoute(page: const LoginScreen()),
                   (route) => false,
                 );
@@ -501,11 +617,16 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   ),
                   onTap: () {
                     Navigator.pop(context);
-
-                    DoctorModals.showPatientProfileModal(
-                      context: context,
-                      patient: DoctorMockData.patientRahul,
-                    );
+                    final patient = RepositoryContainer.instance.serverpodClient == null
+                        ? DoctorMockData.patientRahul
+                        : (_appointments.isEmpty ? null : _appointments.first.patient);
+                    if (patient == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No assigned patient is available.')),
+                      );
+                    } else {
+                      DoctorModals.showPatientProfileModal(context: context, patient: patient);
+                    }
                   },
                 ),
               ),
@@ -581,6 +702,15 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                       setState(() {
                         _availabilityStatus = status;
                       });
+                      if (RepositoryContainer.instance.serverpodClient != null) {
+                        DoctorClinicalRecordsService.instance.saveAvailability(status).catchError((Object error) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Could not save availability: $error')),
+                            );
+                          }
+                        });
+                      }
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -992,11 +1122,26 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       case 0:
         return isMobile ? _buildMobileDashboardTab() : _buildMainDashboardTab();
       case 1:
-        return const DoctorAppointmentsScreen(embedInDashboard: true);
+        return DoctorAppointmentsScreen(
+          embedInDashboard: true,
+          doctorName: widget.doctorName,
+          doctorId: widget.doctorId,
+          specialty: widget.specialty,
+        );
       case 2:
-        return const MyPatientsScreen(embedInDashboard: true);
+        return MyPatientsScreen(
+          embedInDashboard: true,
+          doctorName: widget.doctorName,
+          doctorId: widget.doctorId,
+          specialty: widget.specialty,
+        );
       case 3:
-        return const DoctorCareScreen(embedInDashboard: true);
+        return DoctorCareScreen(
+          embedInDashboard: true,
+          doctorName: widget.doctorName,
+          doctorId: widget.doctorId,
+          specialty: widget.specialty,
+        );
       case 4:
         return DoctorMoreScreen(
           embedInDashboard: true,
@@ -1186,6 +1331,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildMainDashboardTab() {
+    if (_appointments.isEmpty && RepositoryContainer.instance.serverpodClient != null) {
+      return _buildEmptyClinicalDashboard();
+    }
     final nextAppointment = _appointments.firstWhere(
       (a) => a.isNextUpcoming,
       orElse: () => _appointments.first,
@@ -1208,9 +1356,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     a.status == AppointmentStatus.waiting,
               )
               .length,
-          totalPatients: 18,
-          newPatients: 4,
-          followUpPatients: 8,
+          totalPatients: _appointments.map((a) => a.patient.id).toSet().length,
+          newPatients: 0,
+          followUpPatients: 0,
           pendingReports: _pendingReports.where((r) => !r.isReviewed).length,
           urgentReports: _pendingReports
               .where(
@@ -1221,7 +1369,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           criticalEmergencyCount: _emergencyCases
               .where((e) => e.severity == EmergencySeverity.critical)
               .length,
-          followUpsToday: 6,
+          followUpsToday: 0,
           onCardTap: (navIndex) {
             setState(() {
               _selectedNavIndex = navIndex;
@@ -1232,12 +1380,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         const SizedBox(height: 20),
 
         DoctorQuickActionsBar(
-          onStartConsultation: () => DoctorModals.showStartConsultationModal(
-            context: context,
-            appointment: nextAppointment,
-            onConsultationCompleted: () =>
-                _markAppointmentCompleted(nextAppointment),
-          ),
+          onStartConsultation: () => _startDashboardConsultation(nextAppointment),
           onAddPatientNote: _showAddNoteDialog,
           onWritePrescription: _showWritePrescriptionDialog,
           onReviewReports: () {
@@ -1266,13 +1409,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                 children: [
                   NextPatientHeroCard(
                     appointment: nextAppointment,
-                    onStartConsultation: () =>
-                        DoctorModals.showStartConsultationModal(
-                          context: context,
-                          appointment: nextAppointment,
-                          onConsultationCompleted: () =>
-                              _markAppointmentCompleted(nextAppointment),
-                        ),
+                    onStartConsultation: () => _startDashboardConsultation(nextAppointment),
                     onViewMedicalHistory: () =>
                         DoctorModals.showPatientProfileModal(
                           context: context,
@@ -1284,13 +1421,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
                   TodayAppointmentsSection(
                     appointments: _appointments,
-                    onStartConsultation: (apt) =>
-                        DoctorModals.showStartConsultationModal(
-                          context: context,
-                          appointment: apt,
-                          onConsultationCompleted: () =>
-                              _markAppointmentCompleted(apt),
-                        ),
+                    onStartConsultation: _startDashboardConsultation,
                     onViewPatient: (apt) =>
                         DoctorModals.showPatientProfileModal(
                           context: context,
@@ -1409,10 +1540,17 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                         DoctorModals.showConfigureHoursModal(
                           context: context,
                           currentConfig: _availabilityConfig,
-                          onSave: (newConfig) {
+                          onSave: (newConfig) async {
                             setState(() {
                               _availabilityConfig = newConfig;
                             });
+                            if (RepositoryContainer.instance.serverpodClient != null) {
+                              try {
+                                await DoctorClinicalRecordsService.instance.saveAvailabilityConfig(newConfig);
+                              } catch (error) {
+                                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not save schedule: $error')));
+                              }
+                            }
                           },
                         ),
                   ),
@@ -1420,13 +1558,14 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   const SizedBox(height: 20),
 
                   RecentPatientsWidget(
-                    patients: [
-                      DoctorMockData.patientRahul,
-                      DoctorMockData.patientPriya,
-                      DoctorMockData.patientAmit,
-                      DoctorMockData.patientNeha,
-                      DoctorMockData.patientRajesh,
-                    ],
+                    patients: RepositoryContainer.instance.serverpodClient == null
+                        ? [DoctorMockData.patientRahul, DoctorMockData.patientPriya,
+                            DoctorMockData.patientAmit, DoctorMockData.patientNeha,
+                            DoctorMockData.patientRajesh]
+                        : _appointments.fold<Map<String, PatientModel>>({}, (map, item) {
+                            map.putIfAbsent(item.patient.id, () => item.patient);
+                            return map;
+                          }).values.toList(),
                     onPatientTap: (patient) =>
                         DoctorModals.showPatientProfileModal(
                           context: context,
@@ -1447,6 +1586,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   // ═══════════════════════════════════════════════════════════════
 
   Widget _buildMobileDashboardTab() {
+    if (_appointments.isEmpty && RepositoryContainer.instance.serverpodClient != null) {
+      return _buildEmptyClinicalDashboard();
+    }
     final nextAppointment = _appointments.firstWhere(
       (a) => a.isNextUpcoming,
       orElse: () => _appointments.first,
@@ -1459,12 +1601,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
         NextPatientHeroCard(
           appointment: nextAppointment,
-          onStartConsultation: () => DoctorModals.showStartConsultationModal(
-            context: context,
-            appointment: nextAppointment,
-            onConsultationCompleted: () =>
-                _markAppointmentCompleted(nextAppointment),
-          ),
+          onStartConsultation: () => _startDashboardConsultation(nextAppointment),
           onViewMedicalHistory: () => DoctorModals.showPatientProfileModal(
             context: context,
             patient: nextAppointment.patient,
@@ -1485,9 +1622,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     a.status == AppointmentStatus.waiting,
               )
               .length,
-          totalPatients: 18,
-          newPatients: 4,
-          followUpPatients: 8,
+          totalPatients: _appointments.map((a) => a.patient.id).toSet().length,
+          newPatients: 0,
+          followUpPatients: 0,
           pendingReports: _pendingReports.where((r) => !r.isReviewed).length,
           urgentReports: _pendingReports
               .where(
@@ -1498,7 +1635,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           criticalEmergencyCount: _emergencyCases
               .where((e) => e.severity == EmergencySeverity.critical)
               .length,
-          followUpsToday: 6,
+          followUpsToday: 0,
           onCardTap: (index) {
             setState(() {
               _selectedNavIndex = index;
@@ -1509,12 +1646,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         const SizedBox(height: 16),
 
         DoctorQuickActionsBar(
-          onStartConsultation: () => DoctorModals.showStartConsultationModal(
-            context: context,
-            appointment: nextAppointment,
-            onConsultationCompleted: () =>
-                _markAppointmentCompleted(nextAppointment),
-          ),
+          onStartConsultation: () => _startDashboardConsultation(nextAppointment),
           onAddPatientNote: _showAddNoteDialog,
           onWritePrescription: _showWritePrescriptionDialog,
           onReviewReports: () {
@@ -1553,11 +1685,67 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     );
   }
 
+  Widget _buildEmptyClinicalDashboard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDashboardWelcomeBanner(),
+        const SizedBox(height: 20),
+        GlassCard(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('No assigned appointments yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Text('Your doctor workspace will show appointments, patient queue, reports, and emergencies assigned to your profile.'),
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: () => setState(() => _selectedNavIndex = 1),
+                icon: const Icon(Icons.calendar_month_rounded),
+                label: const Text('Open appointments'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   // ═══════════════════════════════════════════════════════════════
   // APPOINTMENT
   // ═══════════════════════════════════════════════════════════════
 
-  void _markAppointmentCompleted(DoctorAppointmentModel appointment) {
+  Future<void> _startDashboardConsultation(DoctorAppointmentModel appointment) async {
+    if (RepositoryContainer.instance.serverpodClient != null) {
+      try {
+        await RepositoryContainer.instance.appointmentRepository.updateAppointmentStatus(
+          appointment.id, domain.AppointmentStatus.inConsultation,
+        );
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not start consultation: $error')));
+        return;
+      }
+    }
+    if (!mounted) return;
+    DoctorModals.showStartConsultationModal(
+      context: context,
+      appointment: appointment.copyWith(status: AppointmentStatus.inConsultation),
+      onConsultationCompleted: () => _markAppointmentCompleted(appointment),
+    );
+  }
+
+  Future<void> _markAppointmentCompleted(DoctorAppointmentModel appointment) async {
+    if (RepositoryContainer.instance.serverpodClient != null) {
+      try {
+        await RepositoryContainer.instance.appointmentRepository.updateAppointmentStatus(
+          appointment.id, domain.AppointmentStatus.completed,
+        );
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not complete appointment: $error')));
+        return;
+      }
+    }
     setState(() {
       _appointments = _appointments.map((a) {
         if (a.id == appointment.id) {
@@ -1569,13 +1757,49 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     });
   }
 
-  void _rescheduleAppointment(
+  Future<void> _rescheduleAppointment(
       DoctorAppointmentModel appointment, String newSlot) {
+    return _persistDashboardReschedule(appointment, newSlot);
+  }
+
+  Future<void> _persistDashboardReschedule(
+    DoctorAppointmentModel appointment,
+    String newSlot,
+  ) async {
+    var newDate = appointment.date;
+    final parsed = RegExp(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$', caseSensitive: false).firstMatch(newSlot.trim());
+    if (parsed != null) {
+      var hour = int.parse(parsed.group(1)!);
+      final minute = int.parse(parsed.group(2)!);
+      final period = parsed.group(3)!.toUpperCase();
+      if (period == 'PM' && hour != 12) hour += 12;
+      if (period == 'AM' && hour == 12) hour = 0;
+      newDate = DateTime(appointment.date.year, appointment.date.month, appointment.date.day, hour, minute);
+      if (!newDate.isAfter(DateTime.now())) newDate = newDate.add(const Duration(days: 1));
+    }
+    final records = RepositoryContainer.instance.hospitalOperationalRepository;
+    if (records != null) {
+      try {
+        final row = await records.get('appointments', appointment.id);
+        if (row == null) throw StateError('Appointment not found.');
+        await records.save('appointments', appointment.id, {
+          ...row,
+          'dateTime': newDate.toUtc().toIso8601String(),
+          'appointmentTime': newSlot,
+          'status': 'scheduled',
+          'updatedAt': DateTime.now().toUtc().toIso8601String(),
+        });
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not reschedule appointment: $error')));
+        return;
+      }
+    }
     setState(() {
       _appointments = _appointments.map((a) {
         if (a.id == appointment.id) {
           return a.copyWith(
             appointmentTime: newSlot,
+            date: newDate,
             status: AppointmentStatus.upcoming,
           );
         }
@@ -1590,72 +1814,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   // ═══════════════════════════════════════════════════════════════
 
   void _showAddNoteDialog() {
-    final controller = TextEditingController();
-
-    showDialog(
+    if (_appointments.isEmpty) return;
+    AddClinicalNoteModal.show(
       context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-
-        return AlertDialog(
-          backgroundColor: _surfaceStrong(isDark),
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: BorderSide(color: _border(isDark)),
-          ),
-          title: Text(
-            'Add Clinical Note',
-            style: TextStyle(color: _primaryText(isDark)),
-          ),
-          content: TextField(
-            controller: controller,
-            maxLines: 3,
-            style: TextStyle(color: _primaryText(isDark)),
-            decoration: InputDecoration(
-              hintText: 'Enter clinical observations or notes...',
-              hintStyle: TextStyle(color: _secondaryText(isDark)),
-              filled: true,
-              fillColor: _surface(isDark),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: _border(isDark)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: _border(isDark)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: _primary),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Clinical Note saved to EHR.'),
-                    backgroundColor: _primary,
-                  ),
-                );
-              },
-              child: const Text('Save Note'),
-            ),
-          ],
-        );
-      },
+      patient: _appointments.first.patient,
+      onNoteAdded: () {},
     );
   }
 
@@ -1664,74 +1827,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   // ═══════════════════════════════════════════════════════════════
 
   void _showWritePrescriptionDialog() {
-    final controller = TextEditingController();
-
-    showDialog(
+    if (_appointments.isEmpty) return;
+    CreatePrescriptionModal.show(
       context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-
-        return AlertDialog(
-          backgroundColor: _surfaceStrong(isDark),
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: BorderSide(color: _border(isDark)),
-          ),
-          title: Text(
-            'Write E-Prescription',
-            style: TextStyle(color: _primaryText(isDark)),
-          ),
-          content: TextField(
-            controller: controller,
-            maxLines: 3,
-            style: TextStyle(color: _primaryText(isDark)),
-            decoration: InputDecoration(
-              hintText: 'Enter medication details, dosage & duration...',
-              hintStyle: TextStyle(color: _secondaryText(isDark)),
-              filled: true,
-              fillColor: _surface(isDark),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: _border(isDark)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: _border(isDark)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: _primary),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'E-Prescription generated & sent to pharmacy.',
-                    ),
-                    backgroundColor: _primary,
-                  ),
-                );
-              },
-              child: const Text('Generate Prescription'),
-            ),
-          ],
-        );
-      },
+      patient: _appointments.first.patient,
+      onPrescriptionCreated: () {},
     );
   }
 }

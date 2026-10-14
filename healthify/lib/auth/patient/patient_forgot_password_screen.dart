@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -13,7 +14,7 @@ class PatientForgotPasswordScreen extends StatefulWidget {
 }
 
 class _PatientForgotPasswordScreenState extends State<PatientForgotPasswordScreen> {
-  int _currentStep = 0; // 0: Phone, 1: New Password, 2: Success
+  int _currentStep = 0; // 0: Email, 1: New Password, 2: Success
 
   final _formKeyPhone = GlobalKey<FormState>();
   final _formKeyPassword = GlobalKey<FormState>();
@@ -24,6 +25,7 @@ class _PatientForgotPasswordScreenState extends State<PatientForgotPasswordScree
 
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  String? _finishResetToken;
 
   @override
   void dispose() {
@@ -35,39 +37,74 @@ class _PatientForgotPasswordScreenState extends State<PatientForgotPasswordScree
 
   void _sendOtp() async {
     if (_formKeyPhone.currentState!.validate()) {
-      final phone = _phoneController.text.trim();
-      
-      // Navigate to OTP verification
-      final verified = await Navigator.push<bool>(
-        context,
-        FadePageRoute(
-          page: PatientOtpScreen(
-            phoneNumber: phone.length == 10 ? '+91 $phone' : phone,
-            isPasswordReset: true,
+      final email = _phoneController.text.trim().toLowerCase();
+      final client = RepositoryContainer.instance.serverpodClient;
+      if (client == null) {
+        _showError('Patient account server is not configured.');
+        return;
+      }
+      try {
+        setState(() => _isLoading = true);
+        final requestId = await client.emailIdp.startPasswordReset(email: email);
+        if (!mounted) return;
+        final verified = await Navigator.push<String>(
+          context,
+          FadePageRoute(
+            page: PatientOtpScreen(
+              phoneNumber: email,
+              email: email,
+              accountRequestId: requestId,
+              isPasswordReset: true,
+            ),
           ),
-        ),
-      );
+        );
 
-      if (verified == true) {
+      if (verified != null && mounted) {
+        _finishResetToken = verified;
         setState(() {
           _currentStep = 1; // Move to New Password step
         });
       }
+      } catch (error) {
+        _showError(error.toString());
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
-  void _resetPassword() {
+  Future<void> _resetPassword() async {
     if (_formKeyPassword.currentState!.validate()) {
       setState(() => _isLoading = true);
-
-      Future.delayed(const Duration(milliseconds: 700), () {
+      try {
+        final client = RepositoryContainer.instance.serverpodClient;
+        final token = _finishResetToken;
+        if (client == null || token == null) {
+          throw StateError('Verify the email code before resetting the password.');
+        }
+        await client.emailIdp.finishPasswordReset(
+          finishPasswordResetToken: token,
+          newPassword: _newPasswordController.text,
+        );
         if (!mounted) return;
         setState(() {
           _isLoading = false;
           _currentStep = 2; // Success step
         });
-      });
+      } catch (error) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          _showError(error.toString());
+        }
+      }
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
   }
 
   @override
@@ -157,33 +194,33 @@ class _PatientForgotPasswordScreenState extends State<PatientForgotPasswordScree
           ),
           const SizedBox(height: 6),
           Text(
-            'Enter your registered phone number. We will send a 6-digit OTP code to reset your password.',
+            'Enter your registered email. Use the 6-digit verification code printed in the Serverpod terminal.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: secondaryTextColor, height: 1.4),
           ),
           const SizedBox(height: 24),
 
           Text(
-            'Registered Phone Number',
+            'Registered Email Address',
             style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: primaryTextColor),
           ),
           const SizedBox(height: 6),
           TextFormField(
             controller: _phoneController,
-            keyboardType: TextInputType.phone,
+            keyboardType: TextInputType.emailAddress,
+            autocorrect: false,
             style: TextStyle(color: primaryTextColor),
             decoration: GlassTextFieldTheme.getDecoration(
               context: context,
-              hintText: '+91 98765 43210',
-              prefixIcon: const Icon(Icons.phone_iphone_rounded),
+              hintText: 'you@example.com',
+              prefixIcon: const Icon(Icons.email_outlined),
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter your phone number';
+                return 'Please enter your email address';
               }
-              final cleanStr = value.replaceAll(RegExp(r'\D'), '');
-              if (cleanStr.length < 10) {
-                return 'Please enter a valid 10-digit phone number';
+              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value.trim())) {
+                return 'Please enter a valid email address';
               }
               return null;
             },

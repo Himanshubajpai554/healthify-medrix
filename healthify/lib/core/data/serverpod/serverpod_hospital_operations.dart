@@ -766,6 +766,10 @@ class ServerpodAppointmentRepository implements AppointmentRepository {
         dateTime: _date(row['dateTime'] ?? row['appointmentDateTime']),
         status: row['status'] as String? ?? AppointmentStatus.scheduled.name,
         type: row['type'] as String? ?? '',
+        patientId: row['patientId'] as String? ?? '',
+        doctorId: row['doctorId'] as String? ?? '',
+        reason: row['reason'] as String? ?? row['reasonForVisit'] as String? ?? '',
+        cancellationReason: row['cancellationReason'] as String?,
       );
 
   Map<String, dynamic> _appointmentJson(AppointmentItem value) => {
@@ -776,6 +780,10 @@ class ServerpodAppointmentRepository implements AppointmentRepository {
         'dateTime': value.dateTime.toIso8601String(),
         'status': value.status,
         'type': value.type,
+        'patientId': value.patientId,
+        'doctorId': value.doctorId,
+        'reason': value.reason,
+        'cancellationReason': value.cancellationReason,
         'updatedAt': DateTime.now().toUtc().toIso8601String(),
       };
 }
@@ -990,6 +998,7 @@ class ServerpodBloodRepository implements BloodRepository {
         'collectionDate': unit.collectionDate.toIso8601String(),
         'expiryDate': unit.expiryDate.toIso8601String(),
         'status': unit.status.name,
+        'isVisibleToPatientApp': true,
         'storageLocation': unit.storageLocation,
         'lastUpdated': DateTime.now().toUtc().toIso8601String(),
       };
@@ -1061,16 +1070,30 @@ class ServerpodAdmissionRepository implements AdmissionRepository {
   @override
   Future<Admission> createAdmission(Admission admission) async {
     if (admission.admissionStatus == AdmissionStatus.admitted) {
-      final active = await getActiveAdmissionForPatient(admission.patientId);
-      if (active != null) throw StateError('Patient already has an active admission.');
+      await records.createAdmission(
+        admission.patientId,
+        admission.id,
+        _admissionJson(admission),
+      );
+    } else {
+      await records.save('admissions', admission.id, _admissionJson(admission));
     }
-    await records.save('admissions', admission.id, _admissionJson(admission));
     return admission;
   }
 
   @override
-  Future<void> updateAdmission(Admission admission) async =>
-      records.save('admissions', admission.id, _admissionJson(admission));
+  Future<void> updateAdmission(Admission admission) async {
+    final payload = _admissionJson(admission);
+    if (admission.admissionStatus == AdmissionStatus.admitted) {
+      await records.updateActiveAdmission(
+        patientId: admission.patientId,
+        admissionId: admission.id,
+        value: payload,
+      );
+    } else {
+      await records.save('admissions', admission.id, payload);
+    }
+  }
 
   @override
   Future<void> dischargeAdmission(String admissionId) async {

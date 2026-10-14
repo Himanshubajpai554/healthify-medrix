@@ -13,7 +13,7 @@ class DoctorsScreen extends StatefulWidget {
 }
 
 class _DoctorsScreenState extends State<DoctorsScreen> {
-  final DoctorRepository _doctorRepository = MockDoctorRepository();
+  final DoctorRepository _doctorRepository = RepositoryContainer.instance.doctorRepository;
   UiState<List<DoctorItem>> _uiState = UiState.initial();
 
   // Search & Filter State

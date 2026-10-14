@@ -1,11 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
+import '../../core/queries/domain_queries.dart' as queries;
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/page_transitions.dart';
 import '../models/patient_portal_models.dart';
 import './patient_doctor_profile_screen.dart';
-import '../symptom_checker/symptom_checker_service.dart';
 import '../appointments/book_appointment_modal.dart';
 import './doctor_filter_modal.dart';
 import '../emergency/emergency_hospitals_modal.dart';
@@ -26,6 +27,8 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
   DoctorFilterCriteria _filterCriteria = const DoctorFilterCriteria();
 
   final TextEditingController _searchController = TextEditingController();
+  List<DoctorSearchResult> _directoryDoctors = [];
+  bool _isLoadingDirectory = true;
 
   static const Color _primary = Color(0xFF0D9488);
   static const Color _primaryDark = Color(0xFF0F766E);
@@ -94,13 +97,60 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadDoctorDirectory();
+  }
+
+  Future<void> _loadDoctorDirectory() async {
+    try {
+      final repository = RepositoryContainer.instance.patientDiscoveryRepository;
+      final hospitals = await repository.searchHospitals(
+        const queries.HospitalSearchQuery(pageSize: 100),
+      );
+      final hospitalNames = {for (final hospital in hospitals) hospital.id: hospital.name};
+      final doctors = await repository.searchDoctors(
+        const queries.DoctorSearchQuery(pageSize: 100),
+      );
+      final results = doctors.map((doctor) => DoctorSearchResult(
+        id: doctor.id,
+        name: doctor.name,
+        specialty: doctor.specialization,
+        department: doctor.departmentId.isEmpty ? doctor.specialization : doctor.departmentId,
+        hospitalName: hospitalNames[doctor.hospitalId] ?? 'Verified hospital',
+        distanceKm: 0,
+        distanceAvailable: false,
+        rating: doctor.rating,
+        reviewsCount: doctor.reviewCount,
+        experienceYears: doctor.experienceYears,
+        consultationFee: doctor.consultationFee,
+        availableSlots: const [],
+        isTeleconsultAvailable: false,
+        hospitalId: doctor.hospitalId,
+        departmentId: doctor.departmentId,
+      )).toList();
+      if (!mounted) return;
+      setState(() {
+        _directoryDoctors = results;
+        _isLoadingDirectory = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isLoadingDirectory = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load doctors: $error')),
+      );
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
   List<DoctorSearchResult> get _filteredDoctors {
-    final all = SymptomCheckerService.getDoctors();
+    final all = _directoryDoctors;
     var filtered = all.where((d) {
       // Category / Department check
       final targetDept = _selectedDept != 'All'
@@ -119,7 +169,8 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
           d.hospitalName.toLowerCase().contains(q);
 
       // Distance check
-      final matchesDistance = d.distanceKm <= _filterCriteria.maxDistanceKm;
+      final matchesDistance = !d.distanceAvailable ||
+          d.distanceKm <= _filterCriteria.maxDistanceKm;
 
       // Rating check
       final matchesRating = d.rating >= _filterCriteria.minRating;
@@ -129,7 +180,12 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
 
     // Sort options
     if (_filterCriteria.sortBy == 'distance') {
-      filtered.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+      filtered.sort((a, b) {
+        if (a.distanceAvailable != b.distanceAvailable) {
+          return a.distanceAvailable ? -1 : 1;
+        }
+        return a.distanceKm.compareTo(b.distanceKm);
+      });
     } else if (_filterCriteria.sortBy == 'rating') {
       filtered.sort((a, b) => b.rating.compareTo(a.rating));
     }
@@ -168,15 +224,39 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
       FadePageRoute(
         page: PatientDoctorProfileScreen(
           doctor: doc,
-          onAppointmentBooked: (newAppt) {
-            if (widget.onBookingSuccess != null) {
-              widget.onBookingSuccess!(
-                'Appointment booked with ${newAppt.doctorName}!',
-              );
-            }
-          },
+          onAppointmentBooked: (newAppt) => _persistAppointment(newAppt),
         ),
       ),
+    );
+  }
+
+  Future<void> _persistAppointment(PatientAppointment appointment) async {
+    final portal = RepositoryContainer.instance.patientPortalRepository;
+    if (portal == null) {
+      throw StateError('Serverpod patient account is not connected.');
+    }
+    await portal.save(
+        'patientAppointments',
+        appointment.id,
+        {
+          'id': appointment.id,
+          'doctorId': appointment.doctorId,
+          'hospitalId': appointment.hospitalId,
+          'doctorName': appointment.doctorName,
+          'specialty': appointment.specialty,
+          'hospitalName': appointment.hospitalName,
+          'hospitalAddress': appointment.hospitalAddress,
+          'dateTime': appointment.dateTime.toIso8601String(),
+          'consultationType': appointment.consultationType,
+          'status': appointment.status,
+          'tokenNumber': appointment.tokenNumber,
+          'consultationFee': appointment.consultationFee,
+          'reasonForVisit': appointment.reasonForVisit,
+          'generatedReportTitles': appointment.generatedReportTitles,
+        },
+    );
+    widget.onBookingSuccess?.call(
+      'Appointment request sent for ${appointment.doctorName}.',
     );
   }
 
@@ -639,7 +719,12 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
 
           // 6. DOCTOR LIST OR EMPTY STATE
           if (doctors.isEmpty) ...[
-            _buildNoDoctorsState(),
+          _isLoadingDirectory
+              ? const Center(child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ))
+              : _buildNoDoctorsState(),
           ] else if (MediaQuery.of(context).size.width >= 700) ...[
             LayoutBuilder(
               builder: (context, constraints) {
@@ -725,7 +810,7 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${doc.hospitalName} (${doc.distanceKm} km away)',
+                          '${doc.hospitalName}${doc.distanceAvailable ? ' (${doc.distanceKm} km away)' : ''}',
                           style: TextStyle(
                             fontSize: 12,
                             color: _secondaryText(isDark),
@@ -768,7 +853,9 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '₹${doc.consultationFee.toInt()} Fee',
+                        doc.consultationFee > 0
+                            ? '₹${doc.consultationFee.toInt()} Fee'
+                            : 'Fee unavailable',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -793,8 +880,8 @@ class _DoctorFinderWidgetState extends State<DoctorFinderWidget> {
                     color: isDark ? const Color(0xFF5EEAD4) : _primary,
                   ),
                   const SizedBox(width: 6),
-                  const Text(
-                    'Available Today: ',
+                  Text(
+                    doc.availableSlots.isEmpty ? 'Schedule: ' : 'Available Today: ',
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,

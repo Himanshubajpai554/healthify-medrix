@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
@@ -81,7 +82,8 @@ class _LoginScreenState extends State<LoginScreen>
         _isLoading = true;
       });
 
-      if (_selectedRole == MedrixRole.hospital) {
+      if (_selectedRole == MedrixRole.hospital ||
+          _selectedRole == MedrixRole.doctor) {
         final client = RepositoryContainer.instance.serverpodClient;
         if (client == null) {
           setState(() => _isLoading = false);
@@ -100,14 +102,50 @@ class _LoginScreenState extends State<LoginScreen>
           await auth.login();
           final membership = await client.hospital.getMyHospital();
           if (!mounted) return;
-          if (membership == null || !membership.isActive) {
+          if (membership == null ||
+              !membership.isActive ||
+              (_selectedRole == MedrixRole.doctor
+                  ? membership.role != 'doctor'
+                  : !{'hospitalOwner', 'hospitalAdmin', 'hospitalManager'}
+                      .contains(membership.role))) {
             await client.auth.signOutDevice();
             _showLoginError(
-              'This account is not linked to an active hospital. Register your hospital first.',
+              _selectedRole == MedrixRole.doctor
+                  ? 'This account is not linked to an active doctor profile. Ask your hospital administrator to provision access.'
+                  : 'This account does not have an active hospital administration role.',
             );
             return;
           }
           RepositoryContainer.instance.setHospitalKey(membership.hospitalKey);
+          if (_selectedRole == MedrixRole.doctor) {
+            final raw = await client.hospital.getMyDoctorProfile(
+              membership.hospitalKey,
+            );
+            final doctor = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+            if (!mounted) return;
+            final doctorName = '${doctor['name'] ?? 'Doctor'}';
+            final doctorId = '${doctor['id']}';
+            final specialty =
+                '${doctor['specialization'] ?? doctor['department'] ?? 'Doctor'}';
+            RepositoryContainer.instance.setDoctorIdentity(
+              doctorId: doctorId,
+              name: doctorName,
+              specialty: specialty,
+            );
+            setState(() => _isLoading = false);
+            Navigator.pushAndRemoveUntil(
+              context,
+              FadePageRoute(
+                page: DoctorDashboardScreen(
+                  doctorName: doctorName,
+                  doctorId: doctorId,
+                  specialty: specialty,
+                ),
+              ),
+              (route) => false,
+            );
+            return;
+          }
           final hospitalInfo = await client.hospital.getInfo(membership.hospitalKey);
           if (!mounted) return;
           setState(() => _isLoading = false);
@@ -122,6 +160,11 @@ class _LoginScreenState extends State<LoginScreen>
           );
         } catch (error) {
           if (!mounted) return;
+          if (_selectedRole == MedrixRole.doctor) {
+            try {
+              await client.auth.signOutDevice();
+            } catch (_) {}
+          }
           setState(() => _isLoading = false);
           _showLoginError(error.toString());
         } finally {

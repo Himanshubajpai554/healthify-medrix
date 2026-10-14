@@ -110,9 +110,9 @@ void main() {
       expect(review.feedback, contains('Great care'));
     });
 
-    test('8. Hospital Bed Availability Comparison Data Integrity & Equality Test', () {
-      final beds1 = BedDiscoveryService.getHospitalBedDataList();
-      final beds2 = BedDiscoveryService.getHospitalBedDataList();
+    test('8. Hospital Bed Availability Comparison Data Integrity & Equality Test', () async {
+      final beds1 = await BedDiscoveryService.getHospitalBedDataList();
+      final beds2 = await BedDiscoveryService.getHospitalBedDataList();
 
       expect(beds1.isNotEmpty, isTrue);
       expect(beds2.isNotEmpty, isTrue);

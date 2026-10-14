@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../theme/app_theme.dart';
 import '../models/patient_portal_models.dart';
-import './blood_discovery_service.dart';
 import './ai_blood_matcher_modal.dart';
 import './blood_comparison_modal.dart';
 import './blood_details_modal.dart';
@@ -31,6 +31,78 @@ class _PatientBloodDiscoveryWidgetState
 
   final TextEditingController _searchController = TextEditingController();
   final List<BloodBankData> _selectedForComparison = [];
+  List<BloodBankData> _allBloodBanks = const [];
+  List<BloodRequestModel> _userRequests = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBloodData();
+  }
+
+  Future<void> _loadBloodData() async {
+    try {
+      final discovery = RepositoryContainer.instance.patientDiscoveryRepository;
+      final portal = RepositoryContainer.instance.patientPortalRepository;
+      final rows = await discovery.getVisibleBloodAvailability();
+      final requests = await portal?.list('patientBloodRequests') ?? const <Map<String, dynamic>>[];
+      final banks = rows.map(_bloodBankFrom).toList();
+      final parsedRequests = requests.map(_requestFrom).toList();
+      if (mounted) {
+        setState(() {
+          _allBloodBanks = banks;
+          _userRequests = parsedRequests;
+        });
+      }
+    } catch (_) {
+      // An unavailable service is represented by an empty live directory.
+    }
+  }
+
+  BloodBankData _bloodBankFrom(Map<String, dynamic> row) => BloodBankData(
+    id: '${row['id']}', name: '${row['name'] ?? 'Hospital'}',
+    type: '${row['type'] ?? 'Hospital'}', rating: (row['rating'] as num?)?.toDouble() ?? 0,
+    reviewCount: (row['reviewCount'] as num?)?.toInt() ?? 0,
+    distance: 'Distance unavailable', distanceKm: 0, travelTime: 'Travel time unavailable',
+    address: '${row['address'] ?? ''}', phone: '${row['phone'] ?? ''}',
+    is24x7: row['is24x7'] as bool? ?? false, acceptsDonations: false,
+    lastUpdated: DateTime.tryParse('${row['lastUpdated'] ?? ''}') ?? DateTime.fromMillisecondsSinceEpoch(0),
+    stocks: (row['stocks'] as List? ?? const []).whereType<Map>().map((stock) {
+      final components = (stock['componentUnits'] as Map? ?? const {}).map(
+        (key, value) => MapEntry('$key', (value as num).toInt()));
+      final units = (stock['unitsAvailable'] as num?)?.toInt() ?? 0;
+      return BloodGroupStockDetail(
+        bloodGroup: '${stock['bloodGroup'] ?? ''}', unitsAvailable: units,
+        status: '${stock['status'] ?? 'Unavailable'}', componentUnits: components,
+        lastUpdated: DateTime.tryParse('${stock['lastUpdated'] ?? ''}') ?? DateTime.fromMillisecondsSinceEpoch(0),
+      );
+    }).toList(),
+  );
+
+  BloodRequestModel _requestFrom(Map<String, dynamic> row) => BloodRequestModel(
+    id: '${row['id']}', patientName: '${row['patientName'] ?? ''}',
+    patientId: '${row['patientId'] ?? ''}', bloodGroup: '${row['bloodGroup'] ?? ''}',
+    unitsNeeded: (row['unitsNeeded'] as num?)?.toInt() ?? 0,
+    componentType: '${row['componentType'] ?? 'PRBC'}',
+    hospitalName: '${row['hospitalName'] ?? ''}', urgencyLevel: '${row['urgencyLevel'] ?? 'Routine'}',
+    status: '${row['status'] ?? 'Pending'}',
+    createdAt: DateTime.tryParse('${row['createdAt'] ?? row['_createdAt']}') ?? DateTime.now(),
+    contactPhone: '${row['contactPhone'] ?? ''}', matchedBankName: row['matchedBankName'] as String?,
+  );
+
+  List<BloodBankData> get _filteredBloodBanks {
+    final query = _searchQuery.trim().toLowerCase();
+    final rows = _allBloodBanks.where((bank) {
+      if (_facilityType == 'Hospital' && !bank.type.toLowerCase().contains('hospital')) return false;
+      if (_facilityType == 'Standalone Blood Bank' && bank.type.toLowerCase().contains('hospital')) return false;
+      if (_open24x7Only && !bank.is24x7) return false;
+      if (_availableOnly && (bank.getStockForGroup(_selectedGroup)?.unitsAvailable ?? 0) <= 0) return false;
+      return query.isEmpty || bank.name.toLowerCase().contains(query) || bank.address.toLowerCase().contains(query);
+    }).toList();
+    if (_sortBy == 'Most Available') rows.sort((a, b) => (b.getStockForGroup(_selectedGroup)?.unitsAvailable ?? 0).compareTo(a.getStockForGroup(_selectedGroup)?.unitsAvailable ?? 0));
+    if (_sortBy == 'Recently Updated') rows.sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
+    return rows;
+  }
 
   // ─────────────────────────────────────────────────────────────
   // Healthify Glass Theme — Light + Dark
@@ -170,16 +242,8 @@ class _PatientBloodDiscoveryWidgetState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bloodBanks = BloodDiscoveryService.getBloodBanks(
-      selectedGroup: _selectedGroup,
-      maxDistanceKm: _maxDistanceKm,
-      facilityType: _facilityType,
-      open24x7Only: _open24x7Only,
-      availableOnly: _availableOnly,
-      searchQuery: _searchQuery,
-      sortBy: _sortBy,
-    );
-    final userRequests = BloodDiscoveryService.getUserRequests();
+    final bloodBanks = _filteredBloodBanks;
+    final userRequests = _userRequests;
 
     return _glassBackground(
       isDark: isDark,
@@ -559,6 +623,7 @@ class _PatientBloodDiscoveryWidgetState
                   onPressed: () => BloodRequestModal.show(
                     context,
                     initialBloodGroup: _selectedGroup,
+                    onRequestSubmitted: () => _loadBloodData(),
                   ),
                   icon: const Icon(
                     Icons.assignment_outlined,

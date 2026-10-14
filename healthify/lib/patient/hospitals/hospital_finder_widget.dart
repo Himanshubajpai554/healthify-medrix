@@ -1,11 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
+import '../../core/queries/domain_queries.dart' as queries;
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/page_transitions.dart';
 import '../models/patient_portal_models.dart';
 import './patient_hospital_profile_screen.dart';
-import '../symptom_checker/symptom_checker_service.dart';
 import '../appointments/book_appointment_modal.dart';
 import '../emergency/emergency_hospitals_modal.dart';
 import './find_care_for_needs_modal.dart';
@@ -27,6 +28,8 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
   HospitalFilterCriteria _filterCriteria = const HospitalFilterCriteria();
 
   final TextEditingController _searchController = TextEditingController();
+  List<NearbyHospital> _directoryHospitals = [];
+  bool _isLoadingDirectory = true;
 
   // ─────────────────────────────────────────────────────────────
   // Healthify Glass Theme — Light + Dark
@@ -51,6 +54,50 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
 
   Color _secondaryText(bool isDark) =>
       isDark ? Colors.white.withValues(alpha: 0.55) : AppTheme.textSecondary;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHospitalDirectory();
+  }
+
+  Future<void> _loadHospitalDirectory() async {
+    try {
+      final hospitals = await RepositoryContainer.instance.patientDiscoveryRepository
+          .searchHospitals(const queries.HospitalSearchQuery(pageSize: 100));
+      if (!mounted) return;
+      setState(() {
+        _directoryHospitals = hospitals.map((hospital) => NearbyHospital(
+          id: hospital.id,
+          name: hospital.name,
+          address: hospital.address,
+          type: hospital.type,
+          distanceKm: 0,
+          distanceAvailable: false,
+          rating: hospital.rating,
+          reviewsCount: hospital.reviewCount,
+          isEmergencyOpen: hospital.has247Emergency,
+          emergencyStatusKnown: true,
+          availableBeds: 0,
+          totalBeds: hospital.totalBeds,
+          icuAvailable: 0,
+          icuTotal: hospital.icuBeds,
+          bloodStock: const {},
+          facilities: const [],
+          availabilityKnown: false,
+          phone: hospital.contactNumber,
+          openHours: 'Hours unavailable',
+        )).toList();
+        _isLoadingDirectory = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isLoadingDirectory = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load hospitals: $error')),
+      );
+    }
+  }
 
   Widget _glassBackground({required bool isDark, required Widget child}) {
     return Stack(
@@ -124,19 +171,23 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
   }
 
   List<NearbyHospital> get _filteredHospitals {
-    final all = SymptomCheckerService.getNearbyHospitals();
+    final all = _directoryHospitals;
     var filtered = all.where((h) {
       // Quick Action chip filter
       bool matchesQuick = true;
       if (_activeActionFilter.contains('Emergency')) {
-        matchesQuick = h.isEmergencyOpen;
+        matchesQuick = h.emergencyStatusKnown && h.isEmergencyOpen;
       } else if (_activeActionFilter.contains('Beds')) {
-        matchesQuick = h.icuAvailable > 0 || h.availableBeds > 0;
+        matchesQuick = h.availabilityKnown &&
+            (h.icuAvailable > 0 || h.availableBeds > 0);
       } else if (_activeActionFilter.contains('Blood')) {
-        matchesQuick =
-            (h.bloodStock['O-'] ?? 0) > 0 || (h.bloodStock['O+'] ?? 0) > 0;
+        matchesQuick = h.availabilityKnown &&
+            ((h.bloodStock['O-'] ?? 0) > 0 ||
+                (h.bloodStock['O+'] ?? 0) > 0);
       } else if (_activeActionFilter.contains('Nearby')) {
-        matchesQuick = h.distanceKm <= 3.0;
+        matchesQuick = h.distanceAvailable && h.distanceKm <= 3.0;
+      } else if (_activeActionFilter.contains('Diagnostic')) {
+        matchesQuick = false;
       }
 
       // Search Query
@@ -148,9 +199,12 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
           h.facilities.any((f) => f.toLowerCase().contains(q));
 
       // Filter criteria
-      final matchesDistance = h.distanceKm <= _filterCriteria.maxDistanceKm;
-      final matchesEr = !_filterCriteria.requiresEmergency || h.isEmergencyOpen;
-      final matchesIcu = !_filterCriteria.requiresIcu || h.icuAvailable > 0;
+      final matchesDistance = !h.distanceAvailable ||
+          h.distanceKm <= _filterCriteria.maxDistanceKm;
+      final matchesEr = !_filterCriteria.requiresEmergency ||
+          (h.emergencyStatusKnown && h.isEmergencyOpen);
+      final matchesIcu = !_filterCriteria.requiresIcu ||
+          (h.availabilityKnown && h.icuAvailable > 0);
       final matchesRating = h.rating >= _filterCriteria.minRating;
 
       return matchesQuick &&
@@ -163,7 +217,12 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
 
     // Sort criteria
     if (_filterCriteria.sortBy == 'distance') {
-      filtered.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+      filtered.sort((a, b) {
+        if (a.distanceAvailable != b.distanceAvailable) {
+          return a.distanceAvailable ? -1 : 1;
+        }
+        return a.distanceKm.compareTo(b.distanceKm);
+      });
     } else if (_filterCriteria.sortBy == 'icu') {
       filtered.sort((a, b) => b.icuAvailable.compareTo(a.icuAvailable));
     } else if (_filterCriteria.sortBy == 'rating') {
@@ -247,7 +306,7 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
                         SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            'Near me (Sector 4, Medical District)',
+                            'Verified hospitals; distance unavailable',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -669,7 +728,12 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
           const SizedBox(height: 20),
 
           // 6. HOSPITALS LIST OR EMPTY STATE
-          if (hospitals.isEmpty)
+          if (_isLoadingDirectory)
+            const Center(child: Padding(
+              padding: EdgeInsets.all(32),
+              child: CircularProgressIndicator(color: _primary),
+            ))
+          else if (hospitals.isEmpty)
             _buildNoHospitalsState()
           else if (MediaQuery.of(context).size.width >= 700)
             LayoutBuilder(
@@ -741,7 +805,7 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Multi-Specialty • ${h.distanceKm} km away',
+                          '${h.type} • ${h.distanceAvailable ? '${h.distanceKm} km away' : 'Distance unavailable'}',
                           style: const TextStyle(
                             fontSize: 12.5,
                             color: Colors.teal,
@@ -779,7 +843,9 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${h.rating} (${h.reviewsCount})',
+                          h.reviewsCount > 0
+                              ? '${h.rating} (${h.reviewsCount})'
+                              : 'No reviews yet',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 11.5,
@@ -796,8 +862,8 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
               Divider(height: 1, color: _border(isDark)),
               const SizedBox(height: 12),
 
-              // Live Capacity Badges Row
-              Wrap(
+              // Show operational counts only when hospitals publish them.
+              if (h.availabilityKnown) Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
@@ -819,6 +885,10 @@ class _HospitalFinderWidgetState extends State<HospitalFinderWidget> {
                         : Colors.orange,
                   ),
                 ],
+              ) else _buildCapacityBadge(
+                icon: Icons.info_outline_rounded,
+                label: 'Bed and blood availability not reported',
+                color: Colors.blueGrey,
               ),
 
               const SizedBox(height: 10),

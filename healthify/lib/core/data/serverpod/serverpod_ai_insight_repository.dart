@@ -36,14 +36,14 @@ class ServerpodAIInsightRepository extends MockAIInsightRepository {
   @override
   Future<AIInsight?> getInsightById(String id) async { final r = await records.get('insights', id); return r == null ? null : _insight(r); }
   @override
-  Future<AIInsight> reviewInsight(String id, RecommendationStatus status) async {
-    final row = await records.get('insights', id) ?? (throw StateError('Insight not found.'));
-    row['status'] = status.name; await records.save('insights', id, row); return _insight(row);
+  Future<AIInsight> reviewInsight(String insightId, RecommendationStatus status) async {
+    final row = await records.get('insights', insightId) ?? (throw StateError('Insight not found.'));
+    row['status'] = status.name; await records.save('insights', insightId, row); return _insight(row);
   }
   @override
-  Future<AIInsight> acceptInsight(String id) => reviewInsight(id, RecommendationStatus.accepted);
+  Future<AIInsight> acceptInsight(String insightId) => reviewInsight(insightId, RecommendationStatus.accepted);
   @override
-  Future<AIInsight> rejectInsight(String id) => reviewInsight(id, RecommendationStatus.rejected);
+  Future<AIInsight> rejectInsight(String insightId) => reviewInsight(insightId, RecommendationStatus.rejected);
 
   @override
   Future<List<DoctorWorkloadForecast>> getDoctorAvailabilityForecast({String? departmentId}) async {
@@ -59,8 +59,8 @@ class ServerpodAIInsightRepository extends MockAIInsightRepository {
   }
 
   @override
-  Future<DoctorWorkloadForecast?> getDoctorWorkloadForecast(String id) async =>
-      (await getDoctorAvailabilityForecast()).where((f) => f.doctorId == id).firstOrNull;
+  Future<DoctorWorkloadForecast?> getDoctorWorkloadForecast(String doctorId) async =>
+      (await getDoctorAvailabilityForecast()).where((f) => f.doctorId == doctorId).firstOrNull;
 
   @override
   Future<List<BloodDemandForecast>> getBloodDemandForecast({String? bloodGroup}) async {
@@ -125,11 +125,11 @@ class ServerpodAIInsightRepository extends MockAIInsightRepository {
     lastUpdated: _now, trainingDataRange: 'No model configured', predictionHorizon: 'Snapshot only', lastPredictionAt: _now)).toList();
 
   @override
-  Future<WhatIfSimulationResult> getWhatIfSimulation(String name, Map<String, dynamic> params) async {
+  Future<WhatIfSimulationResult> getWhatIfSimulation(String scenarioName, Map<String, dynamic> params) async {
     final icu = await getICUCapacityForecast(); final added = (params['addedICUBeds'] as num?)?.toInt() ?? 0;
     final total = icu.currentOccupancy + icu.predictedAvailableBeds + added;
     final rate = total == 0 ? 0 : icu.currentOccupancy * 100 / total;
-    return WhatIfSimulationResult(scenarioName: name, resourceType: HospitalResourceType.icuBed,
+    return WhatIfSimulationResult(scenarioName: scenarioName, resourceType: HospitalResourceType.icuBed,
       currentMetric: '${icu.currentOccupancy} occupied, ${icu.predictedAvailableBeds} available',
       simulatedMetric: '${icu.currentOccupancy} occupied, ${icu.predictedAvailableBeds + added} available',
       projectedChange: 'Snapshot occupancy ${rate.toStringAsFixed(1)}% after adding $added beds', confidence: 1);

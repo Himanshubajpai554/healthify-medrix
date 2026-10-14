@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../core/provider/repository_provider.dart';
+import '../../core/queries/domain_queries.dart' as queries;
+import '../models/patient_portal_models.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
-import '../symptom_checker/symptom_checker_service.dart';
 
-class EmergencyHospitalsModal extends StatelessWidget {
+class EmergencyHospitalsModal extends StatefulWidget {
   const EmergencyHospitalsModal({super.key});
 
   static void show(BuildContext context) {
@@ -15,14 +17,66 @@ class EmergencyHospitalsModal extends StatelessWidget {
   }
 
   @override
+  State<EmergencyHospitalsModal> createState() => _EmergencyHospitalsModalState();
+}
+
+class _EmergencyHospitalsModalState extends State<EmergencyHospitalsModal> {
+  List<NearbyHospital> _hospitals = const [];
+  bool _isLoading = true;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHospitals();
+  }
+
+  Future<void> _loadHospitals() async {
+    try {
+      final hospitals = await RepositoryContainer.instance.patientDiscoveryRepository
+          .searchHospitals(const queries.HospitalSearchQuery(
+        emergencyOnly: true,
+        pageSize: 100,
+      ));
+      if (!mounted) return;
+      setState(() {
+        _hospitals = hospitals.map((hospital) => NearbyHospital(
+          id: hospital.id,
+          name: hospital.name,
+          address: hospital.address,
+          type: hospital.type,
+          distanceKm: 0,
+          distanceAvailable: false,
+          rating: hospital.rating,
+          reviewsCount: hospital.reviewCount,
+          isEmergencyOpen: hospital.has247Emergency,
+          emergencyStatusKnown: true,
+          availableBeds: 0,
+          totalBeds: hospital.totalBeds,
+          icuAvailable: 0,
+          icuTotal: hospital.icuBeds,
+          bloodStock: const {},
+          facilities: const [],
+          availabilityKnown: false,
+          phone: hospital.contactNumber,
+          openHours: '24/7 Emergency Care',
+        )).toList();
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = error.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
 
-    final hospitals =
-        SymptomCheckerService.getNearbyHospitals()
-            .where((hospital) => hospital.isEmergencyOpen)
-            .toList()
-          ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+    final hospitals = _hospitals;
 
     final media = MediaQuery.sizeOf(context);
 
@@ -119,7 +173,21 @@ class EmergencyHospitalsModal extends StatelessWidget {
 
                         const SizedBox(height: 14),
 
-                        if (hospitals.isEmpty)
+                        if (_isLoading)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32),
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        else if (_loadError != null)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Text('Could not load emergency hospitals: $_loadError'),
+                            ),
+                          )
+                        else if (hospitals.isEmpty)
                           _buildEmptyState(isDark: isDark, isDesktop: isDesktop)
                         else
                           _buildHospitalLayout(
@@ -596,7 +664,7 @@ class EmergencyHospitalsModal extends StatelessWidget {
 
                   Expanded(
                     child: Text(
-                      '${hospital.distanceKm} km • ${hospital.address}',
+                      '${hospital.distanceAvailable ? '${hospital.distanceKm} km • ' : ''}${hospital.address}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -613,7 +681,11 @@ class EmergencyHospitalsModal extends StatelessWidget {
 
         const SizedBox(width: 8),
 
-        _buildRatingBadge(rating: hospital.rating),
+        _buildRatingBadge(
+          rating: hospital.reviewsCount > 0
+              ? '${hospital.rating} (${hospital.reviewsCount})'
+              : 'No reviews',
+        ),
       ],
     );
   }
@@ -660,7 +732,9 @@ class EmergencyHospitalsModal extends StatelessWidget {
           child: _buildStatCard(
             icon: Icons.local_hospital_rounded,
             title: 'ICU Beds',
-            value: '${hospital.icuAvailable}/${hospital.icuTotal}',
+            value: hospital.availabilityKnown
+                ? '${hospital.icuAvailable}/${hospital.icuTotal}'
+                : 'Not reported',
             color: Colors.blue,
             isDark: isDark,
             isDesktop: isDesktop,
@@ -673,7 +747,9 @@ class EmergencyHospitalsModal extends StatelessWidget {
           child: _buildStatCard(
             icon: Icons.bloodtype_rounded,
             title: 'O− Blood',
-            value: '${hospital.bloodStock['O-'] ?? 0} units',
+            value: hospital.availabilityKnown
+                ? '${hospital.bloodStock['O-'] ?? 0} units'
+                : 'Not reported',
             color: Colors.red,
             isDark: isDark,
             isDesktop: isDesktop,

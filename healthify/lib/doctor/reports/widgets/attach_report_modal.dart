@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/reports_models.dart';
 
+import '../../services/doctor_patient_service.dart';
+
 class AttachReportModal extends StatefulWidget {
   final DoctorReportFullModel report;
   final Function(String consultationId) onAttachConfirmed;
@@ -17,28 +19,74 @@ class AttachReportModal extends StatefulWidget {
 }
 
 class _AttachReportModalState extends State<AttachReportModal> {
-  String _selectedConsultationId = 'CON-10029';
+  String _selectedConsultationId = '';
+  bool _isLoading = false;
+  List<Map<String, String>> _consultations = [];
 
-  final List<Map<String, String>> _mockConsultations = [
+  static const List<Map<String, String>> _mockConsultations = [
     {
       'id': 'CON-10029',
-      'title': 'Cardiology Follow-up & Risk Assessment',
+      'title': '[DEMO] Cardiology Follow-up & Risk Assessment',
       'date': 'Sep 28, 2026',
-      'doctor': 'Dr. Sarah Jenkins',
+      'doctor': 'Attending Physician',
     },
     {
       'id': 'CON-09941',
-      'title': 'General Clinical Evaluation & Routine Checkup',
+      'title': '[DEMO] General Clinical Evaluation & Routine Checkup',
       'date': 'Sep 20, 2026',
-      'doctor': 'Dr. Sarah Jenkins',
+      'doctor': 'Attending Physician',
     },
     {
       'id': 'CON-09812',
-      'title': 'OPD Consultation - Chest & Dyspnea Review',
+      'title': '[DEMO] OPD Consultation - Chest & Dyspnea Review',
       'date': 'Aug 14, 2026',
-      'doctor': 'Dr. Sarah Jenkins',
+      'doctor': 'Attending Physician',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConsultations();
+  }
+
+  Future<void> _loadConsultations() async {
+    final patientId = widget.report.patientId;
+    if (patientId.isEmpty) {
+      setState(() {
+        _consultations = _mockConsultations;
+        _selectedConsultationId = _consultations.first['id']!;
+      });
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      final items = await DoctorPatientService().getPatientConsultations(patientId);
+      if (items.isNotEmpty) {
+        final mapped = items.map((c) => {
+          'id': c.id,
+          'title': '${c.department.isEmpty ? "Consultation" : c.department} - ${c.diagnosis.isEmpty ? "Clinical Review" : c.diagnosis}',
+          'date': c.date,
+          'doctor': c.doctorName.isEmpty ? 'Attending Physician' : c.doctorName,
+        }).toList();
+        if (mounted) {
+          setState(() {
+            _consultations = mapped;
+            _selectedConsultationId = mapped.first['id'] ?? '';
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _consultations = _mockConsultations;
+        _selectedConsultationId = _consultations.first['id']!;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,14 +150,21 @@ class _AttachReportModalState extends State<AttachReportModal> {
                 color: HealthifyGlassTheme.getTextPrimary(isDark),
               ),
             ),
-            const SizedBox(height: 10),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _mockConsultations.length,
-              separatorBuilder: (_, index) => const SizedBox(height: 8),
-              itemBuilder: (context, idx) {
-                final con = _mockConsultations[idx];
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _consultations.length,
+                separatorBuilder: (_, index) => const SizedBox(height: 8),
+                itemBuilder: (context, idx) {
+                  final con = _consultations[idx];
                 final isSelected = con['id'] == _selectedConsultationId;
                 return InkWell(
                   onTap: () {

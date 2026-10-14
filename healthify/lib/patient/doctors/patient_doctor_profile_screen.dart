@@ -8,7 +8,7 @@ import '../models/patient_portal_models.dart';
 
 class PatientDoctorProfileScreen extends StatefulWidget {
   final DoctorSearchResult doctor;
-  final ValueChanged<PatientAppointment>? onAppointmentBooked;
+  final Future<void> Function(PatientAppointment)? onAppointmentBooked;
 
   const PatientDoctorProfileScreen({
     super.key,
@@ -146,10 +146,12 @@ class _PatientDoctorProfileScreenState
     return '';
   }
 
-  void _onConfirmBookingPressed() {
+  Future<void> _onConfirmBookingPressed() async {
     final date = DateTime.now().add(Duration(days: _selectedDateIndex));
     final newAppt = PatientAppointment(
       id: 'appt_${DateTime.now().millisecondsSinceEpoch}',
+      doctorId: widget.doctor.id,
+      hospitalId: widget.doctor.hospitalId,
       doctorName: widget.doctor.name,
       specialty: widget.doctor.specialty,
       hospitalName: widget.doctor.hospitalName,
@@ -157,7 +159,7 @@ class _PatientDoctorProfileScreenState
       consultationType: _consultationType == 'Video'
           ? 'Video consultation'
           : 'In-person consultation',
-      status: 'Confirmed',
+      status: 'Requested',
       tokenNumber: '#${10 + (DateTime.now().second % 40)}',
       consultationFee: widget.doctor.consultationFee,
       reasonForVisit: _reasonController.text.trim().isNotEmpty
@@ -165,7 +167,15 @@ class _PatientDoctorProfileScreenState
           : 'Routine OPD Consultation',
     );
 
-    widget.onAppointmentBooked?.call(newAppt);
+    try {
+      await widget.onAppointmentBooked?.call(newAppt);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Appointment request was not saved: $error')),
+      );
+      return;
+    }
 
     setState(() {
       _bookedAppointment = newAppt;
@@ -1623,7 +1633,7 @@ class _PatientDoctorProfileScreenState
                   ),
                   SizedBox(width: 10),
                   Text(
-                    'Proceed to Confirm Booking',
+                    'Review Appointment Request',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -1655,8 +1665,7 @@ class _PatientDoctorProfileScreenState
     final dateStr =
         '${_getWeekdayName(date.weekday)}, ${date.day} ${_getMonthName(date.month)} ${date.year}';
     final fee = doctor.consultationFee;
-    const platformFee = 50.0;
-    final totalFee = fee + platformFee;
+    final totalFee = fee;
 
     return Scaffold(
       backgroundColor: _background(isDark),
@@ -1665,7 +1674,7 @@ class _PatientDoctorProfileScreenState
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(72),
         child: _buildGlassAppBar(
-          title: 'Confirm Appointment',
+          title: 'Review Request',
           isDark: isDark,
           onBack: () {
             setState(() {
@@ -1826,7 +1835,7 @@ class _PatientDoctorProfileScreenState
                               ),
                             ),
                             Text(
-                              '₹${fee.toInt()}',
+                              fee > 0 ? '₹${fee.toInt()}' : 'Not published',
                               style: TextStyle(
                                 color: _primaryText(isDark),
                                 fontSize: 13,
@@ -1840,14 +1849,14 @@ class _PatientDoctorProfileScreenState
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Platform Service Fee',
+                              'Payment at hospital',
                               style: TextStyle(
                                 color: _secondaryText(isDark),
                                 fontSize: 13,
                               ),
                             ),
                             Text(
-                              '₹${platformFee.toInt()}',
+                              'No online payment',
                               style: TextStyle(
                                 color: _primaryText(isDark),
                                 fontSize: 13,
@@ -1864,7 +1873,7 @@ class _PatientDoctorProfileScreenState
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Total Payable',
+                              'Expected consultation fee',
                               style: TextStyle(
                                 color: _primaryText(isDark),
                                 fontSize: 15,
@@ -1872,7 +1881,7 @@ class _PatientDoctorProfileScreenState
                               ),
                             ),
                             Text(
-                              '₹${totalFee.toInt()}',
+                              totalFee > 0 ? '₹${totalFee.toInt()}' : 'To be confirmed',
                               style: const TextStyle(
                                 color: _primary,
                                 fontSize: 17,
@@ -1921,7 +1930,7 @@ class _PatientDoctorProfileScreenState
                 ),
                 icon: const Icon(Icons.check_circle_rounded, size: 20),
                 label: const Text(
-                  'Confirm & Pay',
+                  'Send Appointment Request',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
                 ),
               ),
@@ -2034,7 +2043,7 @@ class _PatientDoctorProfileScreenState
                   const SizedBox(height: 24),
 
                   Text(
-                    'Booking Confirmed!',
+                    'Request Sent',
                     style: TextStyle(
                       color: _primaryText(isDark),
                       fontSize: 24,
@@ -2046,7 +2055,7 @@ class _PatientDoctorProfileScreenState
                   const SizedBox(height: 8),
 
                   Text(
-                    'Your appointment has been successfully scheduled.',
+                    'Your appointment request is saved. The hospital must confirm the schedule.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: _secondaryText(isDark),

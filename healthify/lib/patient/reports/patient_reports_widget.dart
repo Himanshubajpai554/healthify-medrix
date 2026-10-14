@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/page_transitions.dart';
 import '../models/patient_portal_models.dart';
@@ -195,175 +197,94 @@ class _PatientReportsWidgetState extends State<PatientReportsWidget> {
   void initState() {
     super.initState();
 
-    _reports = [
-      MedicalReport(
-        id: 'REP-9021',
-        title: 'CBC Blood Test Report',
-        category: 'Lab Reports',
-        hospitalName: 'City Care Hospital',
-        doctorName: 'Dr. Sharma',
-        date: DateTime(2026, 9, 24),
-        summary:
-            'Complete Blood Count (CBC) analysis showing normal hemoglobin and WBC levels. Fasting blood sugar slightly elevated.',
-        fileFormat: 'PDF',
-        fileSize: '1.8 MB',
-        parameters: const [
-          ReportParameter(
-            name: 'Hemoglobin',
-            value: '13.8',
-            unit: 'g/dL',
-            normalRange: '13.0 – 17.0 g/dL',
-            isNormal: true,
-          ),
-          ReportParameter(
-            name: 'WBC Count',
-            value: '7,200',
-            unit: '/µL',
-            normalRange: '4,000 – 11,000 /µL',
-            isNormal: true,
-          ),
-          ReportParameter(
-            name: 'Platelet Count',
-            value: '2.4',
-            unit: 'lakh /µL',
-            normalRange: '1.5 – 4.5 lakh /µL',
-            isNormal: true,
-          ),
-          ReportParameter(
-            name: 'Fasting Blood Sugar',
-            value: '118',
-            unit: 'mg/dL',
-            normalRange: '70 – 99 mg/dL',
-            isNormal: false,
-          ),
-        ],
-        accessLogs: [
-          ReportAccessLog(
-            viewerName: 'Dr. Sharma',
-            viewerRole: 'Attending Physician',
-            timestamp: DateTime(2026, 9, 24, 11, 30),
-          ),
-          ReportAccessLog(
-            viewerName: 'Alex Rivera',
-            viewerRole: 'Patient (Owner)',
-            timestamp: DateTime(2026, 9, 24, 14, 15),
-          ),
-        ],
-      ),
-      MedicalReport(
-        id: 'REP-8810',
-        title: 'Amoxicillin & Antibiotic Prescription',
-        category: 'Prescriptions',
-        hospitalName: 'St. Jude Medical Center',
-        doctorName: 'Dr. Marcus Vance',
-        date: DateTime(2026, 9, 18),
-        summary:
-            'Prescription for Amoxicillin 500mg (TDS x 5 days) and Paracetamol 650mg SOS for acute upper respiratory infection.',
-        fileFormat: 'PDF',
-        fileSize: '950 KB',
-        parameters: const [
-          ReportParameter(
-            name: 'Amoxicillin 500mg',
-            value: '1 Tab TDS',
-            unit: '5 Days',
-            normalRange: 'Oral After Meals',
-            isNormal: true,
-          ),
-          ReportParameter(
-            name: 'Paracetamol 650mg',
-            value: '1 Tab SOS',
-            unit: 'As Needed',
-            normalRange: 'Max 3 / Day',
-            isNormal: true,
-          ),
-        ],
-        accessLogs: [
-          ReportAccessLog(
-            viewerName: 'Dr. Marcus Vance',
-            viewerRole: 'Orthopedist',
-            timestamp: DateTime(2026, 9, 18, 10, 00),
-          ),
-        ],
-      ),
-      MedicalReport(
-        id: 'REP-8402',
-        title: 'Chest Radiogram X-Ray (PA View)',
-        category: 'Imaging',
-        hospitalName: 'Metro Imaging & Diagnostics',
-        doctorName: 'Dr. Elena Rostova',
-        date: DateTime(2026, 9, 2),
-        summary:
-            'Digital Chest X-Ray PA View. Lung fields are clear bilateral. Cardiac silhouette is normal size. No active infiltrates.',
-        fileFormat: 'DICOM',
-        fileSize: '14.2 MB',
-        accessLogs: [
-          ReportAccessLog(
-            viewerName: 'Dr. Elena Rostova',
-            viewerRole: 'Radiologist',
-            timestamp: DateTime(2026, 9, 2, 16, 20),
-          ),
-        ],
-      ),
-      MedicalReport(
-        id: 'REP-7930',
-        title: 'Lipid Profile & Cholesterol Panel',
-        category: 'Lab Reports',
-        hospitalName: 'City Care Hospital',
-        doctorName: 'Dr. Sharma',
-        date: DateTime(2026, 8, 12),
-        summary:
-            'Total cholesterol 215 mg/dL. Triglycerides 160 mg/dL. Recommended dietary lifestyle modifications.',
-        fileFormat: 'PDF',
-        fileSize: '2.1 MB',
-        parameters: const [
-          ReportParameter(
-            name: 'Total Cholesterol',
-            value: '215',
-            unit: 'mg/dL',
-            normalRange: '< 200 mg/dL',
-            isNormal: false,
-          ),
-          ReportParameter(
-            name: 'HDL (Good Cholesterol)',
-            value: '48',
-            unit: 'mg/dL',
-            normalRange: '> 40 mg/dL',
-            isNormal: true,
-          ),
-          ReportParameter(
-            name: 'LDL (Bad Cholesterol)',
-            value: '135',
-            unit: 'mg/dL',
-            normalRange: '< 100 mg/dL',
-            isNormal: false,
-          ),
-        ],
-      ),
-      MedicalReport(
-        id: 'REP-7601',
-        title: 'Inpatient Ward Discharge Summary',
-        category: 'Discharge Summary',
-        hospitalName: 'City Care Hospital',
-        doctorName: 'Dr. Rajesh Kumar',
-        date: DateTime(2026, 8, 5),
-        summary:
-            'Admitted for Acute Gastroenteritis. Treated with IV rehydration and probiotics. Discharged in stable condition.',
-        fileFormat: 'PDF',
-        fileSize: '3.4 MB',
-      ),
-      MedicalReport(
-        id: 'REP-7120',
-        title: 'Cardiology OPD Consultation Notes',
-        category: 'Doctor Notes',
-        hospitalName: 'Medrix Heart Institute',
-        doctorName: 'Dr. Sarah Jenkins',
-        date: DateTime(2026, 7, 15),
-        summary:
-            'Routine cardiac evaluation. BP 120/80 mmHg, HR 72 bpm. S1/S2 normal. Advised 30 min daily cardiovascular walk.',
-        fileFormat: 'PDF',
-        fileSize: '1.2 MB',
-      ),
-    ];
+    _reports = <MedicalReport>[];
+    _loadReports();
+  }
+
+  Map<String, dynamic> _reportJson(MedicalReport r) => {
+        'id': r.id,
+        'title': r.title,
+        'category': r.category,
+        'doctorName': r.doctorName,
+        'hospitalName': r.hospitalName,
+        'date': r.date.toIso8601String(),
+        'summary': r.summary,
+        'fileFormat': r.fileFormat,
+        'fileSize': r.fileSize,
+        'isExternalUploaded': r.isExternalUploaded,
+        'hasAttachedFile': r.hasAttachedFile,
+        'parameters': r.parameters.map((p) => {
+          'name': p.name, 'value': p.value, 'unit': p.unit,
+          'normalRange': p.normalRange, 'isNormal': p.isNormal,
+        }).toList(),
+        'accessLogs': r.accessLogs.map((l) => {
+          'viewerName': l.viewerName, 'viewerRole': l.viewerRole,
+          'timestamp': l.timestamp.toIso8601String(), 'action': l.action,
+        }).toList(),
+        'sharedLinks': r.sharedLinks.map((l) => {
+          'id': l.id, 'sharedWith': l.sharedWith,
+          'createdAt': l.createdAt.toIso8601String(),
+          'expiresAt': l.expiresAt.toIso8601String(), 'isRevoked': l.isRevoked,
+        }).toList(),
+      };
+
+  MedicalReport _reportFrom(Map<String, dynamic> row) => MedicalReport(
+        id: '${row['id']}',
+        title: '${row['title'] ?? ''}',
+        category: '${row['category'] ?? 'Lab Reports'}',
+        doctorName: '${row['doctorName'] ?? ''}',
+        hospitalName: '${row['hospitalName'] ?? ''}',
+        date: DateTime.tryParse('${row['date']}') ?? DateTime.now(),
+        summary: '${row['summary'] ?? ''}',
+        fileFormat: '${row['fileFormat'] ?? 'PDF'}',
+        fileSize: '${row['fileSize'] ?? ''}',
+        isExternalUploaded: row['isExternalUploaded'] as bool? ?? false,
+        hasAttachedFile: row['hasAttachedFile'] as bool? ?? false,
+        parameters: (row['parameters'] as List? ?? const []).whereType<Map>().map((p) => ReportParameter(
+          name: '${p['name'] ?? ''}', value: '${p['value'] ?? ''}',
+          unit: '${p['unit'] ?? ''}', normalRange: '${p['normalRange'] ?? ''}',
+          isNormal: p['isNormal'] as bool? ?? true,
+        )).toList(),
+        accessLogs: (row['accessLogs'] as List? ?? const []).whereType<Map>().map((l) => ReportAccessLog(
+          viewerName: '${l['viewerName'] ?? ''}', viewerRole: '${l['viewerRole'] ?? ''}',
+          timestamp: DateTime.tryParse('${l['timestamp']}') ?? DateTime.now(),
+          action: '${l['action'] ?? 'Viewed Document'}',
+        )).toList(),
+        sharedLinks: (row['sharedLinks'] as List? ?? const []).whereType<Map>().map((l) => SharedReportLink(
+          id: '${l['id'] ?? ''}', sharedWith: '${l['sharedWith'] ?? ''}',
+          createdAt: DateTime.tryParse('${l['createdAt']}') ?? DateTime.now(),
+          expiresAt: DateTime.tryParse('${l['expiresAt']}') ?? DateTime.now(),
+          isRevoked: l['isRevoked'] as bool? ?? false,
+        )).toList(),
+      );
+
+  Future<void> _loadReports() async {
+    final portal = RepositoryContainer.instance.patientPortalRepository;
+    if (portal == null) return;
+    try {
+      final rows = await portal.list('patientReports');
+      if (mounted) setState(() => _reports = rows.map(_reportFrom).toList());
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load reports: $error')),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveReport(MedicalReport report) async {
+    try {
+      await RepositoryContainer.instance.patientPortalRepository?.save(
+        'patientReports', report.id, _reportJson(report),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Report was not saved: $error')),
+        );
+      }
+    }
   }
 
   @override
@@ -397,6 +318,7 @@ class _PatientReportsWidgetState extends State<PatientReportsWidget> {
         setState(() {
           _reports.insert(0, newReport);
         });
+        _saveReport(newReport);
       },
     );
   }
@@ -407,6 +329,7 @@ class _PatientReportsWidgetState extends State<PatientReportsWidget> {
       FadePageRoute(
         page: PatientReportDetailScreen(
           report: report,
+          onDownloadReport: _downloadSharedReport,
           onReportUpdated: (updated) {
             setState(() {
               final index = _reports.indexWhere((r) => r.id == updated.id);
@@ -415,10 +338,32 @@ class _PatientReportsWidgetState extends State<PatientReportsWidget> {
                 _reports[index] = updated;
               }
             });
+            _saveReport(updated);
           },
         ),
       ),
     );
+  }
+
+  Future<void> _downloadSharedReport(String reportId) async {
+    try {
+      final portal = RepositoryContainer.instance.patientPortalRepository;
+      if (portal == null) throw StateError('Sign in to your patient account first.');
+      final file = await portal.downloadSharedReport(reportId);
+      final report = _reports.where((item) => item.id == reportId).firstOrNull;
+      final extension = file.fileName.contains('.')
+          ? file.fileName.split('.').last
+          : 'bin';
+      await FilePicker.saveFile(
+        fileName: '${report?.title ?? 'Medical report'}.$extension',
+        bytes: file.bytes,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not download shared report: $error')),
+      );
+    }
   }
 
   void _shareReport(MedicalReport report) {
@@ -433,6 +378,7 @@ class _PatientReportsWidgetState extends State<PatientReportsWidget> {
             _reports[index] = updated;
           }
         });
+        _saveReport(updated);
       },
     );
   }

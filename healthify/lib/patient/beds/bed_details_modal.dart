@@ -64,7 +64,7 @@ class BedDetailsModal extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              '${h.distanceKm} km (${bedData.estimatedTravelTime}) • ${h.address}',
+                              '${h.distanceAvailable ? '${h.distanceKm} km (${bedData.estimatedTravelTime}) • ' : 'Distance unavailable • '}${h.address}',
                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -250,7 +250,7 @@ class BedDetailsModal extends StatelessWidget {
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Opening Navigation to ${h.name} (${h.address}). Travel time: ${bedData.estimatedTravelTime} (estimate).'),
+                          content: Text('Opening Navigation to ${h.name} (${h.address}).'),
                         ),
                       );
                     },

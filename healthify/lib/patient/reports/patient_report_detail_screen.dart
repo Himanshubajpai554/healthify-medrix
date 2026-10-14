@@ -9,11 +9,13 @@ import './share_report_modal.dart';
 class PatientReportDetailScreen extends StatefulWidget {
 final MedicalReport report;
 final Function(MedicalReport updatedReport)? onReportUpdated;
+final Future<void> Function(String reportId)? onDownloadReport;
 
 const PatientReportDetailScreen({
 super.key,
 required this.report,
 this.onReportUpdated,
+this.onDownloadReport,
 });
 
 @override
@@ -118,24 +120,19 @@ _tabController.dispose();
 super.dispose();
 }
 
-void _triggerDownload() {
-setState(() => _isDownloading = true);
-Future.delayed(const Duration(seconds: 1), () {
-if (!mounted) return;
-setState(() => _isDownloading = false);
+Future<void> _triggerDownload() async {
+if (!_report.hasAttachedFile || widget.onDownloadReport == null) {
 ScaffoldMessenger.of(context).showSnackBar(
-SnackBar(
-content: Text('✓ ${_report.title}.${_report.fileFormat.toLowerCase()} saved to your downloads folder.'),
-backgroundColor: _primary,
-behavior: SnackBarBehavior.floating,
-action: SnackBarAction(
-label: 'OPEN',
-textColor: Colors.white,
-onPressed: () {},
-),
-),
+const SnackBar(content: Text('This report has no downloadable file.')),
 );
-});
+return;
+}
+setState(() => _isDownloading = true);
+try {
+await widget.onDownloadReport!(_report.id);
+} finally {
+if (mounted) setState(() => _isDownloading = false);
+}
 }
 
 void _openShareModal() {
@@ -197,8 +194,8 @@ tooltip: 'Share Secure Link',
 ),
 IconButton(
 icon: Icon(Icons.download_rounded, color: _primary),
-onPressed: _isDownloading ? null : _triggerDownload,
-tooltip: 'Download PDF',
+onPressed: _isDownloading || !_report.hasAttachedFile ? null : _triggerDownload,
+tooltip: 'Download report file',
 ),
 PopupMenuButton<String>(
 onSelected: (val) {
@@ -212,7 +209,7 @@ const SnackBar(content: Text('Sending document to printer...'), behavior: SnackB
 },
 itemBuilder: (context) => const [
 PopupMenuItem(value: 'share', child: Row(children: [Icon(Icons.share_outlined, size: 18), SizedBox(width: 10), Text('Share Report')])),
-PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download_rounded, size: 18), SizedBox(width: 10), Text('Download PDF')])),
+PopupMenuItem(value: 'download', child: Row(children: [Icon(Icons.download_rounded, size: 18), SizedBox(width: 10), Text('Download report file')])),
 PopupMenuItem(value: 'print', child: Row(children: [Icon(Icons.print_outlined, size: 18), SizedBox(width: 10), Text('Print Document')])),
 ],
 ),
@@ -271,7 +268,7 @@ label: const Text('Share Record', style: TextStyle(fontWeight: FontWeight.bold))
 const SizedBox(width: 12),
 Expanded(
 child: ElevatedButton.icon(
-onPressed: _isDownloading ? null : _triggerDownload,
+onPressed: _isDownloading || !_report.hasAttachedFile ? null : _triggerDownload,
 style: ElevatedButton.styleFrom(
 backgroundColor: Colors.teal,
 foregroundColor: Colors.white,
@@ -281,7 +278,7 @@ shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 icon: _isDownloading
 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
     : const Icon(Icons.download_rounded, size: 18),
-label: Text(_isDownloading ? 'Saving...' : 'Download PDF', style: const TextStyle(fontWeight: FontWeight.bold)),
+label: Text(_isDownloading ? 'Saving...' : 'Download file', style: const TextStyle(fontWeight: FontWeight.bold)),
 ),
 ),
 ],

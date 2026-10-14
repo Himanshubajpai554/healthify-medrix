@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/data/mock/mock_audit_repository.dart';
-import '../../core/data/mock/mock_security_repository.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/audit_model.dart';
 import '../../core/models/security_model.dart';
 import '../../core/permissions/permission_service.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../core/queries/domain_queries.dart';
 import '../../core/services/audit_service.dart';
 import '../../core/services/security_service.dart';
@@ -65,8 +64,9 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
-    _auditService = AuditService(auditRepository: MockAuditRepository());
-    _securityService = SecurityService(securityRepository: MockSecurityRepository());
+    final container = RepositoryContainer.instance;
+    _auditService = AuditService(auditRepository: container.auditRepository);
+    _securityService = SecurityService(securityRepository: container.securityRepository);
     _loadData();
   }
 

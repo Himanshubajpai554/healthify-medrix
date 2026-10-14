@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/page_transitions.dart';
 import '../models/patient_portal_models.dart';
@@ -85,80 +86,78 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
 
     _tabController = TabController(length: 3, vsync: this);
 
-    _appointments = [
-      PatientAppointment(
-        id: 'APT-10842',
-        doctorName: 'Dr. Sarah Jenkins',
-        specialty: 'Cardiology - OPD Room 304',
-        hospitalName: 'St. Jude Memorial Hospital',
-        hospitalAddress: '108 Healthcare Blvd, Downtown',
-        dateTime: DateTime.now().add(const Duration(hours: 3)),
-        consultationType: 'In-person consultation',
-        status: 'Confirmed',
-        tokenNumber: 'Token #18',
-        consultationFee: 750.0,
-        reasonForVisit: 'Follow-up for cardiac checkup & ECG review.',
-      ),
+    _appointments = <PatientAppointment>[];
+    _loadAppointments();
+  }
 
-      PatientAppointment(
-        id: 'APT-10492',
-        doctorName: 'Dr. Marcus Vance',
-        specialty: 'Orthopedics - OPD Room 102',
-        hospitalName: 'City Care Hospital',
-        hospitalAddress: '742 Sector 4, City Center',
-        dateTime: DateTime.now().add(const Duration(days: 4, hours: 2)),
-        consultationType: 'In-person consultation',
-        status: 'Confirmed',
-        tokenNumber: 'Token #05',
-        consultationFee: 600.0,
-        reasonForVisit: 'Knee joint pain & mobility consult.',
-      ),
+  Map<String, dynamic> _appointmentJson(PatientAppointment a) => {
+        'id': a.id,
+        if (a.doctorId != null) 'doctorId': a.doctorId,
+        if (a.hospitalId != null) 'hospitalId': a.hospitalId,
+        'doctorName': a.doctorName,
+        'specialty': a.specialty,
+        'hospitalName': a.hospitalName,
+        'hospitalAddress': a.hospitalAddress,
+        'dateTime': a.dateTime.toIso8601String(),
+        'consultationType': a.consultationType,
+        'status': a.status,
+        'tokenNumber': a.tokenNumber,
+        'consultationFee': a.consultationFee,
+        'reasonForVisit': a.reasonForVisit,
+        'rescheduledFrom': a.rescheduledFrom?.toIso8601String(),
+        'cancellationReason': a.cancellationReason,
+        'cancelledAt': a.cancelledAt?.toIso8601String(),
+        'generatedReportTitles': a.generatedReportTitles,
+      };
 
-      PatientAppointment(
-        id: 'APT-09821',
-        doctorName: 'Dr. Rahul Verma',
-        specialty: 'General Medicine',
-        hospitalName: 'City Care Hospital',
-        dateTime: DateTime(2026, 9, 18, 14),
-        consultationType: 'In-person consultation',
-        status: 'Completed',
-        tokenNumber: 'Token #12',
-        consultationFee: 500.0,
-        reasonForVisit: 'Seasonal fever & fatigue consult.',
-        generatedReportTitles: const [
-          'Amoxicillin & Antibiotic Prescription',
-          'Routine Blood Panel (CBC)',
-        ],
-      ),
+  PatientAppointment _appointmentFrom(Map<String, dynamic> row) => PatientAppointment(
+        id: '${row['id']}',
+        doctorId: row['doctorId'] as String?,
+        hospitalId: row['hospitalId'] as String?,
+        doctorName: '${row['doctorName'] ?? ''}',
+        specialty: '${row['specialty'] ?? ''}',
+        hospitalName: '${row['hospitalName'] ?? ''}',
+        hospitalAddress: '${row['hospitalAddress'] ?? ''}',
+        dateTime: DateTime.tryParse('${row['dateTime']}') ?? DateTime.now(),
+        consultationType: '${row['consultationType'] ?? 'In-person consultation'}',
+        status: '${row['status'] ?? 'Confirmed'}',
+        tokenNumber: '${row['tokenNumber'] ?? ''}',
+        consultationFee: (row['consultationFee'] as num?)?.toDouble() ?? 0,
+        reasonForVisit: '${row['reasonForVisit'] ?? ''}',
+        rescheduledFrom: row['rescheduledFrom'] == null ? null : DateTime.tryParse('${row['rescheduledFrom']}'),
+        cancellationReason: row['cancellationReason'] as String?,
+        cancelledAt: row['cancelledAt'] == null ? null : DateTime.tryParse('${row['cancelledAt']}'),
+        generatedReportTitles: (row['generatedReportTitles'] as List? ?? const []).map((e) => e.toString()).toList(),
+      );
 
-      PatientAppointment(
-        id: 'APT-09201',
-        doctorName: 'Dr. Elena Rostova',
-        specialty: 'Pulmonology',
-        hospitalName: 'Metro Imaging & Diagnostics',
-        dateTime: DateTime(2026, 9, 2, 11, 30),
-        consultationType: 'In-person consultation',
-        status: 'Completed',
-        tokenNumber: 'Token #08',
-        consultationFee: 800.0,
-        reasonForVisit: 'Persistent cough evaluation.',
-        generatedReportTitles: const ['Chest Radiogram X-Ray (PA View)'],
-      ),
+  Future<void> _loadAppointments() async {
+    final portal = RepositoryContainer.instance.patientPortalRepository;
+    if (portal == null) return;
+    try {
+      final rows = await portal.list('patientAppointments');
+      if (!mounted) return;
+      setState(() => _appointments = rows.map(_appointmentFrom).toList());
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load appointments: $error')),
+        );
+      }
+    }
+  }
 
-      PatientAppointment(
-        id: 'APT-08701',
-        doctorName: 'Dr. Ananya Sharma',
-        specialty: 'Dermatology',
-        hospitalName: 'City Care Hospital',
-        dateTime: DateTime(2026, 8, 28, 16),
-        consultationType: 'Video consultation',
-        status: 'Cancelled',
-        tokenNumber: 'Token #03',
-        consultationFee: 500.0,
-        cancellationReason: 'Personal schedule conflict',
-        cancelledAt: DateTime(2026, 8, 27),
-      ),
-    ];
+  Future<void> _saveAppointment(PatientAppointment appointment) async {
+    try {
+      await RepositoryContainer.instance.patientPortalRepository?.save(
+        'patientAppointments', appointment.id, _appointmentJson(appointment),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Appointment was not saved: $error')),
+        );
+      }
+    }
   }
 
   @override
@@ -176,7 +175,9 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
     return _appointments
         .where(
           (a) =>
-              (a.status == 'Confirmed' || a.status == 'Rescheduled') &&
+              (a.status == 'Requested' ||
+                  a.status == 'Confirmed' ||
+                  a.status == 'Rescheduled') &&
               _matchesQuery(a),
         )
         .toList();
@@ -233,10 +234,11 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
       FadePageRoute(
         page: PatientDoctorProfileScreen(
           doctor: docResult,
-          onAppointmentBooked: (newAppt) {
+          onAppointmentBooked: (newAppt) async {
             setState(() {
               _appointments.insert(0, newAppt);
             });
+            await _saveAppointment(newAppt);
           },
         ),
       ),
@@ -250,21 +252,13 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
   void _openBookModal() {
     BookAppointmentModal.show(
       context,
-      onSuccess: (msg) {
-        final newAppt = PatientAppointment(
-          id: 'APT-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-          doctorName: 'Dr. Sarah Jenkins',
-          specialty: 'Cardiology',
-          hospitalName: 'St. Jude Memorial Hospital',
-          dateTime: DateTime.now().add(const Duration(hours: 4)),
-          tokenNumber: '#19',
-          status: 'Confirmed',
-        );
-
-        setState(() {
-          _appointments.insert(0, newAppt);
-        });
-
+      onSuccess: (msg) async {
+        final portal = RepositoryContainer.instance.patientPortalRepository;
+        if (portal != null) {
+          final rows = await portal.list('patientAppointments');
+          if (!mounted) return;
+          setState(() => _appointments = rows.map(_appointmentFrom).toList());
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(msg),
@@ -745,7 +739,9 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
 
   Widget _buildAppointmentCard(PatientAppointment appt, bool isDark) {
     final isUpcoming =
-        appt.status == 'Confirmed' || appt.status == 'Rescheduled';
+        appt.status == 'Requested' ||
+        appt.status == 'Confirmed' ||
+        appt.status == 'Rescheduled';
 
     final isCancelled = appt.status == 'Cancelled';
 
@@ -787,6 +783,7 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
                             _appointments[idx] = updated;
                           }
                         });
+                      _saveAppointment(updated);
                       },
                     ),
                   ),
@@ -1055,6 +1052,7 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
                                       _appointments[idx] = updated;
                                     }
                                   });
+                                  _saveAppointment(updated);
                                 },
                               );
                             },
@@ -1086,6 +1084,7 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
                                       _appointments[idx] = updated;
                                     }
                                   });
+                                  _saveAppointment(updated);
                                 },
                               );
                             },
@@ -1421,6 +1420,8 @@ class _PatientAppointmentsWidgetState extends State<PatientAppointmentsWidget>
 
   Color _getStatusColor(String status) {
     switch (status) {
+      case 'Requested':
+        return Colors.amber.shade800;
       case 'Confirmed':
         return Colors.green;
       case 'Rescheduled':

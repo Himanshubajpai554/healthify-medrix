@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import '../../core/provider/repository_provider.dart';
+import '../../core/models/appointment_model.dart' as core;
+import '../../core/enums/domain_enums.dart' as domain;
 import '../../auth/login/login_screen.dart';
 import '../../hospital/dashboard/main_dashboard_screen.dart';
 import '../../main.dart';
@@ -7,6 +11,7 @@ import '../../shared/widgets/glass_components.dart';
 import '../../utils/page_transitions.dart';
 import '../../utils/responsive.dart';
 import '../data/doctor_mock_data.dart';
+import '../services/doctor_clinical_records_service.dart';
 import '../modals/doctor_modals.dart';
 import '../models/doctor_dashboard_models.dart';
 import '../widgets/doctor_sidebar.dart';
@@ -59,9 +64,122 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
   @override
   void initState() {
     super.initState();
-    _patients = DoctorMockData.getAllPatients();
-    _notifications = DoctorMockData.getNotifications();
-    _appointments = DoctorMockData.getAppointments();
+    final connected = RepositoryContainer.instance.serverpodClient != null;
+    _patients = connected ? <PatientModel>[] : DoctorMockData.getAllPatients();
+    _notifications = connected ? <DoctorNotificationModel>[] : DoctorMockData.getNotifications();
+    _appointments = connected ? <DoctorAppointmentModel>[] : DoctorMockData.getAppointments();
+    if (connected) _loadDoctorPatients();
+  }
+
+  Future<void> _loadDoctorPatients() async {
+    final container = RepositoryContainer.instance;
+    try {
+      final liveAppointments = await container.appointmentRepository
+          .getAppointmentsByDoctor(widget.doctorId);
+      final patients = <String, PatientModel>{};
+      for (final appointment in liveAppointments) {
+        final id = appointment.patientId.isEmpty ? appointment.id : appointment.patientId;
+        patients[id] = PatientModel(
+          id: id,
+          name: appointment.patientName.isEmpty ? 'Patient' : appointment.patientName,
+          age: 0,
+          gender: 'Not reported',
+          avatarUrl: '',
+          phone: '',
+          bloodGroup: '',
+          mrn: id,
+          lastVisitDate: 'Not available',
+          lastVisitDoctor: widget.doctorName,
+          primaryConcern: appointment.reason.isEmpty ? 'No reason provided' : appointment.reason,
+          department: appointment.department.isEmpty ? widget.specialty : appointment.department,
+        );
+      }
+      final hospitalPatients = await container.patientRepository.getPatients();
+      for (final patient in hospitalPatients) {
+        patients.putIfAbsent(patient.id, () => PatientModel(
+          id: patient.id,
+          name: patient.name,
+          age: patient.age,
+          gender: patient.gender,
+          avatarUrl: '',
+          phone: '',
+          bloodGroup: patient.bloodGroup,
+          mrn: patient.id,
+          lastVisitDate: patient.admissionDate.toLocal().toString().split(' ').first,
+          lastVisitDoctor: patient.doctorName,
+          primaryConcern: patient.ward,
+          department: widget.specialty,
+        ));
+      }
+      final mappedAppointments = liveAppointments.map(_fromServerAppointment).toList();
+      final schedule = await DoctorClinicalRecordsService.instance.loadAvailabilityConfig();
+      if (!mounted) return;
+      setState(() {
+        _patients = patients.values.toList()
+          ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        _appointments = mappedAppointments;
+        if (schedule != null) _availabilityStatus = schedule.status;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load assigned patients: $error')),
+      );
+    }
+  }
+
+  DoctorAppointmentModel _fromServerAppointment(core.AppointmentItem row) {
+    final patient = PatientModel(
+      id: row.patientId.isEmpty ? row.id : row.patientId,
+      name: row.patientName.isEmpty ? 'Patient' : row.patientName,
+      age: 0,
+      gender: 'Not reported',
+      avatarUrl: '',
+      phone: '',
+      bloodGroup: '',
+      mrn: row.patientId,
+      lastVisitDate: 'Not available',
+      lastVisitDoctor: widget.doctorName,
+      primaryConcern: row.reason.isEmpty ? 'No reason provided' : row.reason,
+      department: row.department,
+    );
+    final status = switch (row.status.toLowerCase()) {
+      'pending' || 'waiting' => AppointmentStatus.waiting,
+      'checkedin' || 'checked_in' => AppointmentStatus.checkedIn,
+      'inconsultation' || 'in_consultation' || 'inprogress' => AppointmentStatus.inConsultation,
+      'completed' => AppointmentStatus.completed,
+      'cancelled' => AppointmentStatus.cancelled,
+      'noshow' || 'no_show' || 'missed' => AppointmentStatus.noShow,
+      _ => AppointmentStatus.upcoming,
+    };
+    final time = TimeOfDay.fromDateTime(row.dateTime);
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final timeText = '$hour:${time.minute.toString().padLeft(2, '0')} ${time.period == DayPeriod.am ? 'AM' : 'PM'}';
+    return DoctorAppointmentModel(
+      id: row.id,
+      patient: patient,
+      appointmentTime: timeText,
+      appointmentType: row.type.isEmpty ? 'Consultation' : row.type,
+      department: row.department,
+      status: status,
+      tokenNumber: '',
+      reasonForVisit: row.reason,
+      date: row.dateTime,
+    );
+  }
+
+  Future<void> _setAvailability(DoctorAvailability status) async {
+    setState(() => _availabilityStatus = status);
+    if (RepositoryContainer.instance.serverpodClient == null) return;
+    try {
+      await DoctorClinicalRecordsService.instance.saveAvailability(status);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save availability: $error')),
+        );
+      }
+    }
   }
 
   void _toggleTheme() {
@@ -81,10 +199,14 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            onPressed: () {
+            onPressed: () async {
+              final navigator = Navigator.of(context);
               Navigator.pop(context);
-              Navigator.pushAndRemoveUntil(
-                context,
+              try {
+                await RepositoryContainer.instance.serverpodClient?.auth.signOutDevice();
+              } catch (_) {}
+              if (!mounted) return;
+              navigator.pushAndRemoveUntil(
                 FadePageRoute(page: const LoginScreen()),
                 (route) => false,
               );
@@ -347,7 +469,7 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
                     PatientsHeader(
                       doctorName: widget.doctorName,
                       availabilityStatus: _availabilityStatus,
-                      onAvailabilityChanged: (status) => setState(() => _availabilityStatus = status),
+                      onAvailabilityChanged: _setAvailability,
                       onNotificationTap: () => DoctorModals.showNotificationsPane(
                         context: context,
                         notifications: _notifications,
@@ -402,7 +524,7 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
         child: PatientsHeader(
           doctorName: widget.doctorName,
           availabilityStatus: _availabilityStatus,
-          onAvailabilityChanged: (status) => setState(() => _availabilityStatus = status),
+          onAvailabilityChanged: _setAvailability,
           onNotificationTap: () => DoctorModals.showNotificationsPane(
             context: context,
             notifications: _notifications,
@@ -471,11 +593,11 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
       children: [
         // 1. Patient Summary Cards
         PatientsSummaryCards(
-          totalPatients: 124,
-          todaysPatients: 12,
-          newPatients: 4,
-          followUpsDue: 8,
-          pendingReports: 5,
+          totalPatients: _patients.length,
+          todaysPatients: _appointments.where((appointment) => appointment.date.year == DateTime.now().year && appointment.date.month == DateTime.now().month && appointment.date.day == DateTime.now().day).length,
+          newPatients: _patients.where((patient) => patient.careStatus == PatientCareStatus.newPatient).length,
+          followUpsDue: _patients.where((patient) => patient.careStatus == PatientCareStatus.followUpDue).length,
+          pendingReports: 0,
           activeCareStatusFilter: _selectedCareStatusFilter,
           onSelectCareStatusFilter: (status) => setState(() => _selectedCareStatusFilter = status),
         ),
@@ -544,10 +666,16 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
     );
   }
 
-  void _startConsultationForPatient(PatientModel patient) {
-    final matchingApt = _appointments.firstWhere(
-      (a) => a.patient.id == patient.id,
-      orElse: () => DoctorAppointmentModel(
+  Future<void> _startConsultationForPatient(PatientModel patient) async {
+    final isConnected = RepositoryContainer.instance.serverpodClient != null;
+    final matchingAppointment = _appointments.where((a) => a.patient.id == patient.id).firstOrNull;
+    if (isConnected && matchingAppointment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Start a consultation from an assigned appointment.')),
+      );
+      return;
+    }
+    final matchingApt = matchingAppointment ?? DoctorAppointmentModel(
         id: 'APT-NEW',
         patient: patient,
         appointmentTime: '10:00 AM',
@@ -557,8 +685,19 @@ class _MyPatientsScreenState extends State<MyPatientsScreen> {
         tokenNumber: '#01',
         reasonForVisit: patient.primaryConcern,
         date: DateTime.now(),
-      ),
-    );
+      );
+
+    if (isConnected) {
+      try {
+        await RepositoryContainer.instance.appointmentRepository.updateAppointmentStatus(
+          matchingApt.id, domain.AppointmentStatus.inConsultation,
+        );
+      } catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not start consultation: $error')));
+        return;
+      }
+    }
+    if (!mounted) return;
 
     DoctorModals.showStartConsultationModal(
       context: context,

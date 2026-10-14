@@ -13,6 +13,7 @@ import '../appointments/book_appointment_modal.dart';
 import '../doctors/doctor_finder_widget.dart';
 import '../emergency/emergency_hospitals_modal.dart';
 import '../hospitals/hospital_finder_widget.dart';
+import '../hospitals/patient_account_link_screen.dart';
 import '../appointments/patient_appointments_widget.dart';
 import '../beds/patient_bed_discovery_widget.dart';
 import '../blood/patient_blood_discovery_widget.dart';
@@ -2498,6 +2499,28 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 ),
                 label: const Text(
                   'Edit Profile',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: _primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: _primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  FadePageRoute(page: const PatientAccountLinkScreen()),
+                ),
+                icon: const Icon(Icons.link, size: 16, color: _primary),
+                label: const Text(
+                  'Link Hospital',
                   style: TextStyle(
                     fontSize: 12.5,
                     color: _primary,

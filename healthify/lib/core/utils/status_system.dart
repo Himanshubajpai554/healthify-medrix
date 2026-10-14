@@ -206,6 +206,12 @@ class MedrixStatusSystem {
           color: Color(0xFF6B7280),
           icon: Icons.delete_rounded,
         );
+      case InventoryUnitStatus.issued:
+        return const MedrixStatusConfig(
+          label: 'Issued',
+          color: Color(0xFF64748B),
+          icon: Icons.check_circle_outline_rounded,
+        );
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -17,6 +18,7 @@ class _PatientSignupScreenState extends State<PatientSignupScreen> {
 
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isPasswordVisible = false;
@@ -27,42 +29,45 @@ class _PatientSignupScreenState extends State<PatientSignupScreen> {
   void dispose() {
     _fullNameController.dispose();
     _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleCreateAccount() {
+  Future<void> _handleCreateAccount() async {
     setState(() {
       _phoneErrorMessage = null;
     });
 
     if (_formKey.currentState!.validate()) {
       final phone = _phoneController.text.trim();
-      
-      // Simulate existing number check for demonstration
-      if (phone == '9876543210') {
-        setState(() {
-          _phoneErrorMessage = 'This phone number is already registered. Please Sign In.';
-        });
+      final email = _emailController.text.trim().toLowerCase();
+      final client = RepositoryContainer.instance.serverpodClient;
+      if (client == null) {
+        setState(() => _phoneErrorMessage = 'Patient account server is not configured.');
         return;
       }
-
       setState(() => _isLoading = true);
-
-      Future.delayed(const Duration(milliseconds: 600), () {
+      try {
+        final accountRequestId = await client.emailIdp.startRegistration(email: email);
         if (!mounted) return;
-        setState(() => _isLoading = false);
-
         Navigator.push(
           context,
           FadePageRoute(
             page: PatientOtpScreen(
               phoneNumber: phone.length == 10 ? '+91 $phone' : phone,
               fullName: _fullNameController.text.trim(),
+              email: email,
+              password: _passwordController.text,
+              accountRequestId: accountRequestId,
             ),
           ),
         );
-      });
+      } catch (error) {
+        if (mounted) setState(() => _phoneErrorMessage = error.toString());
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -248,6 +253,31 @@ class _PatientSignupScreenState extends State<PatientSignupScreen> {
                             final cleanStr = value.replaceAll(RegExp(r'\D'), '');
                             if (cleanStr.length < 10) {
                               return 'Please enter a valid 10-digit phone number';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+                        Text(
+                          'Email Address',
+                          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: primaryTextColor),
+                        ),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          autocorrect: false,
+                          style: TextStyle(color: primaryTextColor),
+                          decoration: GlassTextFieldTheme.getDecoration(
+                            context: context,
+                            hintText: 'you@example.com',
+                            prefixIcon: const Icon(Icons.email_outlined),
+                          ),
+                          validator: (value) {
+                            final email = value?.trim() ?? '';
+                            if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+                              return 'Please enter a valid email address';
                             }
                             return null;
                           },

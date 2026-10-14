@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
+import '../../core/queries/domain_queries.dart' as queries;
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
-import './blood_discovery_service.dart';
 
 class BloodRequestModal extends StatefulWidget {
   final String initialBloodGroup;
@@ -43,6 +44,8 @@ class _BloodRequestModalState extends State<BloodRequestModal> {
   late int _units;
   late String _component;
   late String _hospital;
+  String? _hospitalId;
+  List<dynamic> _hospitals = const [];
   late String _urgency;
   late String _phone;
 
@@ -53,39 +56,81 @@ class _BloodRequestModalState extends State<BloodRequestModal> {
   @override
   void initState() {
     super.initState();
-    _patientName = 'Alex Rivera';
-    _patientId = 'PAT-8842';
+    _patientName = 'Patient';
+    _patientId = 'Authenticated account';
     _bloodGroup = widget.initialBloodGroup;
     _units = 2;
     _component = 'PRBC';
     _hospital = widget.initialHospital;
     _urgency = 'Urgent (within 6h)';
     _phone = '+91 98765 43210';
+    _loadHospitals();
   }
 
-  void _submitRequest() {
+  Future<void> _loadHospitals() async {
+    try {
+      final hospitals = await RepositoryContainer.instance.patientDiscoveryRepository
+          .searchHospitals(const queries.HospitalSearchQuery(pageSize: 100));
+      if (!mounted) return;
+      setState(() {
+        _hospitals = hospitals;
+        final preferred = hospitals.where((h) => h.name == widget.initialHospital);
+        final selected = preferred.isNotEmpty ? preferred.first : (hospitals.isEmpty ? null : hospitals.first);
+        _hospitalId = selected?.id;
+        if (selected != null) _hospital = selected.name;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _hospitals = const []);
+    }
+  }
+
+  Future<void> _submitRequest() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      final req = BloodDiscoveryService.createBloodRequest(
-        patientName: _patientName,
-        patientId: _patientId,
-        bloodGroup: _bloodGroup,
-        unitsNeeded: _units,
-        componentType: _component,
-        hospitalName: _hospital,
-        urgencyLevel: _urgency.startsWith('Emergency') ? 'Emergency SOS' : (_urgency.startsWith('Urgent') ? 'Urgent' : 'Routine'),
-        contactPhone: _phone,
-      );
+      final portal = RepositoryContainer.instance.patientPortalRepository;
+      if (portal == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sign in to submit a blood request.')),
+        );
+        return;
+      }
+      final id = 'BLOOD-${DateTime.now().toUtc().microsecondsSinceEpoch}';
+      final urgency = _urgency.startsWith('Emergency') ? 'Emergency SOS'
+          : (_urgency.startsWith('Urgent') ? 'Urgent' : 'Routine');
+      try {
+        await portal.save('patientBloodRequests', id, {
+          'id': id,
+          'patientName': _patientName,
+          'bloodGroup': _bloodGroup,
+          'unitsNeeded': _units,
+          'componentType': _component,
+          'hospitalName': _hospital,
+          'hospitalId': _hospitalId,
+          'urgencyLevel': urgency,
+          'contactPhone': _phone,
+          'status': 'Pending',
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        });
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Blood request was not saved: $error')),
+          );
+        }
+        return;
+      }
 
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
       Navigator.pop(context);
       if (widget.onRequestSubmitted != null) {
         widget.onRequestSubmitted!();
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
-          content: Text('Blood Request ${req.id} created successfully. Matching nearby blood banks...'),
+          content: Text('Blood Request $id submitted. The hospital will contact you.'),
           backgroundColor: Colors.teal,
           behavior: SnackBarBehavior.floating,
         ),
@@ -251,15 +296,27 @@ class _BloodRequestModalState extends State<BloodRequestModal> {
                     // Hospital / Location Context
                     const Text('Hospital / Admission Desk', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
                     const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: _hospital,
+                    DropdownButtonFormField<String>(
+                      key: ValueKey(_hospitalId),
+                      initialValue: _hospitalId,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.domain_rounded, color: Colors.redAccent, size: 20),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      validator: (val) => val == null || val.isEmpty ? 'Please enter target hospital' : null,
-                      onSaved: (val) => _hospital = val ?? '',
+                      hint: Text(_hospitals.isEmpty ? 'No verified hospitals available' : 'Select hospital'),
+                      items: _hospitals.map((hospital) => DropdownMenuItem<String>(
+                        value: hospital.id,
+                        child: Text(hospital.name, overflow: TextOverflow.ellipsis),
+                      )).toList(),
+                      validator: (val) => val == null ? 'Select a verified hospital' : null,
+                      onChanged: (val) {
+                        final selected = _hospitals.where((h) => h.id == val);
+                        if (selected.isNotEmpty) setState(() {
+                          _hospitalId = val;
+                          _hospital = selected.first.name;
+                        });
+                      },
                     ),
 
                     const SizedBox(height: 16),

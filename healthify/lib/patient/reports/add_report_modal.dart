@@ -1,15 +1,31 @@
-import 'dart:async';
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../../core/provider/repository_provider.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
 import '../models/patient_portal_models.dart';
 
+/// Modal for patients to upload an external medical report.
+///
+/// **Live mode** (patientPortalRepository != null):
+///   1. User fills report details and picks a file via file_picker.
+///   2. On submit: a metadata record is saved to [patientReports] via
+///      [saveMyPatientRecord] (isExternalUploaded = true).
+///   3. File bytes are then uploaded via [uploadPatientReportFile], which
+///      stores them in Serverpod private storage and updates the metadata
+///      record with a [fileReference] block.
+///
+/// **Demo mode** (no server): shows a [DEMO] labelled mock entry.
 class AddReportModal extends StatefulWidget {
   final Function(MedicalReport newReport) onReportAdded;
 
   const AddReportModal({super.key, required this.onReportAdded});
 
-  static void show(BuildContext context, {required Function(MedicalReport newReport) onReportAdded}) {
+  static void show(
+    BuildContext context, {
+    required Function(MedicalReport newReport) onReportAdded,
+  }) {
     showHealthifyGlassBottomSheet(
       context: context,
       builder: (context) => AddReportModal(onReportAdded: onReportAdded),
@@ -27,9 +43,13 @@ class _AddReportModalState extends State<AddReportModal> {
   final _doctorController = TextEditingController();
 
   String _selectedCategory = 'Lab Reports';
-  String _selectedFileSource = 'PDF Document';
-  String _selectedFileName = '';
   DateTime _selectedDate = DateTime.now();
+
+  // Picked file state
+  Uint8List? _pickedBytes;
+  String _pickedFileName = '';
+  String _pickedMimeType = '';
+  String _pickedSourceLabel = '';
 
   bool _isUploading = false;
   double _uploadProgress = 0.0;
@@ -51,80 +71,199 @@ class _AddReportModalState extends State<AddReportModal> {
     super.dispose();
   }
 
-  void _pickFileSource(String source, String fileExt) {
+  // ── File picking ──────────────────────────────────────────────────────────
+
+  Future<void> _pickPdf() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      withData: true,
+    );
+    _applyPickResult(result, 'PDF Document');
+  }
+
+  Future<void> _pickFromGallery() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    _applyPickResult(result, 'Gallery Image');
+  }
+
+  Future<void> _pickFromCamera() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    _applyPickResult(result, 'Camera Photo');
+  }
+
+  void _applyPickResult(FilePickerResult? result, String sourceLabel) {
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    if (file.bytes == null) {
+      setState(() => _uploadError = 'Could not read file bytes. Please try again.');
+      return;
+    }
+    final ext = (file.extension ?? 'pdf').toLowerCase();
+    final mime = switch (ext) {
+      'pdf' => 'application/pdf',
+      'png' => 'image/png',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      _ => 'application/octet-stream',
+    };
     setState(() {
-      _selectedFileSource = source;
-      _selectedFileName = 'Patient_Record_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      _pickedBytes = file.bytes;
+      _pickedFileName = file.name;
+      _pickedMimeType = mime;
+      _pickedSourceLabel = sourceLabel;
       _uploadError = '';
     });
   }
 
-  void _submitUpload() {
+  // ── Submission ────────────────────────────────────────────────────────────
+
+  Future<void> _submitUpload() async {
     if (_formKey.currentState?.validate() != true) return;
-    if (_selectedFileName.isEmpty) {
-      setState(() => _uploadError = 'Please select a document or photo file to attach.');
+    if (_pickedBytes == null) {
+      setState(
+        () => _uploadError = 'Please select a document or photo file to attach.',
+      );
       return;
     }
 
+    final repo = RepositoryContainer.instance.patientPortalRepository;
+    final isLive = repo != null;
+
     setState(() {
       _isUploading = true;
-      _uploadProgress = 0.1;
+      _uploadProgress = 0.05;
       _uploadError = '';
     });
 
-    // Simulate steady upload progress
-    Timer.periodic(const Duration(milliseconds: 150), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      setState(() {
-        _uploadProgress += 0.18;
-        if (_uploadProgress >= 1.0) {
-          _uploadProgress = 1.0;
-          timer.cancel();
+    try {
+      final recordKey =
+          'REP-${DateTime.now().millisecondsSinceEpoch}';
+      final title = _titleController.text.trim();
+      final hospitalName =
+          _hospitalController.text.trim().isEmpty
+              ? 'External Lab / Clinic'
+              : _hospitalController.text.trim();
+      final doctorName =
+          _doctorController.text.trim().isEmpty
+              ? 'Self-Uploaded'
+              : _doctorController.text.trim();
+      final fileExt =
+          _pickedFileName.contains('.') ? _pickedFileName.split('.').last.toUpperCase() : 'PDF';
+      final fileSizeKb = (_pickedBytes!.lengthInBytes / 1024).toStringAsFixed(1);
 
-          final newReport = MedicalReport(
-            id: 'REP-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-            title: _titleController.text.trim(),
-            category: _selectedCategory,
-            hospitalName: _hospitalController.text.trim().isEmpty
-                ? 'External Lab / Clinic'
-                : _hospitalController.text.trim(),
-            doctorName: _doctorController.text.trim().isEmpty ? 'Self-Uploaded' : _doctorController.text.trim(),
-            date: _selectedDate,
-            summary: 'User-uploaded external medical record ($_selectedFileSource). Verified & encrypted in Medrix vault.',
-            fileFormat: _selectedFileSource.contains('Photo') || _selectedFileSource.contains('Camera') ? 'JPG' : 'PDF',
-            fileSize: '3.2 MB',
-            isExternalUploaded: true,
-            accessLogs: [
-              ReportAccessLog(
-                viewerName: 'Patient (You)',
-                viewerRole: 'Owner',
-                timestamp: DateTime.now(),
-                action: 'Uploaded Record',
-              ),
-            ],
-          );
+      MedicalReport newReport;
 
-          widget.onReportAdded(newReport);
-          Navigator.pop(context);
+      if (isLive) {
+        // Step 1: save metadata record
+        setState(() => _uploadProgress = 0.2);
+        final now = DateTime.now().toUtc();
+        await repo.save('patientReports', recordKey, {
+          'id': recordKey,
+          'title': title,
+          'category': _selectedCategory,
+          'hospitalName': hospitalName,
+          'doctorName': doctorName,
+          'date': _selectedDate.toIso8601String(),
+          'fileFormat': fileExt,
+          'isExternalUploaded': true,
+          'hasAttachedFile': false,
+          'summary':
+              'User-uploaded external medical record ($_pickedSourceLabel). Encrypted in Healthify vault.',
+        });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✓ Medical report uploaded & encrypted successfully!'),
-              backgroundColor: Colors.teal,
-              behavior: SnackBarBehavior.floating,
+        // Step 2: upload file bytes
+        setState(() => _uploadProgress = 0.5);
+        await repo.uploadReportFile(
+          recordKey: recordKey,
+          fileName: _pickedFileName,
+          mimeType: _pickedMimeType,
+          bytes: _pickedBytes!,
+        );
+        setState(() => _uploadProgress = 1.0);
+
+        newReport = MedicalReport(
+          id: recordKey,
+          title: title,
+          category: _selectedCategory,
+          hospitalName: hospitalName,
+          doctorName: doctorName,
+          date: _selectedDate,
+          summary:
+              'User-uploaded external medical record ($_pickedSourceLabel). Encrypted in Healthify vault.',
+          fileFormat: fileExt,
+          fileSize: '$fileSizeKb KB',
+          isExternalUploaded: true,
+          accessLogs: [
+            ReportAccessLog(
+              viewerName: 'Patient (You)',
+              viewerRole: 'Owner',
+              timestamp: now,
+              action: 'Uploaded Record',
             ),
-          );
-        }
+          ],
+        );
+      } else {
+        // Demo mode: no server calls, label clearly as [DEMO]
+        await Future.delayed(const Duration(milliseconds: 600));
+        setState(() => _uploadProgress = 1.0);
+        newReport = MedicalReport(
+          id: recordKey,
+          title: '[DEMO] $title',
+          category: _selectedCategory,
+          hospitalName: hospitalName,
+          doctorName: doctorName,
+          date: _selectedDate,
+          summary: '[DEMO] Demo-mode upload — no server connection.',
+          fileFormat: fileExt,
+          fileSize: '$fileSizeKb KB',
+          isExternalUploaded: true,
+          accessLogs: [
+            ReportAccessLog(
+              viewerName: 'Patient (You)',
+              viewerRole: 'Owner',
+              timestamp: DateTime.now(),
+              action: '[DEMO] Simulated Upload',
+            ),
+          ],
+        );
+      }
+
+      if (!mounted) return;
+      widget.onReportAdded(newReport);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isLive
+                ? '✓ Medical report uploaded & encrypted successfully!'
+                : '✓ [DEMO] Report added locally (no server).',
+          ),
+          backgroundColor: Colors.teal,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isUploading = false;
+        _uploadProgress = 0.0;
+        _uploadError = 'Upload failed: ${e.toString()}';
       });
-    });
+    }
   }
+
+  // ── UI ────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLive = RepositoryContainer.instance.patientPortalRepository != null;
 
     return Container(
       decoration: BoxDecoration(
@@ -144,7 +283,7 @@ class _AddReportModalState extends State<AddReportModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Modal Handle & Title Bar
+              // Modal handle & title bar
               Center(
                 child: Container(
                   width: 40,
@@ -164,7 +303,11 @@ class _AddReportModalState extends State<AddReportModal> {
                       color: Colors.teal.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.upload_file_rounded, color: Colors.teal, size: 24),
+                    child: const Icon(
+                      Icons.upload_file_rounded,
+                      color: Colors.teal,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -173,12 +316,18 @@ class _AddReportModalState extends State<AddReportModal> {
                       children: const [
                         Text(
                           'Add External Report',
-                          style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         SizedBox(height: 2),
                         Text(
                           'Upload PDFs or photos of your previous medical records',
-                          style: TextStyle(fontSize: 12.5, color: AppTheme.textSecondary),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: AppTheme.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -189,12 +338,45 @@ class _AddReportModalState extends State<AddReportModal> {
                   ),
                 ],
               ),
+
+              // Offline banner
+              if (!isLive) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.wifi_off_rounded, color: Colors.orange, size: 18),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '[DEMO] Not connected to server — report will be added locally only.',
+                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 20),
 
-              // File Attachment Options Card
+              // File source picker
               const Text(
                 '1. Select Document Source',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textSecondary),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textSecondary,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -204,8 +386,8 @@ class _AddReportModalState extends State<AddReportModal> {
                       icon: Icons.picture_as_pdf_rounded,
                       label: 'Upload PDF',
                       color: Colors.red,
-                      isSelected: _selectedFileSource == 'PDF Document',
-                      onTap: () => _pickFileSource('PDF Document', 'pdf'),
+                      isSelected: _pickedSourceLabel == 'PDF Document',
+                      onTap: _pickPdf,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -214,8 +396,8 @@ class _AddReportModalState extends State<AddReportModal> {
                       icon: Icons.camera_alt_rounded,
                       label: 'Take Photo',
                       color: Colors.teal,
-                      isSelected: _selectedFileSource == 'Camera Photo',
-                      onTap: () => _pickFileSource('Camera Photo', 'jpg'),
+                      isSelected: _pickedSourceLabel == 'Camera Photo',
+                      onTap: _pickFromCamera,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -224,16 +406,21 @@ class _AddReportModalState extends State<AddReportModal> {
                       icon: Icons.photo_library_rounded,
                       label: 'From Gallery',
                       color: Colors.blue,
-                      isSelected: _selectedFileSource == 'Gallery Image',
-                      onTap: () => _pickFileSource('Gallery Image', 'png'),
+                      isSelected: _pickedSourceLabel == 'Gallery Image',
+                      onTap: _pickFromGallery,
                     ),
                   ),
                 ],
               ),
-              if (_selectedFileName.isNotEmpty) ...[
+
+              // Picked file indicator
+              if (_pickedBytes != null) ...[
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.teal.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -241,46 +428,76 @@ class _AddReportModalState extends State<AddReportModal> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle_rounded, color: Colors.teal, size: 18),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.teal,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          _selectedFileName,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.teal),
+                          _pickedFileName,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.teal,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Text('Ready', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.teal)),
+                      Text(
+                        '${(_pickedBytes!.lengthInBytes / 1024).toStringAsFixed(1)} KB',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
+
+              // Error
               if (_uploadError.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(_uploadError, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                Text(
+                  _uploadError,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                ),
               ],
 
               const SizedBox(height: 20),
               const Text(
                 '2. Report Details',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textSecondary),
-              ),
-              const SizedBox(height: 12),
-
-              // Title Field
-              TextFormField(
-                controller: _titleController,
-                validator: (value) => value == null || value.trim().isEmpty ? 'Please enter report title' : null,
-                decoration: InputDecoration(
-                  labelText: 'Report Title *',
-                  hintText: 'e.g., Blood Test CBC, Thyroid Panel, Chest X-Ray',
-                  prefixIcon: const Icon(Icons.title_rounded, color: Colors.teal),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textSecondary,
                 ),
               ),
               const SizedBox(height: 12),
 
-              // Category Dropdown
+              // Title
+              TextFormField(
+                controller: _titleController,
+                validator:
+                    (value) =>
+                        value == null || value.trim().isEmpty
+                            ? 'Please enter report title'
+                            : null,
+                decoration: InputDecoration(
+                  labelText: 'Report Title *',
+                  hintText: 'e.g., Blood Test CBC, Thyroid Panel, Chest X-Ray',
+                  prefixIcon: const Icon(Icons.title_rounded, color: Colors.teal),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Category
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
                 items: _categories
@@ -291,13 +508,18 @@ class _AddReportModalState extends State<AddReportModal> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Report Category *',
-                  prefixIcon: const Icon(Icons.category_rounded, color: Colors.teal),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(
+                    Icons.category_rounded,
+                    color: Colors.teal,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
 
-              // Hospital & Doctor Fields
+              // Hospital & Doctor
               Row(
                 children: [
                   Expanded(
@@ -306,8 +528,13 @@ class _AddReportModalState extends State<AddReportModal> {
                       decoration: InputDecoration(
                         labelText: 'Hospital / Clinic',
                         hintText: 'City Care Clinic',
-                        prefixIcon: const Icon(Icons.domain_rounded, color: AppTheme.textSecondary),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(
+                          Icons.domain_rounded,
+                          color: AppTheme.textSecondary,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
@@ -318,8 +545,13 @@ class _AddReportModalState extends State<AddReportModal> {
                       decoration: InputDecoration(
                         labelText: 'Doctor Name',
                         hintText: 'Dr. Sharma',
-                        prefixIcon: const Icon(Icons.person_rounded, color: AppTheme.textSecondary),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(
+                          Icons.person_rounded,
+                          color: AppTheme.textSecondary,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
@@ -327,7 +559,7 @@ class _AddReportModalState extends State<AddReportModal> {
               ),
               const SizedBox(height: 12),
 
-              // Date Picker Field
+              // Date picker
               InkWell(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -336,28 +568,42 @@ class _AddReportModalState extends State<AddReportModal> {
                     firstDate: DateTime(2000),
                     lastDate: DateTime.now(),
                   );
-                  if (picked != null) {
-                    setState(() => _selectedDate = picked);
-                  }
+                  if (picked != null) setState(() => _selectedDate = picked);
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(color: AppTheme.borderLight),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, color: Colors.teal, size: 20),
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        color: Colors.teal,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Date of Report', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                          const Text(
+                            'Date of Report',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
                           const SizedBox(height: 2),
                           Text(
                             '${_selectedDate.day} ${_getMonthName(_selectedDate.month)} ${_selectedDate.year}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
                           ),
                         ],
                       ),
@@ -370,7 +616,7 @@ class _AddReportModalState extends State<AddReportModal> {
 
               const SizedBox(height: 20),
 
-              // Uploading Progress State
+              // Upload progress
               if (_isUploading) ...[
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,8 +624,21 @@ class _AddReportModalState extends State<AddReportModal> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Encrypting & Uploading Document...', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.teal)),
-                        Text('${(_uploadProgress * 100).toInt()}%', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                        const Text(
+                          'Encrypting & Uploading…',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal,
+                          ),
+                        ),
+                        Text(
+                          '${(_uploadProgress * 100).toInt()}%',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -394,7 +653,7 @@ class _AddReportModalState extends State<AddReportModal> {
                 ),
               ],
 
-              // CTA Submit Button
+              // Submit button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -403,13 +662,18 @@ class _AddReportModalState extends State<AddReportModal> {
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 2,
                   ),
                   icon: const Icon(Icons.cloud_upload_rounded),
                   label: Text(
-                    _isUploading ? 'Uploading Record...' : 'Upload & Save Report',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    _isUploading ? 'Uploading Record…' : 'Upload & Save Report',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ),
@@ -442,7 +706,11 @@ class _AddReportModalState extends State<AddReportModal> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? color : AppTheme.textSecondary, size: 24),
+            Icon(
+              icon,
+              color: isSelected ? color : AppTheme.textSecondary,
+              size: 24,
+            ),
             const SizedBox(height: 6),
             Text(
               label,
@@ -460,7 +728,10 @@ class _AddReportModalState extends State<AddReportModal> {
   }
 
   String _getMonthName(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
     return months[month - 1];
   }
 }

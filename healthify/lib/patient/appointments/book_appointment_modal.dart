@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
 import '../models/patient_portal_models.dart';
+import '../../core/provider/repository_provider.dart';
 
 class BookAppointmentModal extends StatefulWidget {
   final DoctorSearchResult? initialDoctor;
@@ -70,14 +71,63 @@ class _BookAppointmentModalState extends State<BookAppointmentModal> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSubmitting = true);
 
-      Future.delayed(const Duration(milliseconds: 700), () {
+      Future.delayed(const Duration(milliseconds: 250), () async {
+        if (!mounted) return;
+        final tokenNum = '#${(10 + DateTime.now().second % 40)}';
+        final doctor = widget.initialDoctor;
+        final appointment = PatientAppointment(
+          id: 'appt_${DateTime.now().millisecondsSinceEpoch}',
+          doctorId: doctor?.id,
+          hospitalId: doctor?.hospitalId,
+          doctorName: _selectedDoctorName,
+          specialty: _selectedSpecialty,
+          hospitalName: _selectedHospital,
+          dateTime: _requestedDateTime(_selectedSlot),
+          status: 'Requested',
+          tokenNumber: tokenNum,
+          consultationFee: doctor?.consultationFee ?? 0,
+          reasonForVisit: _reasonController.text.trim().isEmpty
+              ? 'Routine OPD Consultation'
+              : _reasonController.text.trim(),
+        );
+        try {
+          final portal = RepositoryContainer.instance.patientPortalRepository;
+          if (portal == null) {
+            throw StateError('Serverpod patient account is not connected.');
+          }
+          await portal.save(
+            'patientAppointments',
+            appointment.id,
+            {
+              'id': appointment.id,
+              if (appointment.doctorId != null) 'doctorId': appointment.doctorId,
+              if (appointment.hospitalId != null) 'hospitalId': appointment.hospitalId,
+              'doctorName': appointment.doctorName,
+              'specialty': appointment.specialty,
+              'hospitalName': appointment.hospitalName,
+              'hospitalAddress': appointment.hospitalAddress,
+              'dateTime': appointment.dateTime.toIso8601String(),
+              'consultationType': appointment.consultationType,
+              'status': appointment.status,
+              'tokenNumber': appointment.tokenNumber,
+              'consultationFee': appointment.consultationFee,
+              'reasonForVisit': appointment.reasonForVisit,
+              'generatedReportTitles': appointment.generatedReportTitles,
+            },
+          );
+        } catch (error) {
+          if (!mounted) return;
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Appointment request was not saved: $error')),
+          );
+          return;
+        }
         if (!mounted) return;
         setState(() => _isSubmitting = false);
         Navigator.pop(context);
-
-        final tokenNum = '#${(10 + DateTime.now().second % 40)}';
         final msg =
-            'Appointment booked with $_selectedDoctorName for $_selectedSlot! Token $tokenNum assigned.';
+            'Appointment request sent to $_selectedHospital for $_selectedSlot. Request $tokenNum.';
         if (widget.onSuccess != null) {
           widget.onSuccess!(msg);
         } else {
@@ -91,6 +141,22 @@ class _BookAppointmentModalState extends State<BookAppointmentModal> {
         }
       });
     }
+  }
+
+  DateTime _requestedDateTime(String slot) {
+    final now = DateTime.now();
+    final day = slot.toLowerCase().startsWith('tomorrow')
+        ? now.add(const Duration(days: 1))
+        : now;
+    final time = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)', caseSensitive: false)
+        .firstMatch(slot);
+    if (time == null) return DateTime(day.year, day.month, day.day, 12);
+    var hour = int.parse(time.group(1)!);
+    final minute = int.parse(time.group(2)!);
+    final meridiem = time.group(3)!.toUpperCase();
+    if (meridiem == 'PM' && hour != 12) hour += 12;
+    if (meridiem == 'AM' && hour == 12) hour = 0;
+    return DateTime(day.year, day.month, day.day, hour, minute);
   }
 
   Color _surface(bool isDark) => isDark
@@ -284,7 +350,7 @@ class _BookAppointmentModalState extends State<BookAppointmentModal> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Select doctor, time slot & describe symptoms',
+                              'Choose a preferred time and send your request',
                               style: TextStyle(
                                 fontSize: 12.5,
                                 color: _secondaryText(isDark),
@@ -469,7 +535,7 @@ class _BookAppointmentModalState extends State<BookAppointmentModal> {
                       label: Text(
                         _isSubmitting
                             ? 'Booking Appointment...'
-                            : 'Confirm Appointment Booking',
+                            : 'Send Appointment Request',
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

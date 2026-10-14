@@ -31,6 +31,19 @@ class PatientService {
     required String doctorName,
     required Map<String, String> vitals,
   }) async {
+    final now = DateTime.now();
+    final id = 'PT-${now.microsecondsSinceEpoch}';
+    if (patientRepository is AtomicPatientAdmissionRepository) {
+      final patient = PatientItem(id: id, name: name, age: age, gender: gender,
+        bloodGroup: bloodGroup, ward: ward, admissionDate: now, status: status,
+        doctorName: doctorName, vitals: vitals);
+      final link = _newHospitalLink(hospitalId, id, now);
+      final admission = _newAdmission(hospitalId, id, link.id, ward, doctorName,
+        vitals, 'General Operational Intake', 'Primary Clinical Evaluation Pending', now);
+      await (patientRepository as AtomicPatientAdmissionRepository)
+          .createAdmissionBundle(patient: patient, link: link, admission: admission);
+      return patient;
+    }
     final req = PatientAdmissionRequest(
       name: name,
       age: age,
@@ -45,37 +58,13 @@ class PatientService {
     final patientItem = await patientRepository.admitPatient(req);
 
     // Create Hospital Patient Link & MRN
-    final mrn = 'MRN-${10000 + DateTime.now().millisecondsSinceEpoch % 89999}';
-    final link = HospitalPatientLink(
-      id: 'HPL-${DateTime.now().millisecondsSinceEpoch}',
-      hospitalId: hospitalId,
-      patientId: patientItem.id,
-      mrnNumber: mrn,
-      registrationDate: DateTime.now(),
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    final link = _newHospitalLink(hospitalId, patientItem.id, DateTime.now());
     await hospitalPatientRepository.createLink(link);
 
     // Create Admission
-    final admission = Admission(
-      id: 'ADM-${DateTime.now().millisecondsSinceEpoch}',
-      hospitalId: hospitalId,
-      patientId: patientItem.id,
-      hospitalPatientLinkId: link.id,
-      bedId: 'BED-${100 + DateTime.now().millisecondsSinceEpoch % 900}',
-      ward: ward,
-      attendingDoctorId: 'DOC-1001',
-      doctorName: doctorName,
-      departmentId: 'DEP-101',
-      admissionDate: DateTime.now(),
-      admissionStatus: AdmissionStatus.admitted,
-      reason: 'General Operational Intake',
-      diagnosis: 'Primary Clinical Evaluation Pending',
-      vitals: vitals,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    final admission = _newAdmission(hospitalId, patientItem.id, link.id, ward,
+      doctorName, vitals, 'General Operational Intake',
+      'Primary Clinical Evaluation Pending', DateTime.now());
     await admissionRepository.createAdmission(admission);
 
     return patientItem;
@@ -98,17 +87,7 @@ class PatientService {
     // Check or create HospitalPatientLink
     var link = await hospitalPatientRepository.getLinkByPatientId(hospitalId, patientId);
     if (link == null) {
-      final mrn = 'MRN-${10000 + DateTime.now().millisecondsSinceEpoch % 89999}';
-      link = HospitalPatientLink(
-        id: 'HPL-${DateTime.now().millisecondsSinceEpoch}',
-        hospitalId: hospitalId,
-        patientId: patientId,
-        mrnNumber: mrn,
-        registrationDate: DateTime.now(),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      await hospitalPatientRepository.createLink(link);
+      link = _newHospitalLink(hospitalId, patientId, DateTime.now());
     }
 
     final updatedPatient = PatientItem(
@@ -123,30 +102,40 @@ class PatientService {
       doctorName: doctorName,
       vitals: vitals,
     );
+    final admission = _newAdmission(hospitalId, patientId, link.id, ward,
+      doctorName, vitals, 'Readmission / Transfer Intake',
+      'Clinical Re-assessment', DateTime.now());
+    if (patientRepository is AtomicPatientAdmissionRepository) {
+      await (patientRepository as AtomicPatientAdmissionRepository)
+          .createAdmissionBundle(patient: updatedPatient, link: link, admission: admission);
+      return updatedPatient;
+    }
     await patientRepository.updatePatient(updatedPatient);
-
-    final admission = Admission(
-      id: 'ADM-${DateTime.now().millisecondsSinceEpoch}',
-      hospitalId: hospitalId,
-      patientId: patientId,
-      hospitalPatientLinkId: link.id,
-      bedId: 'BED-${100 + DateTime.now().millisecondsSinceEpoch % 900}',
-      ward: ward,
-      attendingDoctorId: 'DOC-1001',
-      doctorName: doctorName,
-      departmentId: 'DEP-101',
-      admissionDate: DateTime.now(),
-      admissionStatus: AdmissionStatus.admitted,
-      reason: 'Readmission / Transfer Intake',
-      diagnosis: 'Clinical Re-assessment',
-      vitals: vitals,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    if (await hospitalPatientRepository.getLinkByPatientId(hospitalId, patientId) == null) {
+      await hospitalPatientRepository.createLink(link);
+    }
     await admissionRepository.createAdmission(admission);
 
     return updatedPatient;
   }
+
+  HospitalPatientLink _newHospitalLink(String hospitalId, String patientId, DateTime now) =>
+      HospitalPatientLink(id: 'HPL-${now.microsecondsSinceEpoch}', hospitalId: hospitalId,
+        patientId: patientId, mrnNumber: 'MRN-${10000 + now.microsecondsSinceEpoch % 89999}',
+        registrationDate: now, createdAt: now, updatedAt: now);
+
+  Admission _newAdmission(String hospitalId, String patientId, String linkId,
+      String ward, String doctorName, Map<String, String> vitals, String reason,
+      String diagnosis, DateTime now) => Admission(
+        id: 'ADM-${now.microsecondsSinceEpoch}', hospitalId: hospitalId,
+        patientId: patientId, hospitalPatientLinkId: linkId,
+        // The admission starts without a bed assignment; inventory must supply
+        // a real available bed instead of fabricating an identifier.
+        bedId: '', ward: ward,
+        attendingDoctorId: 'DOC-1001', doctorName: doctorName,
+        departmentId: 'DEP-101', admissionDate: now,
+        admissionStatus: AdmissionStatus.admitted, reason: reason,
+        diagnosis: diagnosis, vitals: vitals, createdAt: now, updatedAt: now);
 
   /// Discharge patient from active hospital stay.
   Future<void> dischargePatient(String patientId) async {

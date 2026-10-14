@@ -8,6 +8,10 @@ class AppointmentItem {
   final DateTime dateTime;
   final String status;
   final String type;
+  final String patientId;
+  final String doctorId;
+  final String reason;
+  final String? cancellationReason;
 
   const AppointmentItem({
     required this.id,
@@ -17,6 +21,10 @@ class AppointmentItem {
     required this.dateTime,
     required this.status,
     required this.type,
+    this.patientId = '',
+    this.doctorId = '',
+    this.reason = '',
+    this.cancellationReason,
   });
 
   DateTime get appointmentDateTime => dateTime;

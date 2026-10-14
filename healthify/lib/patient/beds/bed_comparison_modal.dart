@@ -155,7 +155,9 @@ class BedComparisonModal extends StatelessWidget {
                       ),
                       _buildRow(
                         'Distance & ETA',
-                        (data) => '${data.hospital.distanceKm} km (${data.estimatedTravelTime})',
+                        (data) => data.hospital.distanceAvailable
+                            ? '${data.hospital.distanceKm} km (${data.estimatedTravelTime})'
+                            : 'Unavailable',
                         displayHospitals,
                         isDark,
                       ),
@@ -275,13 +277,17 @@ class BedComparisonModal extends StatelessWidget {
                       ),
                       _buildRow(
                         'Emergency Doctor',
-                        (data) => data.emergencyDoctorAvailable ? '✓ Available 24/7' : '⚠️ On Call',
+                        (data) => data.emergencyDoctorAvailable == null
+                            ? 'Not reported'
+                            : data.emergencyDoctorAvailable! ? '✓ Available 24/7' : '⚠️ On Call',
                         displayHospitals,
                         isDark,
                       ),
                       _buildRow(
                         'CT Scan Facility',
-                        (data) => data.ctScanAvailable ? '✓ Available 24/7' : '⚠️ Limited',
+                        (data) => data.ctScanAvailable == null
+                            ? 'Not reported'
+                            : data.ctScanAvailable! ? '✓ Available 24/7' : '⚠️ Limited',
                         displayHospitals,
                         isDark,
                       ),

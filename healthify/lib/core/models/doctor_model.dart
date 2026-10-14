@@ -14,6 +14,8 @@ class Doctor {
   final DoctorAvailabilityStatus availabilityStatus;
   final DoctorAffiliationStatus affiliationStatus;
   final double rating;
+  final int reviewCount;
+  final double consultationFee;
   final String? profileImageUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -31,6 +33,8 @@ class Doctor {
     required this.availabilityStatus,
     required this.affiliationStatus,
     required this.rating,
+    this.reviewCount = 0,
+    this.consultationFee = 0,
     this.profileImageUrl,
     required this.createdAt,
     required this.updatedAt,

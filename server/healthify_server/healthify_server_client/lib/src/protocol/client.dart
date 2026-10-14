@@ -23,15 +23,15 @@ import 'package:healthify_server_client/src/protocol/hospital/hospital_operation
     as _i6;
 import 'package:healthify_server_client/src/protocol/hospital/hospital_audit_event.dart'
     as _i7;
+import 'dart:typed_data' as _i8;
 import 'package:healthify_server_client/src/protocol/hospital/hospital_membership.dart'
-    as _i8;
-import 'package:healthify_server_client/src/protocol/hospital/hospital_info.dart'
     as _i9;
-import 'package:healthify_server_client/src/protocol/hospital/hospital_profile.dart'
+import 'package:healthify_server_client/src/protocol/hospital/hospital_info.dart'
     as _i10;
-import 'package:healthify_server_client/src/protocol/hospital/verification_document.dart'
+import 'package:healthify_server_client/src/protocol/hospital/hospital_profile.dart'
     as _i11;
-import 'dart:typed_data' as _i12;
+import 'package:healthify_server_client/src/protocol/hospital/verification_document.dart'
+    as _i12;
 import 'package:healthify_server_client/src/protocol/hospital/hospital_settings.dart'
     as _i13;
 import 'package:healthify_server_client/src/protocol/hospital/hospital_user_access.dart'
@@ -286,6 +286,178 @@ class EndpointHospital extends _i2.EndpointRef {
   @override
   String get name => 'hospital';
 
+  /// Returns only verified hospitals that have enabled patient discovery.
+  /// Doctor records are drawn from those hospitals' own operational rows.
+  _i3.Future<String> getPatientDirectory(String collection) =>
+      caller.callServerEndpoint<String>(
+        'hospital',
+        'getPatientDirectory',
+        {'collection': collection},
+      );
+
+  /// Patient portal data is partitioned by the authenticated Serverpod user.
+  /// The caller never supplies the partition key, so one patient cannot read
+  /// or overwrite another patient's records.
+  _i3.Future<List<_i6.HospitalOperationalRecord>> listMyPatientRecords(
+    String collection, {
+    required int limit,
+    required int offset,
+  }) => caller.callServerEndpoint<List<_i6.HospitalOperationalRecord>>(
+    'hospital',
+    'listMyPatientRecords',
+    {
+      'collection': collection,
+      'limit': limit,
+      'offset': offset,
+    },
+  );
+
+  _i3.Future<_i6.HospitalOperationalRecord?> getMyPatientRecord(
+    String collection,
+    String recordKey,
+  ) => caller.callServerEndpoint<_i6.HospitalOperationalRecord?>(
+    'hospital',
+    'getMyPatientRecord',
+    {
+      'collection': collection,
+      'recordKey': recordKey,
+    },
+  );
+
+  _i3.Future<_i6.HospitalOperationalRecord> saveMyPatientRecord(
+    String collection,
+    String recordKey,
+    String payload,
+  ) => caller.callServerEndpoint<_i6.HospitalOperationalRecord>(
+    'hospital',
+    'saveMyPatientRecord',
+    {
+      'collection': collection,
+      'recordKey': recordKey,
+      'payload': payload,
+    },
+  );
+
+  _i3.Future<bool> deleteMyPatientRecord(
+    String collection,
+    String recordKey,
+  ) => caller.callServerEndpoint<bool>(
+    'hospital',
+    'deleteMyPatientRecord',
+    {
+      'collection': collection,
+      'recordKey': recordKey,
+    },
+  );
+
+  /// Starts a claim for a hospital patient record. A hospital administrator
+  /// must verify the patient's identity and approve the request before any
+  /// clinical data is connected to this account.
+  _i3.Future<String> requestHospitalPatientAccountLink(
+    String hospitalKey,
+    String patientId,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'requestHospitalPatientAccountLink',
+    {
+      'hospitalKey': hospitalKey,
+      'patientId': patientId,
+    },
+  );
+
+  /// Lists pending claims for staff authorized to manage hospital accounts.
+  _i3.Future<String> listHospitalPatientAccountLinkRequests(
+    String hospitalKey,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'listHospitalPatientAccountLinkRequests',
+    {'hospitalKey': hospitalKey},
+  );
+
+  /// Approves or rejects a claim. Approval is blocked unless the hospital
+  /// patient record exists and is not already linked to another account.
+  _i3.Future<bool> reviewHospitalPatientAccountLinkRequest(
+    String hospitalKey,
+    String requestId,
+    bool approve,
+  ) => caller.callServerEndpoint<bool>(
+    'hospital',
+    'reviewHospitalPatientAccountLinkRequest',
+    {
+      'hospitalKey': hospitalKey,
+      'requestId': requestId,
+      'approve': approve,
+    },
+  );
+
+  /// Returns only the current user's approved hospital links.
+  _i3.Future<String> listMyHospitalPatientAccountLinks() =>
+      caller.callServerEndpoint<String>(
+        'hospital',
+        'listMyHospitalPatientAccountLinks',
+        {},
+      );
+
+  _i3.Future<String> listMyHospitalPatientAccountLinkRequests() =>
+      caller.callServerEndpoint<String>(
+        'hospital',
+        'listMyHospitalPatientAccountLinkRequests',
+        {},
+      );
+
+  /// A patient can revoke only links owned by their authenticated account.
+  _i3.Future<bool> revokeMyHospitalPatientAccountLink(
+    String hospitalKey,
+    String patientId,
+  ) => caller.callServerEndpoint<bool>(
+    'hospital',
+    'revokeMyHospitalPatientAccountLink',
+    {
+      'hospitalKey': hospitalKey,
+      'patientId': patientId,
+    },
+  );
+
+  _i3.Future<bool> checkMyPatientReviewEligibility(
+    String targetType,
+    String targetId,
+  ) => caller.callServerEndpoint<bool>(
+    'hospital',
+    'checkMyPatientReviewEligibility',
+    {
+      'targetType': targetType,
+      'targetId': targetId,
+    },
+  );
+
+  _i3.Future<String> listPatientReviews(
+    String targetType,
+    String targetId,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'listPatientReviews',
+    {
+      'targetType': targetType,
+      'targetId': targetId,
+    },
+  );
+
+  _i3.Future<String> createPatientReview(
+    String targetType,
+    String targetId,
+    double rating,
+    String feedback,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'createPatientReview',
+    {
+      'targetType': targetType,
+      'targetId': targetId,
+      'rating': rating,
+      'feedback': feedback,
+    },
+  );
+
   _i3.Future<List<_i6.HospitalOperationalRecord>> listOperationalRecords(
     String hospitalKey,
     String collection, {
@@ -334,6 +506,9 @@ class EndpointHospital extends _i2.EndpointRef {
     },
   );
 
+  /// Saves a related set of operational rows and their audit events as one
+  /// database transaction. Used for bed transfers and blood allocation so a
+  /// failed write cannot leave only half of a workflow persisted.
   _i3.Future<List<_i6.HospitalOperationalRecord>> saveOperationalRecords(
     String hospitalKey,
     List<String> collections,
@@ -347,6 +522,26 @@ class EndpointHospital extends _i2.EndpointRef {
       'collections': collections,
       'recordKeys': recordKeys,
       'payloads': payloads,
+    },
+  );
+
+  /// Creates an active admission while serializing competing admissions for
+  /// the same patient. A private lock row is upserted first inside the same
+  /// transaction; PostgreSQL's unique-key conflict lock makes a concurrent
+  /// request wait, then re-check the committed active admission.
+  _i3.Future<_i6.HospitalOperationalRecord> createAdmission(
+    String hospitalKey,
+    String patientId,
+    String recordKey,
+    String payload,
+  ) => caller.callServerEndpoint<_i6.HospitalOperationalRecord>(
+    'hospital',
+    'createAdmission',
+    {
+      'hospitalKey': hospitalKey,
+      'patientId': patientId,
+      'recordKey': recordKey,
+      'payload': payload,
     },
   );
 
@@ -396,19 +591,65 @@ class EndpointHospital extends _i2.EndpointRef {
     },
   );
 
-  _i3.Future<_i8.HospitalMembershipRecord?> getMyHospital() =>
-      caller.callServerEndpoint<_i8.HospitalMembershipRecord?>(
+  /// Uploads a file for a patient-owned external medical report and stores it
+  /// in private storage. The storage path is derived from the authenticated
+  /// user's identifier — the caller never supplies it. After a successful
+  /// store the corresponding patientReports record payload is updated with a
+  /// [fileReference] block so that the app can show download status.
+  ///
+  /// Constraints:
+  ///  - File must be PDF, PNG, or JPEG and pass a magic-byte check.
+  ///  - Max size: 20 MB.
+  ///  - The [recordKey] must already exist in the caller's patientReports
+  ///    partition (the metadata record is saved first via [saveMyPatientRecord],
+  ///    then this endpoint attaches the bytes).
+  _i3.Future<String> uploadPatientReportFile(
+    String recordKey,
+    String fileName,
+    String mimeType,
+    _i8.ByteData fileBytes,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'uploadPatientReportFile',
+    {
+      'recordKey': recordKey,
+      'fileName': fileName,
+      'mimeType': mimeType,
+      'fileBytes': fileBytes,
+    },
+  );
+
+  /// Returns the raw bytes for a patient's own uploaded report file.
+  /// Only the account that owns the patientReports partition can download.
+  _i3.Future<_i8.ByteData> getPatientReportFileBytes(String recordKey) =>
+      caller.callServerEndpoint<_i8.ByteData>(
+        'hospital',
+        'getPatientReportFileBytes',
+        {'recordKey': recordKey},
+      );
+
+  _i3.Future<_i9.HospitalMembershipRecord?> getMyHospital() =>
+      caller.callServerEndpoint<_i9.HospitalMembershipRecord?>(
         'hospital',
         'getMyHospital',
         {},
       );
 
+  /// Resolves the signed-in doctor to the doctor profile assigned by their
+  /// hospital. A doctor cannot choose another profile by sending an ID.
+  _i3.Future<String> getMyDoctorProfile(String hospitalKey) =>
+      caller.callServerEndpoint<String>(
+        'hospital',
+        'getMyDoctorProfile',
+        {'hospitalKey': hospitalKey},
+      );
+
   /// Creates the first hospital profile for the signed-in account and makes
   /// the account its initial owner. The operation is atomic.
-  _i3.Future<_i8.HospitalMembershipRecord> registerHospital(
-    _i9.HospitalInfoRecord info,
-    _i10.HospitalProfileRecord profile,
-  ) => caller.callServerEndpoint<_i8.HospitalMembershipRecord>(
+  _i3.Future<_i9.HospitalMembershipRecord> registerHospital(
+    _i10.HospitalInfoRecord info,
+    _i11.HospitalProfileRecord profile,
+  ) => caller.callServerEndpoint<_i9.HospitalMembershipRecord>(
     'hospital',
     'registerHospital',
     {
@@ -417,30 +658,30 @@ class EndpointHospital extends _i2.EndpointRef {
     },
   );
 
-  _i3.Future<_i9.HospitalInfoRecord?> getInfo(String hospitalKey) =>
-      caller.callServerEndpoint<_i9.HospitalInfoRecord?>(
+  _i3.Future<_i10.HospitalInfoRecord?> getInfo(String hospitalKey) =>
+      caller.callServerEndpoint<_i10.HospitalInfoRecord?>(
         'hospital',
         'getInfo',
         {'hospitalKey': hospitalKey},
       );
 
-  _i3.Future<_i9.HospitalInfoRecord> saveInfo(_i9.HospitalInfoRecord info) =>
-      caller.callServerEndpoint<_i9.HospitalInfoRecord>(
+  _i3.Future<_i10.HospitalInfoRecord> saveInfo(_i10.HospitalInfoRecord info) =>
+      caller.callServerEndpoint<_i10.HospitalInfoRecord>(
         'hospital',
         'saveInfo',
         {'info': info},
       );
 
-  _i3.Future<_i10.HospitalProfileRecord?> getProfile(String hospitalKey) =>
-      caller.callServerEndpoint<_i10.HospitalProfileRecord?>(
+  _i3.Future<_i11.HospitalProfileRecord?> getProfile(String hospitalKey) =>
+      caller.callServerEndpoint<_i11.HospitalProfileRecord?>(
         'hospital',
         'getProfile',
         {'hospitalKey': hospitalKey},
       );
 
-  _i3.Future<_i10.HospitalProfileRecord> saveProfile(
-    _i10.HospitalProfileRecord profile,
-  ) => caller.callServerEndpoint<_i10.HospitalProfileRecord>(
+  _i3.Future<_i11.HospitalProfileRecord> saveProfile(
+    _i11.HospitalProfileRecord profile,
+  ) => caller.callServerEndpoint<_i11.HospitalProfileRecord>(
     'hospital',
     'saveProfile',
     {'profile': profile},
@@ -453,14 +694,14 @@ class EndpointHospital extends _i2.EndpointRef {
         {'hospitalKey': hospitalKey},
       );
 
-  _i3.Future<_i11.VerificationDocumentRecord> uploadVerificationDocument(
+  _i3.Future<_i12.VerificationDocumentRecord> uploadVerificationDocument(
     String hospitalKey,
     String title,
     String documentType,
     String fileName,
     String mimeType,
-    _i12.ByteData fileBytes,
-  ) => caller.callServerEndpoint<_i11.VerificationDocumentRecord>(
+    _i8.ByteData fileBytes,
+  ) => caller.callServerEndpoint<_i12.VerificationDocumentRecord>(
     'hospital',
     'uploadVerificationDocument',
     {
@@ -473,10 +714,10 @@ class EndpointHospital extends _i2.EndpointRef {
     },
   );
 
-  _i3.Future<_i12.ByteData> getVerificationDocumentBytes(
+  _i3.Future<_i8.ByteData> getVerificationDocumentBytes(
     String hospitalKey,
     int documentId,
-  ) => caller.callServerEndpoint<_i12.ByteData>(
+  ) => caller.callServerEndpoint<_i8.ByteData>(
     'hospital',
     'getVerificationDocumentBytes',
     {
@@ -485,17 +726,89 @@ class EndpointHospital extends _i2.EndpointRef {
     },
   );
 
-  _i3.Future<_i10.HospitalProfileRecord> submitVerification(
+  _i3.Future<String> uploadDoctorReportFile(
     String hospitalKey,
-  ) => caller.callServerEndpoint<_i10.HospitalProfileRecord>(
+    String reportId,
+    String fileName,
+    String mimeType,
+    _i8.ByteData fileBytes,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'uploadDoctorReportFile',
+    {
+      'hospitalKey': hospitalKey,
+      'reportId': reportId,
+      'fileName': fileName,
+      'mimeType': mimeType,
+      'fileBytes': fileBytes,
+    },
+  );
+
+  _i3.Future<_i8.ByteData> getDoctorReportFileBytes(
+    String hospitalKey,
+    String reportId,
+  ) => caller.callServerEndpoint<_i8.ByteData>(
+    'hospital',
+    'getDoctorReportFileBytes',
+    {
+      'hospitalKey': hospitalKey,
+      'reportId': reportId,
+    },
+  );
+
+  /// Releases a reviewed report into an explicitly linked patient account.
+  /// The account owner comes from the hospital-approved link, never from the
+  /// doctor request, and both portal/source rows change atomically.
+  _i3.Future<String> setDoctorReportPatientSharing(
+    String hospitalKey,
+    String reportId,
+    bool isShared,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'setDoctorReportPatientSharing',
+    {
+      'hospitalKey': hospitalKey,
+      'reportId': reportId,
+      'isShared': isShared,
+    },
+  );
+
+  /// Returns a shared report file only while its owner-scoped portal record
+  /// and the source doctor's release flag both remain active.
+  _i3.Future<_i8.ByteData> getMySharedReportFileBytes(String reportId) =>
+      caller.callServerEndpoint<_i8.ByteData>(
+        'hospital',
+        'getMySharedReportFileBytes',
+        {'reportId': reportId},
+      );
+
+  /// Approves or rejects an emergency clinical break-glass request.
+  /// Approval grants a temporary time-bounded access window (60 minutes).
+  _i3.Future<bool> reviewBreakGlassRequest(
+    String hospitalKey,
+    String requestId,
+    bool approve,
+  ) => caller.callServerEndpoint<bool>(
+    'hospital',
+    'reviewBreakGlassRequest',
+    {
+      'hospitalKey': hospitalKey,
+      'requestId': requestId,
+      'approve': approve,
+    },
+  );
+
+  _i3.Future<_i11.HospitalProfileRecord> submitVerification(
+    String hospitalKey,
+  ) => caller.callServerEndpoint<_i11.HospitalProfileRecord>(
     'hospital',
     'submitVerification',
     {'hospitalKey': hospitalKey},
   );
 
-  _i3.Future<List<_i11.VerificationDocumentRecord>> getVerificationDocuments(
+  _i3.Future<List<_i12.VerificationDocumentRecord>> getVerificationDocuments(
     String hospitalKey,
-  ) => caller.callServerEndpoint<List<_i11.VerificationDocumentRecord>>(
+  ) => caller.callServerEndpoint<List<_i12.VerificationDocumentRecord>>(
     'hospital',
     'getVerificationDocuments',
     {'hospitalKey': hospitalKey},
@@ -507,6 +820,50 @@ class EndpointHospital extends _i2.EndpointRef {
         'getSettings',
         {'hospitalKey': hospitalKey},
       );
+
+  /// Lists all hospitals pending platform verification review (P1-11).
+  _i3.Future<List<_i11.HospitalProfileRecord>>
+  listPendingHospitalVerifications() =>
+      caller.callServerEndpoint<List<_i11.HospitalProfileRecord>>(
+        'hospital',
+        'listPendingHospitalVerifications',
+        {},
+      );
+
+  /// Platform reviewer decision: approves or rejects hospital platform credentials (P1-11).
+  _i3.Future<bool> reviewHospitalVerification(
+    String hospitalKey,
+    bool approve,
+    String reviewerNotes,
+  ) => caller.callServerEndpoint<bool>(
+    'hospital',
+    'reviewHospitalVerification',
+    {
+      'hospitalKey': hospitalKey,
+      'approve': approve,
+      'reviewerNotes': reviewerNotes,
+    },
+  );
+
+  /// Dispatches an onboarding invitation to a new doctor or hospital staff member (P1-10).
+  /// Creates a provisional access record and dispatches an activation token via email.
+  _i3.Future<String> inviteHospitalStaff(
+    String hospitalKey,
+    String email,
+    String fullName,
+    String role,
+    String department,
+  ) => caller.callServerEndpoint<String>(
+    'hospital',
+    'inviteHospitalStaff',
+    {
+      'hospitalKey': hospitalKey,
+      'email': email,
+      'fullName': fullName,
+      'role': role,
+      'department': department,
+    },
+  );
 
   _i3.Future<_i13.HospitalSettingsRecord> saveSettings(
     _i13.HospitalSettingsRecord settings,

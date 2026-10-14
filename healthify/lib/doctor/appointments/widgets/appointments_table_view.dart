@@ -10,6 +10,7 @@ class AppointmentsTableView extends StatelessWidget {
   final ValueChanged<DoctorAppointmentModel> onReschedule;
   final ValueChanged<DoctorAppointmentModel> onCancel;
   final ValueChanged<DoctorAppointmentModel> onCallPatient;
+  final ValueChanged<DoctorAppointmentModel> onAccept;
 
   const AppointmentsTableView({
     super.key,
@@ -20,6 +21,7 @@ class AppointmentsTableView extends StatelessWidget {
     required this.onReschedule,
     required this.onCancel,
     required this.onCallPatient,
+    required this.onAccept,
   });
 
   @override
@@ -239,7 +241,20 @@ class AppointmentsTableView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (apt.status == AppointmentStatus.waiting || apt.status == AppointmentStatus.checkedIn || apt.status == AppointmentStatus.upcoming)
+                  if (apt.status == AppointmentStatus.waiting && apt.id.startsWith('patient-'))
+                    ElevatedButton.icon(
+                      onPressed: () => onAccept(apt),
+                      icon: const Icon(Icons.check_rounded, size: 14),
+                      label: const Text('Accept'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: HealthifyGlassTheme.primaryTeal,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  else if (apt.status == AppointmentStatus.waiting || apt.status == AppointmentStatus.checkedIn || apt.status == AppointmentStatus.upcoming)
                     ElevatedButton.icon(
                       onPressed: () => onStartConsultation(apt),
                       icon: const Icon(Icons.video_call_rounded, size: 14),
@@ -266,6 +281,9 @@ class AppointmentsTableView extends StatelessWidget {
                           break;
                         case 'start':
                           onStartConsultation(apt);
+                          break;
+                        case 'accept':
+                          onAccept(apt);
                           break;
                         case 'reschedule':
                           onReschedule(apt);
@@ -298,7 +316,12 @@ class AppointmentsTableView extends StatelessWidget {
 
     if (apt.status == AppointmentStatus.waiting) {
       items.add(const PopupMenuItem(value: 'call', child: Text('Call Patient')));
-      items.add(const PopupMenuItem(value: 'start', child: Text('Start Consultation')));
+      if (apt.id.startsWith('patient-')) {
+        items.add(const PopupMenuItem(value: 'accept', child: Text('Accept Request')));
+        items.add(const PopupMenuItem(value: 'cancel', child: Text('Reject Request', style: TextStyle(color: Colors.redAccent))));
+      } else {
+        items.add(const PopupMenuItem(value: 'start', child: Text('Start Consultation')));
+      }
     } else if (apt.status == AppointmentStatus.upcoming || apt.status == AppointmentStatus.checkedIn) {
       items.add(const PopupMenuItem(value: 'start', child: Text('Start Consultation')));
     }
@@ -394,7 +417,19 @@ class AppointmentsTableView extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 children: [
-                  ElevatedButton.icon(
+                  if (apt.status == AppointmentStatus.waiting && apt.id.startsWith('patient-'))
+                    ElevatedButton.icon(
+                      onPressed: () => onAccept(apt),
+                      icon: const Icon(Icons.check_rounded, size: 14),
+                      label: const Text('Accept Request'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: HealthifyGlassTheme.primaryTeal,
+                        foregroundColor: Colors.white,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    )
+                  else
+                    ElevatedButton.icon(
                     onPressed: () => onStartConsultation(apt),
                     icon: const Icon(Icons.video_call_rounded, size: 14),
                     label: const Text('Start Consult'),
@@ -404,6 +439,11 @@ class AppointmentsTableView extends StatelessWidget {
                       visualDensity: VisualDensity.compact,
                     ),
                   ),
+                  if (apt.status == AppointmentStatus.waiting && apt.id.startsWith('patient-'))
+                    TextButton(
+                      onPressed: () => onCancel(apt),
+                      child: const Text('Reject', style: TextStyle(color: Colors.redAccent)),
+                    ),
                   OutlinedButton(
                     onPressed: () => onViewPatient(apt),
                     style: OutlinedButton.styleFrom(visualDensity: VisualDensity.compact),

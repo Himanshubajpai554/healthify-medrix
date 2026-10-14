@@ -13,3 +13,13 @@ abstract class PatientRepository {
   Future<void> dischargePatient(String patientId);
   Future<PatientOverviewMetrics> getPatientMetrics(String hospitalId);
 }
+
+/// Optional repository capability for committing a patient, hospital link,
+/// and first active admission as a single server transaction.
+abstract interface class AtomicPatientAdmissionRepository {
+  Future<void> createAdmissionBundle({
+    required PatientItem patient,
+    required HospitalPatientLink link,
+    required Admission admission,
+  });
+}

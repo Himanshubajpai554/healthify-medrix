@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../../theme/app_theme.dart';
 
@@ -209,7 +209,7 @@ class AiHospitalInsightsWidget extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Medrix AI Predictive Capacity Insights',
+                  'Healthify AI Predictive Capacity Insights',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

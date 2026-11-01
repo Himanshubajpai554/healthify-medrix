@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
@@ -944,7 +944,7 @@ class _PatientBedDiscoveryWidgetState extends State<PatientBedDiscoveryWidget> {
                     Icon(Icons.shield_outlined, size: 16, color: Colors.teal),
                     SizedBox(width: 8),
                     Text(
-                      'MEDRIX Availability Data Policy',
+                      'HEALTHIFY Availability Data Policy',
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.bold,

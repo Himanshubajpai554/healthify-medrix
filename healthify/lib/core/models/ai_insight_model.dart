@@ -1,4 +1,4 @@
-import '../enums/domain_enums.dart';
+﻿import '../enums/domain_enums.dart';
 
 /// Legacy Category helper for existing widgets
 enum InsightCategory { capacityPlanning, clinicalAlert, inventoryForecast, triageRecommendation }
@@ -39,7 +39,7 @@ class AIPredictionExplanation {
   });
 }
 
-/// Generic AI Prediction Entity for Medrix Phase 10
+/// Generic AI Prediction Entity for Healthify Phase 10
 class AIPrediction {
   final String id;
   final String hospitalId;

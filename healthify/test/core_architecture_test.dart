@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:healthify_hospital/core/core.dart';
 
 /// Fake Serverpod Repository simulation for swap readiness verification
@@ -94,7 +94,7 @@ class FakeServerpodPatientRepository implements PatientRepository {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('MEDRIX Phase 14 & 15 Core Architecture & Contract Tests', () {
+  group('HEALTHIFY Phase 14 & 15 Core Architecture & Contract Tests', () {
     test('1. Appointment Lifecycle Workflow', () async {
       final apptRepo = MockAppointmentRepository();
       final docRepo = MockDoctorRepository();

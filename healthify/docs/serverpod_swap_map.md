@@ -1,4 +1,4 @@
-# MEDRIX — SERVERPOD BACKEND SWAP BLUEPRINT & DOMAIN MAP
+﻿# HEALTHIFY — SERVERPOD BACKEND SWAP BLUEPRINT & DOMAIN MAP
 
 This document defines the exact mechanical mapping between the current **Flutter Frontend Repositories & Mock Data Services** and the **Future Serverpod Backend Client, Endpoints, and PostgreSQL Schemas**.
 

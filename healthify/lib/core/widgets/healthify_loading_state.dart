@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../shared/widgets/glass_components.dart';
 
-class MedrixLoadingState extends StatelessWidget {
+class HealthifyLoadingState extends StatelessWidget {
   final String? message;
   final double size;
 
-  const MedrixLoadingState({
+  const HealthifyLoadingState({
     super.key,
     this.message,
     this.size = 48,
@@ -49,7 +49,7 @@ class MedrixLoadingState extends StatelessWidget {
   }
 }
 
-typedef AppLoadingView = MedrixLoadingState;
+typedef AppLoadingView = HealthifyLoadingState;
 
 class AppShimmer extends StatefulWidget {
   final double width;

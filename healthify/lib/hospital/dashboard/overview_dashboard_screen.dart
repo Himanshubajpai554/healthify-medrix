@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
@@ -207,9 +207,9 @@ class _OverviewDashboardScreenState extends State<OverviewDashboardScreen> {
           const SizedBox(height: 18),
 
           if (_metricsState.isLoading)
-            const MedrixLoadingState(message: 'Loading hospital analytics & operational data...')
+            const HealthifyLoadingState(message: 'Loading hospital analytics & operational data...')
           else if (_metricsState.isError)
-            MedrixErrorState(
+            HealthifyErrorState(
               errorMessage: _metricsState.errorMessage ?? 'Error loading dashboard data',
               onRetry: _loadDashboardData,
             )

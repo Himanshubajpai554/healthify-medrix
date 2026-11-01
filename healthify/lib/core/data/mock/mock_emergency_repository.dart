@@ -1,4 +1,4 @@
-import '../repositories/emergency_repository.dart';
+﻿import '../repositories/emergency_repository.dart';
 import '../../enums/domain_enums.dart';
 import '../../models/emergency_model.dart';
 import '../../models/ai_insight_model.dart';
@@ -202,7 +202,7 @@ class MockEmergencyRepository implements EmergencyRepository {
     return [
       EmergencyHospitalRecommendation(
         hospitalId: 'HOSP-101',
-        hospitalName: 'Medrix Central Hospital',
+        hospitalName: 'Healthify Central Hospital',
         distanceKm: 2.4,
         emergencyAvailability: 'High',
         availableERCapacity: 10,

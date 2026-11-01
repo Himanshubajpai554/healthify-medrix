@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import '../models/doctor_help_models.dart';
 
 class DoctorHelpService {
@@ -192,7 +192,7 @@ class DoctorHelpService {
           ),
           TicketMessageModel(
             id: 'MSG-02',
-            senderName: 'Medrix IT Operations (Rajesh Varma)',
+            senderName: 'Healthify IT Operations (Rajesh Varma)',
             isDoctor: false,
             timestamp: now.subtract(const Duration(hours: 1)),
             messageText:
@@ -220,7 +220,7 @@ class DoctorHelpService {
           ),
           TicketMessageModel(
             id: 'MSG-11',
-            senderName: 'Medrix Support Specialist',
+            senderName: 'Healthify Support Specialist',
             isDoctor: false,
             timestamp: now.subtract(const Duration(days: 1)),
             messageText:
@@ -231,12 +231,12 @@ class DoctorHelpService {
     ]);
 
     _adminContact = const HospitalAdminContactModel(
-      hospitalName: 'Medrix City Hospital & Research Center',
+      hospitalName: 'Healthify City Hospital & Research Center',
       adminName: 'Mr. Rajesh Varma',
       role: 'IT & Operations Director',
       department: 'Hospital Medical Informatics & Systems Desk',
       phone: '+91 22 6789 4400 (Ext: 4401)',
-      email: 'rajesh.varma@medrixcity.org',
+      email: 'rajesh.varma@healthifycity.org',
       officeHours: 'Mon - Sat: 08:00 AM - 08:00 PM IST',
     );
 
@@ -283,7 +283,7 @@ class DoctorHelpService {
           'Outdated browser cache or active session data.',
         ],
         recommendedSteps: [
-          'Verify your connection to the secure Medrix Hospital Wi-Fi network.',
+          'Verify your connection to the secure Healthify Hospital Wi-Fi network.',
           'Clear local browser cache (Ctrl + Shift + R or Cmd + Shift + R).',
           'Sign out of your workspace session and sign back in.',
         ],
@@ -298,7 +298,7 @@ class DoctorHelpService {
         ],
         recommendedSteps: [
           'Ensure your header availability toggle is set to Available.',
-          'Check browser permission settings to allow notifications from medrix.org.',
+          'Check browser permission settings to allow notifications from healthify.org.',
           'Go to Settings -> Notifications and verify In-App Alert is enabled.',
         ],
       ),

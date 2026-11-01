@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_notification_repository.dart';
@@ -7,9 +7,9 @@ import '../../core/enums/domain_enums.dart';
 import '../../core/models/notification_model.dart';
 import '../../core/queries/domain_queries.dart';
 import '../../core/services/notification_service.dart';
-import '../../core/widgets/medrix_empty_state.dart';
-import '../../core/widgets/medrix_error_state.dart';
-import '../../core/widgets/medrix_loading_state.dart';
+import '../../core/widgets/healthify_empty_state.dart';
+import '../../core/widgets/healthify_error_state.dart';
+import '../../core/widgets/healthify_loading_state.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../utils/responsive.dart';
@@ -280,12 +280,12 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
                   const SizedBox(height: 10),
                   Expanded(
                     child: _isLoading
-                        ? const MedrixLoadingState(
+                        ? const HealthifyLoadingState(
                             message:
                                 'Loading notification & dispatch pipeline...',
                           )
                         : _errorMessage != null
-                        ? MedrixErrorState(
+                        ? HealthifyErrorState(
                             errorMessage: _errorMessage!,
                             onRetry: _loadData,
                           )
@@ -1155,7 +1155,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
     required bool isDesktop,
   }) {
     if (items.isEmpty) {
-      return const MedrixEmptyState(
+      return const HealthifyEmptyState(
         title: 'No Notifications Found',
         description:
             'No notification records match the current filter or search criteria.',
@@ -1590,7 +1590,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
           ),
           const SizedBox(height: 12),
           if (_alerts.isEmpty)
-            const MedrixEmptyState(
+            const HealthifyEmptyState(
               title: 'No Operational Alerts',
               description:
                   'There are currently no operational alert records to review.',
@@ -1870,7 +1870,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
           ),
           const SizedBox(height: 12),
           if (filtered.isEmpty)
-            const MedrixEmptyState(
+            const HealthifyEmptyState(
               title: 'No Dispatch Records',
               description:
                   'There are no dispatch records for the selected channel.',

@@ -1,4 +1,4 @@
-import '../enums/domain_enums.dart';
+﻿import '../enums/domain_enums.dart';
 import '../events/domain_event_bus.dart';
 import '../models/appointment_model.dart';
 import '../models/domain_event.dart';
@@ -37,7 +37,7 @@ class DemoScenarioExecutionReport {
   });
 }
 
-/// Service executing the 10-step Cross-App Medrix Lifecycle Scenario
+/// Service executing the 10-step Cross-App Healthify Lifecycle Scenario
 class CrossAppDemoScenarioService {
   final RepositoryContainer _container;
   final DomainEventBus _eventBus;
@@ -274,7 +274,7 @@ class CrossAppDemoScenarioService {
     final allPassed = steps.every((s) => s.success);
 
     return DemoScenarioExecutionReport(
-      scenarioName: '10-Step Medrix Cross-App End-to-End Workflow',
+      scenarioName: '10-Step Healthify Cross-App End-to-End Workflow',
       steps: steps,
       allPassed: allPassed,
       executedAt: now,

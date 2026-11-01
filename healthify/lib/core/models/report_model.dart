@@ -1,4 +1,4 @@
-import '../enums/domain_enums.dart';
+﻿import '../enums/domain_enums.dart';
 
 enum DiagnosticReportStatus { pending, inProgress, completed, verified, cancelled }
 
@@ -61,7 +61,7 @@ class DocumentActivity {
   });
 }
 
-/// Core Diagnostic Report Model for Medrix Phase 8
+/// Core Diagnostic Report Model for Healthify Phase 8
 class DiagnosticReport {
   final String id;
   final String hospitalId;

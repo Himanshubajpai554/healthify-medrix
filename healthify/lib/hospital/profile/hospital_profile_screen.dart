@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -215,11 +215,11 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
     final isDark = HealthifyGlassTheme.isDarkMode(context);
 
     if (_uiState.isLoading) {
-      return const MedrixLoadingState(message: 'Loading hospital profile...');
+      return const HealthifyLoadingState(message: 'Loading hospital profile...');
     }
 
     if (_uiState.isError) {
-      return MedrixErrorState(
+      return HealthifyErrorState(
         errorMessage: _uiState.errorMessage ?? 'Error loading hospital profile',
         onRetry: _loadProfile,
       );
@@ -227,7 +227,7 @@ class _HospitalProfileScreenState extends State<HospitalProfileScreen> {
 
     final profile = _uiState.data;
     if (profile == null) {
-      return const MedrixEmptyState(
+      return const HealthifyEmptyState(
         title: 'No Profile Found',
         description: 'Hospital profile details are currently unavailable.',
         icon: Icons.domain_disabled_rounded,

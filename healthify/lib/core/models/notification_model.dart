@@ -1,4 +1,4 @@
-import '../enums/domain_enums.dart';
+﻿import '../enums/domain_enums.dart';
 
 /// Legacy NotificationSeverity for backward compatibility
 enum NotificationSeverity { info, warning, critical }
@@ -22,7 +22,7 @@ class SystemNotificationItem {
   });
 }
 
-/// Medrix Central Notification Record Model
+/// Healthify Central Notification Record Model
 class NotificationRecord {
   final String id;
   final String hospitalId;

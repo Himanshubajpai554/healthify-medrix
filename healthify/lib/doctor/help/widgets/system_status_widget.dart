@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_help_models.dart';
 
@@ -33,7 +33,7 @@ class SystemStatusWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Medrix System Health & Status',
+                      'Healthify System Health & Status',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

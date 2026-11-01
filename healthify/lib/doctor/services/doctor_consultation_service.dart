@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../models/doctor_dashboard_models.dart';
 import '../models/patient_profile_models.dart';
 import '../models/consultation_models.dart';
@@ -60,7 +60,7 @@ class DoctorConsultationService {
           title: 'Comprehensive Lipid Panel & HbA1c',
           category: ReportCategory.laboratory,
           date: '28 Sep 2026',
-          labName: 'Medrix Central Diagnostics Lab',
+          labName: 'Healthify Central Diagnostics Lab',
           orderingDoctor: 'Dr. Sarah Jenkins',
           status: 'Abnormal LDL',
           priority: ReportPriority.high,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import '../../core/enums/domain_enums.dart' as domain;
 import '../../core/models/appointment_model.dart' as core;
@@ -269,7 +269,7 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'MEDRIX Portal Switcher',
+                    'HEALTHIFY Portal Switcher',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/glass_components.dart';
 import '../../models/consultation_models.dart';
@@ -419,7 +419,7 @@ class _ConsultationOverviewTabState extends State<ConsultationOverviewTab> {
                     );
                     final textWidget = Text(
                       widget.consultation.noteVisibility == NoteVisibility.internalPrivate
-                          ? 'INTERNAL PRIVATE NOTE: Visible ONLY to doctors & clinical care team in Medrix EHR.'
+                          ? 'INTERNAL PRIVATE NOTE: Visible ONLY to doctors & clinical care team in Healthify EHR.'
                           : 'PATIENT VISIBLE NOTE: Accessible to patient in Consultation Summary on Patient App.',
                       style: TextStyle(
                         fontSize: 12,

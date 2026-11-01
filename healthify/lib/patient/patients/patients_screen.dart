@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../core/core.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
@@ -259,9 +259,9 @@ class _PatientsScreenState extends State<PatientsScreen> {
                   const SizedBox(height: 20),
 
                   if (_uiState.isLoading)
-                    const MedrixLoadingState(message: 'Loading patient directory...')
+                    const HealthifyLoadingState(message: 'Loading patient directory...')
                   else if (_uiState.isError)
-                    MedrixErrorState(
+                    HealthifyErrorState(
                       errorMessage: _uiState.errorMessage ?? 'Error loading patients',
                       onRetry: _loadPatients,
                     )
@@ -984,7 +984,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return MedrixEmptyState(
+    return HealthifyEmptyState(
       title: 'No Patient Records Found',
       description: 'No patient records matched your search query or active filter criteria.',
       icon: Icons.search_off_rounded,

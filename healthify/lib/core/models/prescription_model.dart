@@ -1,4 +1,4 @@
-import '../enums/domain_enums.dart';
+﻿import '../enums/domain_enums.dart';
 
 class MedicationItem {
   final String drugName;
@@ -56,7 +56,7 @@ class PrescriptionItem {
   });
 }
 
-/// Core Prescription Index Model for Medrix Phase 8
+/// Core Prescription Index Model for Healthify Phase 8
 class PrescriptionIndex {
   final String id;
   final String hospitalId;

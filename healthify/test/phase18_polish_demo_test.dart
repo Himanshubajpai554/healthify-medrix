@@ -1,11 +1,11 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:healthify_hospital/core/demo/demo_mode_controller.dart';
 import 'package:healthify_hospital/core/data/mock/mock_data_reset_service.dart';
 import 'package:healthify_hospital/core/utils/datetime_service.dart';
 import 'package:healthify_hospital/core/widgets/freshness_badge.dart';
 
 void main() {
-  group('Phase 18 — Medrix Final Frontend Hardening & Demo Readiness Tests', () {
+  group('Phase 18 — Healthify Final Frontend Hardening & Demo Readiness Tests', () {
     setUp(() {
       MockDataResetService.resetAllMockData();
     });

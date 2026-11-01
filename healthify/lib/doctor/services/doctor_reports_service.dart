@@ -1,4 +1,4 @@
-import '../models/reports_models.dart';
+﻿import '../models/reports_models.dart';
 import '../../core/provider/repository_provider.dart';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
@@ -79,7 +79,7 @@ class DoctorReportsService {
       requestedBy: 'Dr. Sarah Jenkins',
       performedBy: 'Dr. R. Mehta (Radiologist)',
       department: 'Radiology',
-      facility: 'Medrix Central Diagnostics, Bay 3',
+      facility: 'Healthify Central Diagnostics, Bay 3',
       summaryAiText: 'Left lower lobe ground-glass opacity noted with minor costophrenic angle blunting. No overt pneumothorax or mediastinal shift.',
       findingsText: 'PA and lateral views of the chest demonstrate mild focal airspace opacity in the posterior segment of the left lower lobe. Trachea is midline. Cardiac size is within normal limits (CTR < 0.50). Right lung fields are clear without focal infiltrates. Mild subsegmental atelectasis in the left base. Diaphragm contours normal.',
       impressionText: 'Left lower lobe early pneumonitis or localized subsegmental atelectasis. Clinical correlation with fever and inflammatory markers recommended.',
@@ -119,7 +119,7 @@ class DoctorReportsService {
       requestedBy: 'Dr. Sarah Jenkins',
       performedBy: 'Dr. V. Gupta (Pathologist)',
       department: 'Biochemistry',
-      facility: 'Medrix Pathology Lab A',
+      facility: 'Healthify Pathology Lab A',
       summaryAiText: 'Total Cholesterol 245 mg/dL (Elevated), LDL 162 mg/dL (Elevated), HDL 42 mg/dL (Normal), Triglycerides 210 mg/dL (Elevated). High sensitivity CRP: 3.8 mg/L.',
       findingsText: 'Lipid Profile Analysis:\n• Total Cholesterol: 245 mg/dL [Ref: < 200]\n• HDL Cholesterol: 42 mg/dL [Ref: > 40]\n• LDL Cholesterol: 162 mg/dL [Ref: < 100]\n• Triglycerides: 210 mg/dL [Ref: < 150]\n• Non-HDL Cholesterol: 203 mg/dL\n• hs-CRP: 3.8 mg/L [Elevated Cardiovascular Risk]',
       impressionText: 'Hypercholesterolemia with mixed dyslipidemia and moderate systemic inflammatory response (elevated hs-CRP).',

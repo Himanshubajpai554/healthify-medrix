@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_resource_repository.dart';
 import '../../core/provider/repository_provider.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/resource_model.dart';
 import '../../core/queries/domain_queries.dart';
 import '../../core/services/resource_service.dart';
-import '../../core/widgets/medrix_empty_state.dart';
-import '../../core/widgets/medrix_error_state.dart';
-import '../../core/widgets/medrix_loading_state.dart';
+import '../../core/widgets/healthify_empty_state.dart';
+import '../../core/widgets/healthify_error_state.dart';
+import '../../core/widgets/healthify_loading_state.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../utils/responsive.dart';
@@ -137,9 +137,9 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
                   ),
                   Expanded(
                     child: _isLoading
-                        ? const MedrixLoadingState(message: 'Loading hospital resource capacity matrix...')
+                        ? const HealthifyLoadingState(message: 'Loading hospital resource capacity matrix...')
                         : _errorMessage != null
-                            ? MedrixErrorState(
+                            ? HealthifyErrorState(
                                 errorMessage: _errorMessage!,
                                 onRetry: _loadData,
                               )
@@ -464,7 +464,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
   // ---------------------------------------------------------------------------
   Widget _buildRequestsTab(bool isDark, bool isDesktop) {
     if (_requests.isEmpty) {
-      return const MedrixEmptyState(
+      return const HealthifyEmptyState(
         title: 'No Pending Allocation Requests',
         description: 'All hospital resource requests have been processed.',
         icon: Icons.assignment_turned_in_rounded,
@@ -551,7 +551,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> wit
         ),
         Expanded(
           child: _recommendations.isEmpty
-              ? const MedrixEmptyState(
+              ? const HealthifyEmptyState(
                   title: 'No Resource Insights',
                   description: 'Hospital resource capacity is currently balanced.',
                   icon: Icons.lightbulb_outline_rounded,

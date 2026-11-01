@@ -1,4 +1,4 @@
-/// DateTime Utility Service for Medrix Platform
+﻿/// DateTime Utility Service for Healthify Platform
 /// Standardizes date formatting, relative time calculation, and timezone display across
 /// both Hospital and Patient applications.
 class DateTimeService {

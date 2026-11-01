@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/provider/repository_provider.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
@@ -374,7 +374,7 @@ class _PatientForgotPasswordScreenState extends State<PatientForgotPasswordScree
         ),
         const SizedBox(height: 8),
         Text(
-          'Your password has been updated securely. You can now sign in to Medrix using your new password.',
+          'Your password has been updated securely. You can now sign in to Healthify using your new password.',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13.5, color: secondaryTextColor, height: 1.4),
         ),

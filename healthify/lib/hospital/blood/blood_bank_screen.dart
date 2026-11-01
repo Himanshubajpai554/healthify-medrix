@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../theme/app_theme.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -220,12 +220,12 @@ class _BloodBankScreenState extends State<BloodBankScreen> {
                     const SizedBox(height: 24),
 
                     if (_uiState.isLoading)
-                      const MedrixLoadingState(
+                      const HealthifyLoadingState(
                         message:
                             'Loading blood bank inventory & request data...',
                       )
                     else if (_uiState.isError)
-                      MedrixErrorState(
+                      HealthifyErrorState(
                         errorMessage:
                             _uiState.errorMessage ?? 'Error loading blood bank',
                         onRetry: _loadBloodBankData,

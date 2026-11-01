@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_analytics_repository.dart';
 import '../../core/provider/repository_provider.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/analytics_model.dart';
 import '../../core/queries/domain_queries.dart';
 import '../../core/services/analytics_service.dart';
-import '../../core/widgets/medrix_error_state.dart';
-import '../../core/widgets/medrix_loading_state.dart';
+import '../../core/widgets/healthify_error_state.dart';
+import '../../core/widgets/healthify_loading_state.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../utils/responsive.dart';
@@ -110,9 +110,9 @@ class _OperationalAnalyticsScreenState extends State<OperationalAnalyticsScreen>
                   _buildHeader(isDark, isDesktop),
                   Expanded(
                     child: _isLoading
-                        ? const MedrixLoadingState(message: 'Loading hospital operational analytics & trends...')
+                        ? const HealthifyLoadingState(message: 'Loading hospital operational analytics & trends...')
                         : _errorMessage != null
-                            ? MedrixErrorState(
+                            ? HealthifyErrorState(
                                 errorMessage: _errorMessage!,
                                 onRetry: _loadData,
                               )

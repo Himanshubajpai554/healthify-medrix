@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
@@ -14,7 +14,7 @@ import '../patient/patient_login_screen.dart';
 import '../patient/patient_signup_screen.dart';
 import '../signup/signup_screen.dart';
 
-enum MedrixRole { patient, doctor, hospital }
+enum HealthifyRole { patient, doctor, hospital }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  MedrixRole _selectedRole = MedrixRole.hospital;
+  HealthifyRole _selectedRole = HealthifyRole.hospital;
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
   bool _isLoading = false;
@@ -82,8 +82,8 @@ class _LoginScreenState extends State<LoginScreen>
         _isLoading = true;
       });
 
-      if (_selectedRole == MedrixRole.hospital ||
-          _selectedRole == MedrixRole.doctor) {
+      if (_selectedRole == HealthifyRole.hospital ||
+          _selectedRole == HealthifyRole.doctor) {
         final client = RepositoryContainer.instance.serverpodClient;
         if (client == null) {
           setState(() => _isLoading = false);
@@ -104,20 +104,20 @@ class _LoginScreenState extends State<LoginScreen>
           if (!mounted) return;
           if (membership == null ||
               !membership.isActive ||
-              (_selectedRole == MedrixRole.doctor
+              (_selectedRole == HealthifyRole.doctor
                   ? membership.role != 'doctor'
                   : !{'hospitalOwner', 'hospitalAdmin', 'hospitalManager'}
                       .contains(membership.role))) {
             await client.auth.signOutDevice();
             _showLoginError(
-              _selectedRole == MedrixRole.doctor
+              _selectedRole == HealthifyRole.doctor
                   ? 'This account is not linked to an active doctor profile. Ask your hospital administrator to provision access.'
                   : 'This account does not have an active hospital administration role.',
             );
             return;
           }
           RepositoryContainer.instance.setHospitalKey(membership.hospitalKey);
-          if (_selectedRole == MedrixRole.doctor) {
+          if (_selectedRole == HealthifyRole.doctor) {
             final raw = await client.hospital.getMyDoctorProfile(
               membership.hospitalKey,
             );
@@ -160,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen>
           );
         } catch (error) {
           if (!mounted) return;
-          if (_selectedRole == MedrixRole.doctor) {
+          if (_selectedRole == HealthifyRole.doctor) {
             try {
               await client.auth.signOutDevice();
             } catch (_) {}
@@ -182,13 +182,13 @@ class _LoginScreenState extends State<LoginScreen>
         // Navigate based on selected persona role
         Widget destinationScreen;
         switch (_selectedRole) {
-          case MedrixRole.patient:
+          case HealthifyRole.patient:
             destinationScreen = const PatientDashboardScreen();
             break;
-          case MedrixRole.doctor:
+          case HealthifyRole.doctor:
             destinationScreen = const DoctorDashboardScreen();
             break;
-          case MedrixRole.hospital:
+          case HealthifyRole.hospital:
             destinationScreen = const MainDashboardScreen(
               hospitalName: 'St. Jude Memorial Hospital',
             );
@@ -263,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               decoration: GlassTextFieldTheme.getDecoration(
                 context: context,
-                hintText: 'user@medrix.org',
+                hintText: 'user@healthify.org',
                 labelText: 'Account Email',
                 prefixIcon: const Icon(Icons.email_outlined),
               ),
@@ -373,7 +373,7 @@ class _LoginScreenState extends State<LoginScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header Logo & Title (MEDRIX)
+          // Header Logo & Title (HEALTHIFY)
           Center(
             child: GlassIconContainer(
               icon: Icons.local_hospital_rounded,
@@ -385,7 +385,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 14),
           const Text(
-            'MEDRIX',
+            'HEALTHIFY',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 30,
@@ -430,7 +430,7 @@ class _LoginScreenState extends State<LoginScreen>
               Expanded(
                 child: _buildRoleCard(
                   context: context,
-                  role: MedrixRole.patient,
+                  role: HealthifyRole.patient,
                   label: 'PATIENT',
                   icon: Icons.person_rounded,
                   activeColor: HealthifyGlassTheme.primaryTeal,
@@ -440,7 +440,7 @@ class _LoginScreenState extends State<LoginScreen>
               Expanded(
                 child: _buildRoleCard(
                   context: context,
-                  role: MedrixRole.doctor,
+                  role: HealthifyRole.doctor,
                   label: 'DOCTOR',
                   icon: Icons.medical_services_rounded,
                   activeColor: Colors.indigo,
@@ -450,7 +450,7 @@ class _LoginScreenState extends State<LoginScreen>
               Expanded(
                 child: _buildRoleCard(
                   context: context,
-                  role: MedrixRole.hospital,
+                  role: HealthifyRole.hospital,
                   label: 'HOSPITAL',
                   icon: Icons.local_hospital_rounded,
                   activeColor: HealthifyGlassTheme.primaryTeal,
@@ -641,13 +641,13 @@ class _LoginScreenState extends State<LoginScreen>
                 onTap: () {
                   Widget signupPage;
                   switch (_selectedRole) {
-                    case MedrixRole.patient:
+                    case HealthifyRole.patient:
                       signupPage = const PatientSignupScreen();
                       break;
-                    case MedrixRole.doctor:
+                    case HealthifyRole.doctor:
                       signupPage = const DoctorSignupScreen();
                       break;
-                    case MedrixRole.hospital:
+                    case HealthifyRole.hospital:
                       signupPage = const HospitalSignupScreen();
                       break;
                   }
@@ -683,7 +683,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   Widget _buildRoleCard({
     required BuildContext context,
-    required MedrixRole role,
+    required HealthifyRole role,
     required String label,
     required IconData icon,
     required Color activeColor,
@@ -693,7 +693,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     return InkWell(
       onTap: () {
-        if (role == MedrixRole.patient) {
+        if (role == HealthifyRole.patient) {
           Navigator.pushReplacement(
             context,
             FadePageRoute(page: const PatientLoginScreen()),
@@ -748,33 +748,33 @@ class _LoginScreenState extends State<LoginScreen>
 
   Color _getRoleColor() {
     switch (_selectedRole) {
-      case MedrixRole.patient:
+      case HealthifyRole.patient:
         return HealthifyGlassTheme.primaryTeal;
-      case MedrixRole.doctor:
+      case HealthifyRole.doctor:
         return Colors.indigo;
-      case MedrixRole.hospital:
+      case HealthifyRole.hospital:
         return HealthifyGlassTheme.primaryTeal;
     }
   }
 
   String _getEmailLabel() {
     switch (_selectedRole) {
-      case MedrixRole.patient:
+      case HealthifyRole.patient:
         return 'Patient Email or Registration ID';
-      case MedrixRole.doctor:
+      case HealthifyRole.doctor:
         return 'Doctor Official Email or Medical License ID';
-      case MedrixRole.hospital:
+      case HealthifyRole.hospital:
         return 'Official Hospital Admin Email';
     }
   }
 
   String _getEmailHint() {
     switch (_selectedRole) {
-      case MedrixRole.patient:
+      case HealthifyRole.patient:
         return 'e.g. patient@gmail.com or PAT-8842';
-      case MedrixRole.doctor:
+      case HealthifyRole.doctor:
         return 'e.g. dr.jenkins@hospital.org';
-      case MedrixRole.hospital:
+      case HealthifyRole.hospital:
         return 'e.g. admin@cityhospital.org';
     }
   }
@@ -827,7 +827,7 @@ class _LoginHeroPanel extends StatelessWidget {
                 const SizedBox(width: 12),
                 const Flexible(
                   child: Text(
-                    'MEDRIX System',
+                    'HEALTHIFY System',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -852,7 +852,7 @@ class _LoginHeroPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'MEDRIX seamlessly connects Patients, Doctors, and Hospital Facilities in real-time across beds, queues, and blood inventory.',
+                  'HEALTHIFY seamlessly connects Patients, Doctors, and Hospital Facilities in real-time across beds, queues, and blood inventory.',
                   style: TextStyle(
                     fontSize: 13.5,
                     color: Colors.white.withValues(alpha: 0.88),
@@ -900,7 +900,7 @@ class _LoginHeroPanel extends StatelessWidget {
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'All MEDRIX connections are HIPAA compliant and encrypted.',
+                          'All HEALTHIFY connections are HIPAA compliant and encrypted.',
                           style: TextStyle(fontSize: 11.5, color: Colors.white),
                         ),
                       ),

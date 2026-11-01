@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
@@ -221,9 +221,9 @@ class _FacilitiesScreenState extends State<FacilitiesScreen> {
             _buildPrivacyCallout(context),
             const SizedBox(height: 20),
             if (_facilityUiState.isLoading)
-              const MedrixLoadingState(message: 'Loading facilities directory...')
+              const HealthifyLoadingState(message: 'Loading facilities directory...')
             else if (_facilityUiState.isError)
-              MedrixErrorState(
+              HealthifyErrorState(
                 errorMessage: _facilityUiState.errorMessage ?? 'Error loading facilities',
                 onRetry: _loadFacilities,
               )
@@ -238,9 +238,9 @@ class _FacilitiesScreenState extends State<FacilitiesScreen> {
             _buildEquipmentFilterToolbar(context),
             const SizedBox(height: 20),
             if (_equipmentUiState.isLoading)
-              const MedrixLoadingState(message: 'Loading equipment directory & maintenance schedules...')
+              const HealthifyLoadingState(message: 'Loading equipment directory & maintenance schedules...')
             else if (_equipmentUiState.isError)
-              MedrixErrorState(
+              HealthifyErrorState(
                 errorMessage: _equipmentUiState.errorMessage ?? 'Error loading equipment',
                 onRetry: _loadEquipment,
               )

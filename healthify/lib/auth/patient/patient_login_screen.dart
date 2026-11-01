@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import '../../core/provider/repository_provider.dart';
 import '../../utils/page_transitions.dart';
@@ -128,7 +128,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'Sign In to Medrix',
+                          'Sign In to Healthify',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 24,

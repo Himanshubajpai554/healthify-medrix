@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/glass_components.dart';
 import '../../models/consultation_models.dart';
@@ -75,7 +75,7 @@ class ConsultationNotesTab extends StatelessWidget {
                 Expanded(
                   child: Text(
                     isPrivate
-                        ? 'Internal Note Mode: Strictly private. Only accessible to doctors & care team in Medrix EHR.'
+                        ? 'Internal Note Mode: Strictly private. Only accessible to doctors & care team in Healthify EHR.'
                         : 'Patient Visible Mode: Will be included in the patient\'s accessible consultation summary.',
                     style: TextStyle(
                       fontSize: 12,

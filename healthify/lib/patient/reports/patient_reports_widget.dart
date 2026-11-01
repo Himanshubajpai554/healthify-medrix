@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/material.dart';
@@ -981,7 +981,7 @@ class _PatientReportsWidgetState extends State<PatientReportsWidget> {
           const SizedBox(height: 8),
 
           Text(
-            'Reports from your Medrix appointments and connected healthcare providers will appear here.',
+            'Reports from your Healthify appointments and connected healthcare providers will appear here.',
             style: TextStyle(
               fontSize: 13,
               color: _secondaryText(isDark),

@@ -1,4 +1,4 @@
-import '../repositories/auth_repository.dart';
+﻿import '../repositories/auth_repository.dart';
 import '../../enums/domain_enums.dart';
 import '../../models/auth_model.dart';
 
@@ -10,7 +10,7 @@ class MockAuthRepository implements AuthRepository {
     sessionId: 'SES-MOCK-101',
     isAuthenticated: true,
     lastActive: DateTime.now(),
-    token: 'mock-jwt-token-medrix-2026',
+    token: 'mock-jwt-token-healthify-2026',
   );
 
   @override
@@ -29,7 +29,7 @@ class MockAuthRepository implements AuthRepository {
       sessionId: 'SES-${DateTime.now().millisecondsSinceEpoch}',
       isAuthenticated: true,
       lastActive: DateTime.now(),
-      token: 'mock-jwt-token-medrix-${DateTime.now().millisecondsSinceEpoch}',
+      token: 'mock-jwt-token-healthify-${DateTime.now().millisecondsSinceEpoch}',
     );
     return _currentSession;
   }

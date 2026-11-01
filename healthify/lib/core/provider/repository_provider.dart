@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:healthify_server_client/healthify_server_client.dart';
 import '../data/mock/mock_repositories.dart';
 import '../data/mock/mock_resource_repository.dart';
@@ -19,7 +19,7 @@ import '../data/serverpod/serverpod_patient_discovery_repository.dart';
 import '../data/serverpod/serverpod_patient_review_repositories.dart';
 import '../data/repositories/repositories.dart';
 
-/// Central Dependency Injection container / InheritedWidget for Medrix repositories.
+/// Central Dependency Injection container / InheritedWidget for Healthify repositories.
 class RepositoryContainer {
   final Client? serverpodClient;
   final HospitalOperationalRepository? hospitalOperationalRepository;

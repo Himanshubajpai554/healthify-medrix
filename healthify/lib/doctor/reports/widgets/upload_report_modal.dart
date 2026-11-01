@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_dashboard_models.dart';
@@ -32,7 +32,7 @@ class _UploadReportModalState extends State<UploadReportModal> {
   final _departmentController = TextEditingController(text: 'Radiology');
   final _requestedByController = TextEditingController(text: 'Dr. Sarah Jenkins');
   final _performedByController = TextEditingController(text: 'Central Diagnostic Lab');
-  final _facilityController = TextEditingController(text: 'Medrix Diagnostic Wing B');
+  final _facilityController = TextEditingController(text: 'Healthify Diagnostic Wing B');
   final _findingsController = TextEditingController();
 
   ReportCategory _selectedCategory = ReportCategory.radiology;

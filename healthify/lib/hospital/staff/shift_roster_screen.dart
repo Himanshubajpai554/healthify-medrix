@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 
@@ -148,11 +148,11 @@ class _ShiftRosterScreenState extends State<ShiftRosterScreen> {
 
           // Shift List View
           if (_uiState.isLoading)
-            const MedrixLoadingState(message: 'Loading operational shift roster...')
+            const HealthifyLoadingState(message: 'Loading operational shift roster...')
           else if (_uiState.isError)
-            MedrixErrorState(errorMessage: _uiState.errorMessage ?? 'Error', onRetry: _loadRoster)
+            HealthifyErrorState(errorMessage: _uiState.errorMessage ?? 'Error', onRetry: _loadRoster)
           else if (_uiState.isEmpty || (_uiState.data?.isEmpty ?? true))
-            MedrixEmptyState(
+            HealthifyEmptyState(
               title: 'No Active Roster',
               description: 'No shifts currently scheduled.',
               icon: Icons.calendar_month_rounded,

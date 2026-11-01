@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../models/doctor_dashboard_models.dart';
 
@@ -67,7 +67,7 @@ class DoctorSidebar extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'MEDRIX',
+                          'HEALTHIFY',
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.8,

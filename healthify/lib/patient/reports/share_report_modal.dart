@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
@@ -77,7 +77,7 @@ class _ShareReportModalState extends State<ShareReportModal> {
     setState(() {
       _currentReport = updatedReport;
       _isLinkGenerated = true;
-      _generatedLink = 'https://medrix.health/v/${newLink.id}';
+      _generatedLink = 'https://healthify.health/v/${newLink.id}';
     });
 
     widget.onReportUpdated(updatedReport);

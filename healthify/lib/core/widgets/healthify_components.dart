@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import '../../shared/widgets/glass_components.dart';
 
-export 'medrix_empty_state.dart';
-export 'medrix_error_state.dart';
-export 'medrix_loading_state.dart';
-export 'medrix_status_badge.dart';
+export 'healthify_empty_state.dart';
+export 'healthify_error_state.dart';
+export 'healthify_loading_state.dart';
+export 'healthify_status_badge.dart';
 export 'access_denied_widget.dart';
 
-typedef MedrixCard = GlassCard;
-typedef MedrixPrimaryButton = GlassPrimaryButton;
-typedef MedrixSecondaryButton = GlassSecondaryButton;
-typedef MedrixIconButton = GlassIconContainer;
+typedef HealthifyCard = GlassCard;
+typedef HealthifyPrimaryButton = GlassPrimaryButton;
+typedef HealthifySecondaryButton = GlassSecondaryButton;
+typedef HealthifyIconButton = GlassIconContainer;
 
-class MedrixSectionHeader extends StatelessWidget {
+class HealthifySectionHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? trailing;
 
-  const MedrixSectionHeader({
+  const HealthifySectionHeader({
     super.key,
     required this.title,
     this.subtitle,
@@ -63,16 +63,16 @@ class MedrixSectionHeader extends StatelessWidget {
   }
 }
 
-typedef MedrixPageHeader = MedrixSectionHeader;
+typedef HealthifyPageHeader = HealthifySectionHeader;
 
-class MedrixStatCard extends StatelessWidget {
+class HealthifyStatCard extends StatelessWidget {
   final String title;
   final String value;
   final String subtitle;
   final IconData icon;
   final Color color;
 
-  const MedrixStatCard({
+  const HealthifyStatCard({
     super.key,
     required this.title,
     required this.value,
@@ -140,14 +140,14 @@ class MedrixStatCard extends StatelessWidget {
   }
 }
 
-typedef MedrixMetricCard = MedrixStatCard;
+typedef HealthifyMetricCard = HealthifyStatCard;
 
-class MedrixSearchField extends StatelessWidget {
+class HealthifySearchField extends StatelessWidget {
   final String hintText;
   final ValueChanged<String> onChanged;
   final String value;
 
-  const MedrixSearchField({
+  const HealthifySearchField({
     super.key,
     required this.hintText,
     required this.onChanged,
@@ -173,10 +173,10 @@ class MedrixSearchField extends StatelessWidget {
   }
 }
 
-class MedrixFilterBar extends StatelessWidget {
+class HealthifyFilterBar extends StatelessWidget {
   final List<Widget> children;
 
-  const MedrixFilterBar({
+  const HealthifyFilterBar({
     super.key,
     required this.children,
   });
@@ -196,11 +196,11 @@ class MedrixFilterBar extends StatelessWidget {
   }
 }
 
-class MedrixChartContainer extends StatelessWidget {
+class HealthifyChartContainer extends StatelessWidget {
   final String title;
   final Widget chart;
 
-  const MedrixChartContainer({
+  const HealthifyChartContainer({
     super.key,
     required this.title,
     required this.chart,
@@ -214,7 +214,7 @@ class MedrixChartContainer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MedrixSectionHeader(title: title),
+          HealthifySectionHeader(title: title),
           const SizedBox(height: 16),
           SizedBox(
             height: 220,
@@ -226,10 +226,10 @@ class MedrixChartContainer extends StatelessWidget {
   }
 }
 
-class MedrixTimeline extends StatelessWidget {
-  final List<MedrixTimelineItem> items;
+class HealthifyTimeline extends StatelessWidget {
+  final List<HealthifyTimelineItem> items;
 
-  const MedrixTimeline({
+  const HealthifyTimeline({
     super.key,
     required this.items,
   });
@@ -291,14 +291,14 @@ class MedrixTimeline extends StatelessWidget {
   }
 }
 
-class MedrixTimelineItem {
+class HealthifyTimelineItem {
   final String title;
   final String description;
   final String timeAgo;
   final IconData icon;
   final Color color;
 
-  const MedrixTimelineItem({
+  const HealthifyTimelineItem({
     required this.title,
     required this.description,
     required this.timeAgo,

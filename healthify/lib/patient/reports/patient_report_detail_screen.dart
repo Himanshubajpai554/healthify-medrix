@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
@@ -524,7 +524,7 @@ children: [
 Icon(Icons.verified_rounded, color: isDark ? const Color(0xFF5EEAD4) : Colors.teal.shade700, size: 28),
 const SizedBox(height: 4),
 Text(
-'Digitally Signed by Medrix Vault',
+'Digitally Signed by Healthify Vault',
 style: TextStyle(fontSize: 10, color: isDark ? Colors.white.withValues(alpha: 0.48) : Colors.grey.shade600, fontWeight: FontWeight.w600),
 ),
 ],
@@ -665,7 +665,7 @@ color: _primaryText(isDark),
 ),
 const SizedBox(height: 2),
 Text(
-'Stored securely under Medrix Health Vault with HIPAA & GDPR compliance standards.',
+'Stored securely under Healthify Health Vault with HIPAA & GDPR compliance standards.',
 style: TextStyle(
 fontSize: 12,
 color: _secondaryText(isDark),

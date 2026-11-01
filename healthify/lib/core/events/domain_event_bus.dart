@@ -1,10 +1,10 @@
-import 'dart:async';
+﻿import 'dart:async';
 import '../enums/domain_enums.dart';
 import '../models/domain_event.dart';
 import '../models/notification_model.dart';
 import '../provider/repository_provider.dart';
 
-/// Central In-Memory Domain Event Bus for Medrix Frontend Simulation.
+/// Central In-Memory Domain Event Bus for Healthify Frontend Simulation.
 /// Publishes domain events locally and automatically routes notifications to
 /// patient and hospital audiences without any backend or WebSocket dependency.
 class DomainEventBus {
@@ -100,7 +100,7 @@ class DomainEventBus {
             recipientRole: UserRole.patient,
             type: NotificationType.appointmentReminder,
             title: 'Consultation Completed',
-            message: 'Your consultation is complete. Thank you for visiting Medrix.',
+            message: 'Your consultation is complete. Thank you for visiting Healthify.',
             priority: NotificationPriority.low,
             status: NotificationStatus.unread,
             createdAt: now,

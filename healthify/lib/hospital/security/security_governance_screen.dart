@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/audit_model.dart';
 import '../../core/models/security_model.dart';
@@ -8,9 +8,9 @@ import '../../core/queries/domain_queries.dart';
 import '../../core/services/audit_service.dart';
 import '../../core/services/security_service.dart';
 import '../../core/widgets/access_denied_widget.dart';
-import '../../core/widgets/medrix_empty_state.dart';
-import '../../core/widgets/medrix_error_state.dart';
-import '../../core/widgets/medrix_loading_state.dart';
+import '../../core/widgets/healthify_empty_state.dart';
+import '../../core/widgets/healthify_error_state.dart';
+import '../../core/widgets/healthify_loading_state.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../utils/responsive.dart';
@@ -225,9 +225,9 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
                   _buildTabBar(isDark),
                   Expanded(
                     child: _isLoading
-                        ? const MedrixLoadingState(message: 'Loading security, governance & audit logs...')
+                        ? const HealthifyLoadingState(message: 'Loading security, governance & audit logs...')
                         : _errorMessage != null
-                            ? MedrixErrorState(errorMessage: _errorMessage!, onRetry: _loadData)
+                            ? HealthifyErrorState(errorMessage: _errorMessage!, onRetry: _loadData)
                             : TabBarView(
                                 controller: _tabController,
                                 children: [
@@ -610,7 +610,7 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
         const SizedBox(height: 8),
         Expanded(
           child: _auditLogs.isEmpty
-              ? const MedrixEmptyState(
+              ? const HealthifyEmptyState(
                   title: 'No Audit Logs Found',
                   description: 'No audit records match the current filter or search criteria.',
                   icon: Icons.history_toggle_off_rounded,
@@ -727,7 +727,7 @@ class _SecurityGovernanceScreenState extends State<SecurityGovernanceScreen> wit
               Text('Target Entity: ${item.targetEntityType} (${item.targetEntityId})'),
               Text('Timestamp: ${item.timestamp}'),
               Text('IP Address: ${item.ipAddress ?? "192.168.1.x"}'),
-              Text('User Agent: ${item.userAgent ?? "Medrix Client"}'),
+              Text('User Agent: ${item.userAgent ?? "Healthify Client"}'),
               const SizedBox(height: 16),
               const Text('STATE CHANGE DIFF (PREVIOUS vs NEW)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.indigo)),
               const SizedBox(height: 8),

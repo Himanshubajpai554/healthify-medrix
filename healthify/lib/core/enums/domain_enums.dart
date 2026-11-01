@@ -1,4 +1,4 @@
-/// Domain enums for Medrix Hospital Portal.
+﻿/// Domain enums for Healthify Hospital Portal.
 /// Source of truth for entity statuses and classifications across the application.
 library;
 

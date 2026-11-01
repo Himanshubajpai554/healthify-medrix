@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_profile_models.dart';
 import '../../services/doctor_profile_service.dart';
@@ -386,7 +386,7 @@ class _SecuritySettingsSectionState extends State<SecuritySettingsSection> {
                           ),
                         ),
                         Text(
-                          'Devices currently logged into your Medrix Doctor account.',
+                          'Devices currently logged into your Healthify Doctor account.',
                           style: TextStyle(
                             fontSize: 12.5,
                             color: HealthifyGlassTheme.getTextSecondary(isDark),

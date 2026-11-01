@@ -1,14 +1,14 @@
-# MEDRIX SERVERPOD INTEGRATION CONTRACT & BACKEND SWAP BLUEPRINT
+﻿# HEALTHIFY SERVERPOD INTEGRATION CONTRACT & BACKEND SWAP BLUEPRINT
 
 > **Developer-Facing Architecture & Serverpod Contract Specification**  
-> **Target Version**: Medrix Frontend Architecture v1  
+> **Target Version**: Healthify Frontend Architecture v1  
 > **Status**: Verified Contract Specification (Zero Flutter UI Rewrites Required)
 
 ---
 
 ## 1. Integration Architecture & Data Flow
 
-Medrix Flutter frontend enforces a strict 6-layer decoupled architecture:
+Healthify Flutter frontend enforces a strict 6-layer decoupled architecture:
 
 $$\text{UI Widgets} \longrightarrow \text{State / Controllers} \longrightarrow \text{Domain Services} \longrightarrow \text{Repository Interfaces} \longrightarrow \text{Domain Mappers} \longrightarrow \text{Serverpod DTO / Endpoints}$$
 
@@ -170,7 +170,7 @@ $$\text{Serverpod Exception} \longrightarrow \text{DomainError Mapping} \longrig
 | Serverpod Error Code | DomainError Variant | UI Display Behavior |
 | :--- | :--- | :--- |
 | `VALIDATION_FAILED` | `ValidationError` | Highlights form fields with field error strings. |
-| `NOT_FOUND` | `NotFoundError` | Renders `MedrixErrorState` with entity details and Retry button. |
+| `NOT_FOUND` | `NotFoundError` | Renders `HealthifyErrorState` with entity details and Retry button. |
 | `UNAUTHORIZED` / `FORBIDDEN` | `PermissionError` / `PermissionDeniedError` | Renders `AccessDeniedWidget` with audit denial logging. |
 | `STATE_CONFLICT` | `ConflictError` | Shows snackbar with refreshed data prompt. |
 | `SERVICE_UNAVAILABLE` | `UnavailableError` | Renders temporary unavailability message with retry. |

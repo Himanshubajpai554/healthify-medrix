@@ -1,4 +1,4 @@
-/// Hospital Identity & Operating Mode Settings Model
+﻿/// Hospital Identity & Operating Mode Settings Model
 class HospitalSettings {
 
   final String hospitalId;
@@ -27,7 +27,7 @@ class HospitalSettings {
     this.licenseId = 'HOSP-NY-90218',
     this.taxId = 'XX-XXX9081',
     this.email = 'admin@stjude-hospital.org',
-    this.phone = '+1 (555) 900-MEDRIX',
+    this.phone = '+1 (555) 900-HEALTHIFY',
     this.emergencyHelpline = '+1 (555) 911-STJUDE',
     this.website = 'https://stjude-hospital.org',
     this.address = '742 Healthcare Boulevard',
@@ -447,7 +447,7 @@ class SystemInformation {
   final String architectureVersion;
 
   const SystemInformation({
-    this.appName = 'Medrix Hospital Portal',
+    this.appName = 'Healthify Hospital Portal',
     this.appVersion = '2.4.0',
     this.buildVersion = 'Build 2026.10',
     this.environment = 'Frontend Architecture v1',

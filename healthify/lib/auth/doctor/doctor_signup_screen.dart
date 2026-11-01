@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../utils/page_transitions.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
@@ -504,7 +504,7 @@ class _DoctorHeroPanel extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'MEDRIX Physician',
+                  'HEALTHIFY Physician',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,

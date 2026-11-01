@@ -1,4 +1,4 @@
-import '../enums/domain_enums.dart';
+﻿import '../enums/domain_enums.dart';
 import '../models/core_models.dart';
 
 /// Bidirectional Domain <-> DTO Mapping Layer Specs for Serverpod Integration
@@ -26,7 +26,7 @@ class HospitalMapper {
       hospitalType: dto['hospitalType'] as String? ?? 'Multi-specialty Center',
       licenseId: dto['licenseId'] as String? ?? 'HOSP-NY-90218',
       email: dto['email'] as String? ?? 'admin@stjude-hospital.org',
-      phone: dto['phone'] as String? ?? '+1 (555) 900-MEDRIX',
+      phone: dto['phone'] as String? ?? '+1 (555) 900-HEALTHIFY',
       emergencyHelpline: dto['emergencyHelpline'] as String? ?? '+1 (555) 911-STJUDE',
       operatingMode: dto['operatingMode'] as String? ?? 'Normal Operations',
     );

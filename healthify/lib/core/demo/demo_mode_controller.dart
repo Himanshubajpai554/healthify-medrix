@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import '../data/mock/mock_data_reset_service.dart';
 import '../services/cross_app_demo_scenario_service.dart';
 
@@ -32,7 +32,7 @@ class DemoModeController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Runs the full 10-step end-to-end Medrix care scenario
+  /// Runs the full 10-step end-to-end Healthify care scenario
   Future<DemoScenarioExecutionReport> executeFullScenario() async {
     _isExecuting = true;
     notifyListeners();

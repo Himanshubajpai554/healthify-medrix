@@ -1,4 +1,4 @@
-export 'enums/domain_enums.dart';
+﻿export 'enums/domain_enums.dart';
 export 'models/core_models.dart';
 export 'errors/domain_errors.dart';
 export 'queries/pagination.dart';
@@ -10,6 +10,6 @@ export 'provider/repository_provider.dart';
 export 'services/services.dart';
 export 'state/ui_state.dart';
 export 'utils/status_system.dart';
-export 'widgets/medrix_components.dart';
+export 'widgets/healthify_components.dart';
 export 'mappers/domain_mappers.dart';
 

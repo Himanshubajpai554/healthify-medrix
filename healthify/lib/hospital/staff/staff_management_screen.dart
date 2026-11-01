@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 
@@ -250,11 +250,11 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
 
           // States
           if (_uiState.isLoading)
-            const MedrixLoadingState(message: 'Loading staff directory...')
+            const HealthifyLoadingState(message: 'Loading staff directory...')
           else if (_uiState.isError)
-            MedrixErrorState(errorMessage: _uiState.errorMessage ?? 'Error', onRetry: _loadStaff)
+            HealthifyErrorState(errorMessage: _uiState.errorMessage ?? 'Error', onRetry: _loadStaff)
           else if (_filteredStaff.isEmpty)
-            MedrixEmptyState(
+            HealthifyEmptyState(
               title: 'No Staff Found',
               description: 'No active staff records match your criteria.',
               icon: Icons.people_outline_rounded,

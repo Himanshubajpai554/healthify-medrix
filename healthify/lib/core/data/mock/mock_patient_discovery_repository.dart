@@ -1,4 +1,4 @@
-import '../../enums/domain_enums.dart';
+﻿import '../../enums/domain_enums.dart';
 import '../../models/ai_insight_model.dart';
 import '../../models/doctor_model.dart';
 import '../../models/hospital_model.dart';
@@ -39,7 +39,7 @@ class MockPatientDiscoveryRepository implements PatientDiscoveryRepository {
       id: 'HOSP-101',
       name: 'St. Jude Memorial Hospital',
       address: '742 Healthcare Boulevard, Medical District, NY 10001',
-      contactNumber: '+1 (555) 900-MEDRIX',
+      contactNumber: '+1 (555) 900-HEALTHIFY',
       email: 'admin@stjude-hospital.org',
       type: 'Trauma Center & Multi-Specialty',
       rating: 4.8,
@@ -194,12 +194,12 @@ class MockPatientDiscoveryRepository implements PatientDiscoveryRepository {
       displayName: 'St. Jude Memorial Hospital',
       hospitalType: 'Multi-Specialty Medical & Trauma Center',
       establishmentDate: '1984',
-      registrationLicenseId: 'LIC-MEDRIX-9981',
+      registrationLicenseId: 'LIC-HEALTHIFY-9981',
       taxId: 'TX-991204',
       accreditationInfo: 'JCI Accredited & Level-1 Trauma Certified',
       email: 'admin@stjude-hospital.org',
       emergencyHelpline: '+1 (555) 911-STJUDE',
-      receptionPhone: '+1 (555) 900-MEDRIX',
+      receptionPhone: '+1 (555) 900-HEALTHIFY',
       website: 'https://stjude-hospital.org',
       address: '742 Healthcare Boulevard, Medical District',
       city: 'New York',

@@ -1,4 +1,4 @@
-import 'mock_data_store.dart';
+﻿import 'mock_data_store.dart';
 
 class DataIntegrityReport {
   final bool isValid;
@@ -12,7 +12,7 @@ class DataIntegrityReport {
   });
 }
 
-/// Development & Test Data Integrity Validator for Medrix Shared Mock Store
+/// Development & Test Data Integrity Validator for Healthify Shared Mock Store
 class MockDataIntegrityValidator {
   static DataIntegrityReport validate() {
     final store = MockDataStore();

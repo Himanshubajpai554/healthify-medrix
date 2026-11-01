@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import '../models/doctor_dashboard_models.dart';
 import '../models/doctor_profile_models.dart';
 
@@ -34,10 +34,10 @@ class DoctorProfileService {
       title: 'Senior Consultant Cardiologist',
       photoUrl: null,
       phone: '+91 98765 43210',
-      email: 'arjun.mehta@medrix.org',
+      email: 'arjun.mehta@healthify.org',
       dateOfBirth: '14 Aug 1982',
       gender: 'Male',
-      address: 'Suite 402, Medrix Hospital Tower, BKC',
+      address: 'Suite 402, Healthify Hospital Tower, BKC',
       city: 'Mumbai',
       state: 'Maharashtra',
       country: 'India',
@@ -60,8 +60,8 @@ class DoctorProfileService {
 
     _affiliations.addAll([
       const HospitalAffiliationModel(
-        hospitalId: 'HOSP-MEDRIX-01',
-        hospitalName: 'Medrix City Hospital & Research Center',
+        hospitalId: 'HOSP-HEALTHIFY-01',
+        hospitalName: 'Healthify City Hospital & Research Center',
         department: 'Cardiology & Vascular Medicine',
         role: 'Senior Consultant Doctor',
         location: 'Bandra Kurla Complex, Mumbai',
@@ -69,8 +69,8 @@ class DoctorProfileService {
         isPrimary: true,
       ),
       const HospitalAffiliationModel(
-        hospitalId: 'HOSP-MEDRIX-02',
-        hospitalName: 'Medrix Super Specialty Heart Institute',
+        hospitalId: 'HOSP-HEALTHIFY-02',
+        hospitalName: 'Healthify Super Specialty Heart Institute',
         department: 'Interventional Cardiology',
         role: 'Visiting Specialist Consultant',
         location: 'Andheri West, Mumbai',
@@ -164,7 +164,7 @@ class DoctorProfileService {
       DoctorSecuritySessionModel(
         id: 'SES-992',
         device: 'Samsung Galaxy A73 (Mobile App)',
-        browser: 'Medrix Doctor App v2.4',
+        browser: 'Healthify Doctor App v2.4',
         locationApprox: 'Mumbai, MH, India',
         lastActive: now.subtract(const Duration(hours: 4)),
         isCurrent: false,
@@ -183,7 +183,7 @@ class DoctorProfileService {
       DoctorLoginActivityModel(
         id: 'LOG-302',
         timestamp: now.subtract(const Duration(days: 1, hours: 2)),
-        device: 'Android / Medrix App',
+        device: 'Android / Healthify App',
         locationApprox: 'Mumbai, India',
         ipAddress: '49.36.14.88',
         isSuccessful: true,

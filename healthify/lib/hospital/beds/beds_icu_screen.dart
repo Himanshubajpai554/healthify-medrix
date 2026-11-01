@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../theme/app_theme.dart';
 import '../../shared/widgets/glass_components.dart';
@@ -169,11 +169,11 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                   const SizedBox(height: 24),
 
                   if (_uiState.isLoading)
-                    const MedrixLoadingState(
+                    const HealthifyLoadingState(
                       message: 'Loading bed & ICU management data...',
                     )
                   else if (_uiState.isError)
-                    MedrixErrorState(
+                    HealthifyErrorState(
                       errorMessage:
                           _uiState.errorMessage ?? 'Error loading beds',
                       onRetry: _loadBedData,
@@ -2618,7 +2618,7 @@ class _BedsIcuScreenState extends State<BedsIcuScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Only verified available beds are displayed to patients searching for emergency admission via the Medrix mobile app.',
+                    'Only verified available beds are displayed to patients searching for emergency admission via the Healthify mobile app.',
                     style: TextStyle(fontSize: 12, color: textColor),
                   ),
                 ),

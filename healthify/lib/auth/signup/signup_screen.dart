@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:healthify_server_client/healthify_server_client.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import '../../utils/page_transitions.dart';
@@ -605,7 +605,7 @@ class _HospitalSignupScreenState extends State<HospitalSignupScreen>
               Icon(Icons.arrow_back_rounded, size: 20),
               SizedBox(width: 8),
               Text(
-                'Return to MEDRIX Sign In',
+                'Return to HEALTHIFY Sign In',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ],

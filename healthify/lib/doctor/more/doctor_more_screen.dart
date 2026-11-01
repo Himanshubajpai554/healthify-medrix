@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../models/doctor_dashboard_models.dart';
 
@@ -74,7 +74,7 @@ class DoctorMoreScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '$specialty • Medrix Doctor Portal',
+                      '$specialty • Healthify Doctor Portal',
                       style: TextStyle(
                         fontSize: 12,
                         color: HealthifyGlassTheme.getTextSecondary(isDark),

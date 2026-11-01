@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/prescription_models.dart';
 
@@ -84,7 +84,7 @@ class PrescriptionPrintModal extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'MEDRIX CENTRAL HOSPITAL',
+                                'HEALTHIFY CENTRAL HOSPITAL',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
@@ -93,7 +93,7 @@ class PrescriptionPrintModal extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '104 Healthcare Boulevard, Medical District • Tel: +91 1800-MEDRIX',
+                                '104 Healthcare Boulevard, Medical District • Tel: +91 1800-HEALTHIFY',
                                 style: TextStyle(fontSize: 11, color: Colors.black54),
                               ),
                             ],

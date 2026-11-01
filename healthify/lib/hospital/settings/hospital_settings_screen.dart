@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 
@@ -386,11 +386,11 @@ class _HospitalSettingsScreenState extends State<HospitalSettingsScreen>
     final isDesktop = screenWidth >= 900;
 
     if (_isLoading) {
-      return const MedrixLoadingState(message: 'Loading hospital settings & parameters...');
+      return const HealthifyLoadingState(message: 'Loading hospital settings & parameters...');
     }
 
     if (_errorMessage != null) {
-      return MedrixErrorState(
+      return HealthifyErrorState(
         errorMessage: _errorMessage!,
         onRetry: _loadAllSettings,
       );
@@ -671,7 +671,7 @@ class _HospitalSettingsScreenState extends State<HospitalSettingsScreen>
               Text('Operating Mode', style: TextStyle(fontWeight: FontWeight.bold, color: HealthifyGlassTheme.getTextPrimary(isDark))),
               const SizedBox(height: 6),
               Text(
-                'Changing operating mode adjusts alert escalation, triage routing, and bed allocation priorities across Medrix.',
+                'Changing operating mode adjusts alert escalation, triage routing, and bed allocation priorities across Healthify.',
                 style: TextStyle(fontSize: 12, color: HealthifyGlassTheme.getTextSecondary(isDark)),
               ),
               const SizedBox(height: 12),
@@ -805,7 +805,7 @@ class _HospitalSettingsScreenState extends State<HospitalSettingsScreen>
               const Divider(),
               _buildSwitchTile(
                 'Allow Online Patient Self-Booking',
-                'Allow registered patients to book appointments via Medrix mobile app',
+                'Allow registered patients to book appointments via Healthify mobile app',
                 op.allowOnlineAppointments,
                 (v) {
                   setState(() => _operationalSettings = op.copyWith(allowOnlineAppointments: v));

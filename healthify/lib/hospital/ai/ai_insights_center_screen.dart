@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_ai_insight_repository.dart';
 import '../../core/provider/repository_provider.dart';
 import '../../core/enums/domain_enums.dart';
 import '../../core/models/ai_insight_model.dart';
 import '../../core/services/ai_insight_service.dart';
-import '../../core/widgets/medrix_empty_state.dart';
-import '../../core/widgets/medrix_error_state.dart';
-import '../../core/widgets/medrix_loading_state.dart';
+import '../../core/widgets/healthify_empty_state.dart';
+import '../../core/widgets/healthify_error_state.dart';
+import '../../core/widgets/healthify_loading_state.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../utils/responsive.dart';
@@ -155,9 +155,9 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
                   ),
                   Expanded(
                     child: _isLoading
-                        ? const MedrixLoadingState(message: 'Initializing AI/ML forecasting pipeline...')
+                        ? const HealthifyLoadingState(message: 'Initializing AI/ML forecasting pipeline...')
                         : _errorMessage != null
-                            ? MedrixErrorState(
+                            ? HealthifyErrorState(
                                 errorMessage: _errorMessage!,
                                 onRetry: _loadData,
                               )
@@ -269,7 +269,7 @@ class _AIInsightsCenterScreenState extends State<AIInsightsCenterScreen> with Si
         ),
         Expanded(
           child: _insights.isEmpty
-              ? const MedrixEmptyState(
+              ? const HealthifyEmptyState(
                   title: 'No AI Insights Currently Active',
                   description: 'All hospital capacity metrics are operating within normal baseline parameters.',
                   icon: Icons.lightbulb_outline_rounded,

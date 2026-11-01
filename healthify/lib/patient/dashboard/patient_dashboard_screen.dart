@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../auth/login/login_screen.dart';
@@ -145,7 +145,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'MEDRIX Persona Switcher',
+                    'HEALTHIFY Persona Switcher',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_dashboard_models.dart';
 import '../../services/doctor_clinical_records_service.dart';
@@ -152,7 +152,7 @@ class AddClinicalNoteModal {
                         Expanded(
                           child: Text(
                             isInternal
-                                ? 'PRIVATE NOTE: Visible ONLY to doctors and medical team in Medrix EHR.'
+                                ? 'PRIVATE NOTE: Visible ONLY to doctors and medical team in Healthify EHR.'
                                 : 'CARE TEAM NOTE: Saved to the hospital EHR. Patient portal sharing is not connected.',
                             style: TextStyle(
                               fontSize: 11.5,

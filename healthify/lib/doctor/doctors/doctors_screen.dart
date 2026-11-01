@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../theme/app_theme.dart';
@@ -178,9 +178,9 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
 
                 // 4. DOCTOR DATA TABLE / MOBILE CARDS OR EMPTY STATE
                 _uiState.isLoading
-                    ? const MedrixLoadingState(message: 'Loading doctor roster...')
+                    ? const HealthifyLoadingState(message: 'Loading doctor roster...')
                     : _uiState.isError
-                        ? MedrixErrorState(
+                        ? HealthifyErrorState(
                             errorMessage: _uiState.errorMessage ?? 'Error loading doctors',
                             onRetry: _loadDoctors,
                           )

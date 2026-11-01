@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/core.dart';
 import '../../shared/widgets/glass_components.dart';
 
@@ -293,14 +293,14 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
 
           // Content States
           if (_uiState.isLoading)
-            const MedrixLoadingState(message: 'Loading department matrix...')
+            const HealthifyLoadingState(message: 'Loading department matrix...')
           else if (_uiState.isError)
-            MedrixErrorState(
+            HealthifyErrorState(
               errorMessage: _uiState.errorMessage ?? 'Error',
               onRetry: _loadDepartments,
             )
           else if (_filteredDepartments.isEmpty)
-            MedrixEmptyState(
+            HealthifyEmptyState(
               title: 'No Departments Found',
               description: 'No medical departments match your query filter.',
               icon: Icons.corporate_fare_rounded,

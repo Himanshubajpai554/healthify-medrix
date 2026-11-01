@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 
 import '../repositories/hospital_repository.dart';
 import '../../enums/domain_enums.dart';
@@ -20,7 +20,7 @@ class MockHospitalRepository implements HospitalRepository {
     accreditationInfo: 'JCI Accredited & NABH Level 3 Certified',
     email: 'admin@stjude-hospital.org',
     emergencyHelpline: '+1 (555) 911-STJUDE',
-    receptionPhone: '+1 (555) 900-MEDRIX',
+    receptionPhone: '+1 (555) 900-HEALTHIFY',
     website: 'https://www.stjude-hospital.org',
     address: '742 Healthcare Boulevard, Medical District',
     city: 'New York',
@@ -97,7 +97,7 @@ class MockHospitalRepository implements HospitalRepository {
     _profile = _profile.copyWith(
       verificationStatus: VerificationStatus.pending,
       submittedDate: DateTime.now(),
-      verificationNotes: 'Verification submission received. Under review by Medrix Health Portal Audit Team.',
+      verificationNotes: 'Verification submission received. Under review by Healthify Health Portal Audit Team.',
     );
   }
 

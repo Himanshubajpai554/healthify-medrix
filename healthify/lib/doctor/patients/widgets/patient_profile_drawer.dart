@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_dashboard_models.dart';
 
@@ -397,7 +397,7 @@ class _PatientProfileContentState extends State<_PatientProfileContent>
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  '• 4 recorded consultations in Medrix EHR',
+                  '• 4 recorded consultations in Healthify EHR',
                   style: TextStyle(
                     fontSize: 12.5,
                     color: HealthifyGlassTheme.getTextPrimary(isDark),

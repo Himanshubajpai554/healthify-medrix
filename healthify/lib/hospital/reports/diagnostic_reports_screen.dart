@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/data/mock/mock_prescription_repository.dart';
 import '../../core/provider/repository_provider.dart';
 import '../../core/data/mock/mock_report_repository.dart';
@@ -9,9 +9,9 @@ import '../../core/permissions/permission_service.dart';
 import '../../core/queries/domain_queries.dart';
 import '../../core/services/prescription_service.dart';
 import '../../core/services/report_service.dart';
-import '../../core/widgets/medrix_empty_state.dart';
-import '../../core/widgets/medrix_error_state.dart';
-import '../../core/widgets/medrix_loading_state.dart';
+import '../../core/widgets/healthify_empty_state.dart';
+import '../../core/widgets/healthify_error_state.dart';
+import '../../core/widgets/healthify_loading_state.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../../utils/responsive.dart';
@@ -299,9 +299,9 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
                   ),
                 Expanded(
                   child: _isLoading
-                      ? const MedrixLoadingState(message: 'Loading clinical document repository...')
+                      ? const HealthifyLoadingState(message: 'Loading clinical document repository...')
                       : _errorMessage != null
-                          ? MedrixErrorState(
+                          ? HealthifyErrorState(
                               errorMessage: _errorMessage!,
                               onRetry: _loadData,
                             )
@@ -469,7 +469,7 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
         _buildReportFilterBar(isDark),
         Expanded(
           child: _reports.isEmpty
-              ? const MedrixEmptyState(
+              ? const HealthifyEmptyState(
                   title: 'No Diagnostic Reports Found',
                   description: 'No report records match the selected query and filters.',
                   icon: Icons.folder_open_rounded,
@@ -739,7 +739,7 @@ class _DiagnosticReportsScreenState extends State<DiagnosticReportsScreen> with 
           ),
         Expanded(
           child: _prescriptions.isEmpty
-              ? const MedrixEmptyState(
+              ? const HealthifyEmptyState(
                   title: 'No Prescription Index Records',
                   description: 'No prescription records match your criteria.',
                   icon: Icons.medication_liquid_rounded,

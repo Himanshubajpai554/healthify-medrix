@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../shared/widgets/glass_components.dart';
 
-class MedrixErrorState extends StatelessWidget {
+class HealthifyErrorState extends StatelessWidget {
   final String title;
   final String errorMessage;
   final VoidCallback? onRetry;
   final String retryLabel;
 
-  const MedrixErrorState({
+  const HealthifyErrorState({
     super.key,
     this.title = 'Unable to Load Data',
     required this.errorMessage,
@@ -73,7 +73,7 @@ class MedrixErrorState extends StatelessWidget {
   }
 }
 
-typedef AppErrorState = MedrixErrorState;
+typedef AppErrorState = HealthifyErrorState;
 
 class AppRetryButton extends StatelessWidget {
   final VoidCallback onPressed;

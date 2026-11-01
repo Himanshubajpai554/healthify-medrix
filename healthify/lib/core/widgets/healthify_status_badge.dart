@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../utils/status_system.dart';
 
-class MedrixStatusBadge extends StatelessWidget {
-  final MedrixStatusConfig config;
+class HealthifyStatusBadge extends StatelessWidget {
+  final HealthifyStatusConfig config;
   final bool showIcon;
 
-  const MedrixStatusBadge({
+  const HealthifyStatusBadge({
     super.key,
     required this.config,
     this.showIcon = true,

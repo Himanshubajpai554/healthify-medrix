@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/reports_models.dart';
 
@@ -599,7 +599,7 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
               children: [
                 const Expanded(
                   child: Text(
-                    'MEDRIX CENTRAL LABORATORY',
+                    'HEALTHIFY CENTRAL LABORATORY',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Color(0xFF0D9488),
@@ -940,7 +940,7 @@ class _ReportDetailDrawerState extends State<ReportDetailDrawer> {
             decoration: InputDecoration(
               hintText: _isPrivateNote
                   ? 'Enter private internal doctor notes (only visible to medical staff)...'
-                  : 'Enter notes visible to the patient on their Medrix Portal app...',
+                  : 'Enter notes visible to the patient on their Healthify Portal app...',
               hintStyle: TextStyle(
                 fontSize: 13,
                 color: HealthifyGlassTheme.getTextSecondary(isDark).withValues(alpha: 0.7),

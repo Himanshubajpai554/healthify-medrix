@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_help_models.dart';
 
@@ -109,7 +109,7 @@ class _ContactSupportModalState extends State<ContactSupportModal> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Medrix IT support specialists will review your ticket and respond in My Support Requests.'),
+                const Text('Healthify IT support specialists will review your ticket and respond in My Support Requests.'),
               ],
             ),
             actions: [

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../main.dart';
 import '../../shared/widgets/glass_components.dart';
 import '../models/doctor_dashboard_models.dart';
@@ -468,7 +468,7 @@ class _DoctorProfileSettingsScreenState
       case ProfileSettingsTab.account:
         return AccountManagementSection(
           doctorId: _profile.id,
-          hospitalName: 'Medrix City Hospital',
+          hospitalName: 'Healthify City Hospital',
           onSignOut: () {
             Navigator.of(context).pushReplacementNamed('/');
           },

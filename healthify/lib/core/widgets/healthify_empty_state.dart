@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../shared/widgets/glass_components.dart';
 
-class MedrixEmptyState extends StatelessWidget {
+class HealthifyEmptyState extends StatelessWidget {
   final String title;
   final String description;
   final IconData icon;
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const MedrixEmptyState({
+  const HealthifyEmptyState({
     super.key,
     required this.title,
     required this.description,
@@ -76,4 +76,4 @@ class MedrixEmptyState extends StatelessWidget {
   }
 }
 
-typedef AppEmptyState = MedrixEmptyState;
+typedef AppEmptyState = HealthifyEmptyState;

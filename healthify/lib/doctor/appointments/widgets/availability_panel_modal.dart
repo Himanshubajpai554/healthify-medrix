@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_dashboard_models.dart';
 
@@ -197,7 +197,7 @@ class AvailabilityPanelModal {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Availability saved. Synced live with Medrix Patient App.'),
+                            content: Text('Availability saved. Synced live with Healthify Patient App.'),
                             backgroundColor: HealthifyGlassTheme.primaryTeal,
                             behavior: SnackBarBehavior.floating,
                           ),

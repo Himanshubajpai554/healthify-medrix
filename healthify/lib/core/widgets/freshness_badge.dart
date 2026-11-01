@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../utils/datetime_service.dart';
 
-/// Reusable Data Freshness Indicator Badge for Medrix Platform
+/// Reusable Data Freshness Indicator Badge for Healthify Platform
 class FreshnessBadge extends StatelessWidget {
   final DateTime? timestamp;
   final String? customLabel;

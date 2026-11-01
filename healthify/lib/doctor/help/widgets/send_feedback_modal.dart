@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 
 class SendFeedbackModal extends StatefulWidget {
@@ -37,7 +37,7 @@ class _SendFeedbackModalState extends State<SendFeedbackModal> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Thank you for your feedback! Your suggestion helps improve Medrix.'),
+            content: Text('Thank you for your feedback! Your suggestion helps improve Healthify.'),
             backgroundColor: HealthifyGlassTheme.primaryTeal,
           ),
         );

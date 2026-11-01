@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 
 class HelpSupportSection extends StatelessWidget {
@@ -130,7 +130,7 @@ class HelpSupportSection extends StatelessWidget {
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Connecting to Medrix Hospital IT Desk (Ext: 4400)...'),
+                            content: Text('Connecting to Healthify Hospital IT Desk (Ext: 4400)...'),
                             backgroundColor: HealthifyGlassTheme.primaryTeal,
                           ),
                         );

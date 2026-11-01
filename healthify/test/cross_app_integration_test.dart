@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:healthify_hospital/core/data/mock/mock_data_integrity_validator.dart';
 import 'package:healthify_hospital/core/data/mock/mock_data_reset_service.dart';
 import 'package:healthify_hospital/core/events/domain_event_bus.dart';
@@ -11,7 +11,7 @@ import 'package:healthify_hospital/core/services/patient_discovery_service.dart'
 import 'package:healthify_hospital/core/utils/datetime_service.dart';
 
 void main() {
-  group('Phase 17 — Medrix Cross-App Integration & Shared Pipeline Tests', () {
+  group('Phase 17 — Healthify Cross-App Integration & Shared Pipeline Tests', () {
     late RepositoryContainer container;
     late DomainEventBus eventBus;
     late PatientDiscoveryService discoveryService;
@@ -132,7 +132,7 @@ void main() {
 
     test('11. Full 10-Step Cross-App End-to-End Demo Scenario Execution', () async {
       final report = await demoService.runFullCrossAppScenario();
-      expect(report.scenarioName, contains('10-Step Medrix Cross-App'));
+      expect(report.scenarioName, contains('10-Step Healthify Cross-App'));
       expect(report.steps.length, equals(10));
       expect(report.allPassed, isTrue);
     });

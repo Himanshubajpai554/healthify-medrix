@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:healthify_server_client/healthify_server_client.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
@@ -59,7 +59,7 @@ class HealthifyHospitalApp extends StatelessWidget {
         return RepositoryScope(
           container: RepositoryContainer.instance,
           child: MaterialApp(
-            title: 'MEDRIX - Healthcare Platform',
+            title: 'HEALTHIFY - Healthcare Platform',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.theme,
             darkTheme: AppTheme.darkTheme,

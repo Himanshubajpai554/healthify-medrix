@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../auth/login/login_screen.dart';
 import '../../shared/widgets/animated_pulse_background.dart';
@@ -260,7 +260,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'MEDRIX Persona Switcher',
+                    'HEALTHIFY Persona Switcher',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -476,7 +476,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
                     text: TextSpan(
                       children: [
                         const TextSpan(
-                          text: 'MEDRIX ',
+                          text: 'HEALTHIFY ',
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             color: HealthifyGlassTheme.primaryTeal,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../shared/widgets/glass_components.dart';
 import '../../models/doctor_profile_models.dart';
 
@@ -96,7 +96,7 @@ class ProfileSettingsHeader extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '${professionalInfo.specialization} • Medrix Hospital',
+                            '${professionalInfo.specialization} • Healthify Hospital',
                             style: TextStyle(
                               fontSize: 11,
                               color: HealthifyGlassTheme.getTextSecondary(isDark),
